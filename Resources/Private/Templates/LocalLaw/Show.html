@@ -1,0 +1,81 @@
+{namespace nws=Nwsnet\NwsMunicipalStatutes\ViewHelpers}
+<f:layout name="Default"/>
+<f:section name="main">
+	<f:flashMessages/>
+	<f:if condition="{settings.substitutePageTitle}== 0">
+		<f:then>
+			<h2>{legalNorm.longTitle}</h2>
+		</f:then>
+		<f:else>
+			<h2 class="hidden-md hidden-lg d-md-none d-lg-none">{legalNorm.longTitle}</h2>
+		</f:else>
+	</f:if>
+	<div class="row">
+		<div class="col-md-12">
+			<p>erlassen am:
+				<f:format.date format="%d.%m.%Y">{legalNorm.jurisPromulgationDate}</f:format.date>
+				|i.d.F.v.
+				<f:format.date format="%d.%m.%Y">{legalNorm.jurisAmendDate}</f:format.date>
+				| gültig ab
+				<f:format.date format="%d.%m.%Y">{legalNorm.jurisEnactmentFrom}</f:format.date>
+			</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-8">
+			<div class="dropdown">
+				<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+						aria-haspopup="true" aria-expanded="false">
+					Schnellfinder
+				</button>
+				<div class="dropdown-menu">
+					<f:if condition="{legalNorm.parseContent.nav}">
+						<f:alias map="{nav : legalNorm.parseContent.nav}">
+							<f:for each="{nav}" as="navItems">
+								<f:link.page class="dropdown-item" addQueryString="1" section="{navItems.section}">
+									{navItems.name}
+								</f:link.page>
+							</f:for>
+						</f:alias>
+					</f:if>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<p class="text-right">
+				<f:link.action action="list" arguments="{legislator: legalNorm.legislator.id}"
+							   class="button btn btn-default btn-secondary">
+					{f:translate(key:'template.events.show.back-list')}
+				</f:link.action>
+			</p>
+		</div>
+
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-md-12">
+			<f:if condition="{legalNorm.parseContent.elements}">
+				<f:alias map="{elements : legalNorm.parseContent.elements}">
+					<f:for each="{elements}" as="element">
+						<div class="tx-nwsmunicipalstatutes-content">
+							<f:if condition="{element.header}">
+								<f:if condition="{element.content}">
+									<f:then>
+										<h3 id="{element.header.section}">{element.header.headline}</h3>
+									</f:then>
+									<f:else>
+										<h2 id="{element.header.section}">{element.header.headline}</h2>
+									</f:else>
+								</f:if>
+
+							</f:if>
+							<f:if condition="{element.content}">
+								<f:format.raw>{element.content}</f:format.raw>
+							</f:if>
+						</div>
+					</f:for>
+				</f:alias>
+			</f:if>
+		</div>
+	</div>
+</f:section>

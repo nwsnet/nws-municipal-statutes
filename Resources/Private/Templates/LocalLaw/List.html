@@ -1,0 +1,93 @@
+<f:layout name="Default"/>
+<f:section name="main">
+	<f:flashMessages/>
+	<f:if condition="{legalNorm.structure.subStructurNodes}">
+		<f:for each="{legalNorm.structure.subStructurNodes}" as="script" iteration="iterator">
+			<f:if condition="{iterator.isFirst}">
+				<f:format.raw>
+					<script type="text/javascript">
+						$(document).ready(function () {
+							$('#lg{script.id}Cont').collapse({
+								show: true
+							});
+						});
+					</script>
+				</f:format.raw>
+			</f:if>
+		</f:for>
+	</f:if>
+	<div class="row">
+		<div class="col-md-4">
+			<f:render partial="Menu/TreeMenu" arguments="{treeMenu: '{treeMenu}'}"/>
+		</div>
+		<div class="col-md-8">
+			<f:if condition="{legalNorm}">
+				<f:then>
+					<h2>{legalNorm.name}</h2>
+					<p>Vorschriften ({legalNorm.count} Treffer)</p>
+					<f:if condition="{legalNorm.structure.subStructurNodes}">
+						<div class="panel-group accordion" id="accordionContent" role="tablist"
+							 aria-multiselectable="true">
+							<f:for each="{legalNorm.structure.subStructurNodes}" as="structure">
+								<div class="panel panel-default card">
+									<div class="panel-heading card-header" role="tab"
+										 id="lg{structure.id}">
+										<h3 class="margin-y-0 my-0">
+											<a class="show d-block" role="button" data-toggle="collapse"
+											   data-parent="#accordionContent" data-target="#lg{structure.id}Cont"
+											   aria-expanded="false" aria-controls="lg{structure.id}Cont">
+												<f:if condition="{structure.structureText}">
+													<f:then>
+														{structure.structureText}
+													</f:then>
+													<f:else>
+														{structure.structureNumber}
+													</f:else>
+												</f:if>
+											</a>
+										</h3>
+									</div>
+									<div id="lg{structure.id}Cont" class="panel-collapse collapse"
+										 data-parent="#accordionContent" role="tabpanel"
+										 aria-labelledby="lg{structure.id}">
+										<div class="panel-body card-body">
+											<ul>
+												<f:if condition="{structure.legalNorm}">
+													<f:for each="{structure.legalNorm}" as="legalNormItem">
+														<li>
+															<p>
+																<f:link.action action="show"
+																			   arguments="{legalnorm: legalNormItem.id}">
+																	{legalNormItem.longTitle}
+																</f:link.action>
+																<span class="small d-block">
+								erlassen am:
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisPromulgationDate}</f:format.date>
+								|i.d.F.v.
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisAmendDate}</f:format.date>
+								| gültig ab
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisEnactmentFrom}</f:format.date>
+								</span>
+															</p>
+														</li>
+													</f:for>
+												</f:if>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</f:for>
+						</div>
+					</f:if>
+				</f:then>
+				<f:else>
+					<div class="alert alert-secondary" role="alert">
+						<h3>Ihr direkter Weg zu kommunalen Rechtsinformationen</h3>
+						<p>Bitte wählen Sie Ihre Verwaltung aus um nützliche Rechtsinformationen zu erhalten.</p>
+					</div>
+				</f:else>
+			</f:if>
+		</div>
+	</div>
+
+</f:section>

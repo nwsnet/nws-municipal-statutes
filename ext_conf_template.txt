@@ -1,0 +1,11 @@
+# cat=content/enable; type=string; label=Activation of the FullRest-API key: Providing municipal legal information requires an API key
+apiKey =
+# cat=content/enable; type=string; label=Local law FullRest-API URL: Providing local legal information requires a FullRest-API Url.
+localLawApiUrl = https://restapi-recht-v1-sh.zfinder.de
+# cat=content/enable; type=string; label=Jurisdiction finder FullRest-API URL: To provide jurisdiction information, a FullRest Url is needed.
+jurisdictionFinderApiUrl = https://restapi-v3-sh.zfinder.de
+# cat=content/enable; type=string; label=Official municipality key: Official municipality key for a federal state, for example (Schleswig-Holstein = 01)
+agsKey = 01
+
+
+

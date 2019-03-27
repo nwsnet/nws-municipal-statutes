@@ -1,0 +1,14 @@
+<f:translate key="template.mail.register.mail-content-admin" arguments="{0:'{host}',1: '{f:format.date(date: \'now\' format: \'%A, %d.%m.%Y %H:%M:%S\')}'}"/>
+
+{f:if(condition: '{organizer.organizer}', then: '{f:translate(key:\'template.organizer.label-organizer\')}:	{organizer.organizer}')}
+{f:if(condition: '{organizer.contactPerson}', then: '{f:translate(key:\'template.organizer.label-contactperson\')}:	{organizer.contactPerson}')}
+{f:if(condition: '{organizer.street}', then: '{f:translate(key:\'template.organizer.label-street\')}:	{organizer.street}')}
+{f:if(condition: '{organizer.zip}', then: '{f:translate(key:\'template.organizer.label-zip\')}:	{organizer.zip}')}
+{f:if(condition: '{organizer.city}', then: '{f:translate(key:\'template.organizer.label-city\')}:	{organizer.city}')}
+{f:if(condition: '{organizer.telephone}', then: '{f:translate(key:\'template.organizer.label-telephone\')}:	{organizer.telephone}')}
+{f:if(condition: '{organizer.fax}', then: '{f:translate(key:\'template.organizer.label-fax\')}:	{organizer.fax}')}
+{f:if(condition: '{organizer.email}', then: '{f:translate(key:\'template.organizer.label-email\')}:	{organizer.email}')}
+{f:if(condition: '{organizer.homepage}', then: '{f:translate(key:\'template.organizer.label-homepage\')}:	{organizer.homepage}')}
+
+_________________________________________________________
+<f:translate key="template.mail.register.binder-admin"/>

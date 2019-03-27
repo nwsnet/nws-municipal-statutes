@@ -1,0 +1,115 @@
+<f:comment>Selection menu of legislators</f:comment>
+<f:if condition="{treeMenu}">
+	<f:for each="{treeMenu}" as="state">
+		<nav class="navbar">
+			<ul class="navbar-nav">
+				<li class="nav-item"><h3>{state.displayName}</h3>
+					<f:if condition="{state.child}">
+						<ul class="navbar-nav ml-3">
+							<f:for each="{state.child}" as="district">
+								<li class="nav-item">
+									<a href="#a{district.id}" data-toggle="collapse" role="button"
+									   aria-expanded="false"
+									   aria-controls="a{district.id}">{district.displayName}</a>
+									<f:if condition="{district.child}">
+										<ul class="collapse" id="a{district.id}">
+											<f:if condition="{district.legislator}">
+												<f:for each="{district.legislator}" as="legislator">
+													<li class="nav-item">
+														<f:link.action action="list"
+																	   arguments="{legislator: legislator.id}">
+															{legislator.name}
+														</f:link.action>
+													</li>
+												</f:for>
+											</f:if>
+											<f:for each="{district.child}" as="location">
+												<li class="nav-item">
+													<f:if condition="<f:count>{location.child}</f:count> > 1">
+														<f:then>
+															<a href="#a{location.id}" data-toggle="collapse"
+															   role="button" aria-expanded="false"
+															   aria-controls="a{location.id}">{location.displayName}</a>
+														</f:then>
+														<f:else>
+															<f:if condition="{location.legislator}">
+																<f:for each="{location.legislator}"
+																	   as="legislator">
+																	<f:link.action action="list"
+																				   arguments="{legislator: legislator.id}">
+																		{legislator.name}
+																	</f:link.action>
+																</f:for>
+															</f:if>
+														</f:else>
+													</f:if>
+													<f:if condition="{location.child}">
+														<ul class="collapse" id="a{location.id}">
+															<f:if condition="{location.legislator}">
+																<f:for each="{location.legislator}"
+																	   as="legislator">
+																	<li class="nav-item">
+																		<f:link.action action="list"
+																					   arguments="{legislator: legislator.id}">
+																			{legislator.name}
+																		</f:link.action>
+																	</li>
+																</f:for>
+															</f:if>
+															<f:for each="{location.child}" as="sublocation">
+																<f:if condition="{sublocation.legislator}">
+																	<f:if condition="<f:count>{sublocation.legislator}</f:count> > 1">
+																		<f:then>
+																			<li class="nav-item">
+																				<a href="#b{sublocation.id}"
+																				   data-toggle="collapse"
+																				   role="button"
+																				   aria-expanded="false"
+																				   aria-controls="b{sublocation.id}">{sublocation.displayName}</a>
+																				<ul class="collapse"
+																					id="b{sublocation.id}">
+																					<f:for each="{sublocation.legislator}"
+																						   as="legislator">
+																						<li class="nav-item">
+																							<f:link.action
+																									action="list"
+																									arguments="{legislator: legislator.id}">
+																								{legislator.name}
+																							</f:link.action>
+																						</li>
+																					</f:for>
+																				</ul>
+																			</li>
+																		</f:then>
+																		<f:else>
+																			<f:for each="{sublocation.legislator}"
+																				   as="legislator">
+																				<li class="nav-item">
+																					<f:link.action action="list"
+																								   arguments="{legislator: legislator.id}">
+																						{sublocation.displayName}
+																					</f:link.action>
+																				</li>
+																			</f:for>
+																		</f:else>
+																	</f:if>
+																</f:if>
+															</f:for>
+														</ul>
+													</f:if>
+												</li>
+											</f:for>
+										</ul>
+									</f:if>
+								</li>
+							</f:for>
+						</ul>
+					</f:if>
+				</li>
+			</ul>
+		</nav>
+	</f:for>
+</f:if>
+
+
+

@@ -1,0 +1,46 @@
+<f:form.validationResults for="{form}">
+	<f:if condition="{validationResults.flattenedErrors}">
+		<div class="alert alert-danger">
+			<f:if condition="{validationResults.errors}">
+				<f:then>
+					<f:for each="{validationResults.errors}" as="error">
+						<f:if condition="{error.code} == 1496773299">
+							<f:then>
+								<div class="tx-nwsmunicipalstatutes-error">
+									<f:format.raw><f:translate key="template.global.error.{error.code}" arguments="{error.arguments}"/></f:format.raw>
+								</div>
+								<div>
+									<f:format.raw><f:translate key="template.organizer.confirm.note-similar-organizers"/></f:format.raw>
+									<br/>
+									<f:if condition="{settings.showPasswordViewPid}">
+										<f:then>
+											<f:link.action pageUid="{settings.showPasswordViewPid}" controller="Organizer" action="password" class="btn btn-primary">
+												{f:translate(key:'template.organizer.showregistration.button-password')}
+											</f:link.action>
+										</f:then>
+										<f:else>
+											<f:link.action controller="Organizer" action="password" class="btn btn-primary">
+												{f:translate(key:'template.organizer.confirm.button-password')}
+											</f:link.action>
+										</f:else>
+									</f:if>
+								</div>
+							</f:then>
+							<f:else>
+								<div class="tx-nwsmunicipalstatutes-error">
+									<f:format.raw><f:translate key="template.global.error.{error.code}" arguments="{error.arguments}"/></f:format.raw>
+								</div>
+							</f:else>
+						</f:if>
+					</f:for>
+				</f:then>
+				<f:else>
+					<div class="tx-nwsmunicipalstatutes-error">
+						<f:translate key="template.global.error"/>
+					</div>
+				</f:else>
+			</f:if>
+		</div>
+	</f:if>
+</f:form.validationResults>
+

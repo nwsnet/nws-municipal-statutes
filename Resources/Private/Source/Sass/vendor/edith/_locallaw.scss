@@ -1,0 +1,47 @@
+/*!
+ * TSA Local Law
+ * Copyright 2019 die NetzWerkstatt
+ */
+
+.tx-nwsmunicipalstatutes {
+
+  /* Bugfix Modal */
+  .modal-backdrop {
+	z-index: -1;
+  }
+  #accordionContent .card-header a {
+	cursor: pointer;
+  }
+}
+
+@media (max-width: 480px) {
+  #tx-nwsmunicipalstatutes-list {
+	tbody {
+	  td {
+		border: none;
+	  }
+	}
+  }
+}
+
+@media (min-width: 768px) {
+  /* Bugfix Modal */
+  .tx-nwsmunicipalstatutes .modal-backdrop {
+	z-index: 1040;
+  }
+}
+
+@media (min-width: 992px) {
+  /* Modal wide*/
+  .tx-nwsmunicipalstatutes .modal-lg {
+	width: 80%;
+	max-width: 80%;
+  }
+  .tx-nwsmunicipalstatutes .modal-lg {
+	width: 60%;
+	max-width: 60%;
+  }
+}
+
+
+

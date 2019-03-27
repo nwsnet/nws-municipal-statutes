@@ -1,0 +1,33 @@
+{
+	"name": "nwsnet/nws-municipal-statutes",
+	"type": "typo3-cms-extension",
+	"description": "It provides events and registrations for the appointment system of www.termine-regional.de.",
+	"homepage": "https://git.die-netzwerkstatt.de/t3x/tx-nws-municipal-statutes.git",
+	"keywords": [
+		"TYPO3",
+		"extension",
+		"regional events"
+	],
+	"autoload": {
+		"psr-4": {
+			"Nwsnet\\NwsMunicipalStatutes\\": "Classes"
+		},
+		"psr-0": {
+		  "SimpleHtmlDom": "Classes/Dom/"
+		},
+		"files": [
+		  "Classes/Dom/SimpleHtmlDom.php"
+		]
+	},
+	"authors": [
+		{
+			"name": "Dirk Meinke",
+			"email": "typo3@die-netzwerkstatt.de",
+			"homepage": "http://www.die-netzwerkstatt.de/"
+		}
+	],
+	"require": {
+		"typo3/cms-core": "^7.6.13 || >=8.5.0 <9.5.99",
+		"sabre/vobject": "^4.1"
+	}
+}

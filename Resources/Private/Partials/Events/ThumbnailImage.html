@@ -1,0 +1,8 @@
+<f:if condition="{image.filenameThumbnail}">
+	<f:then>
+		<img src="{image.baseUrl}{image.filenameThumbnail}" alt="{image.altText}"/>
+	</f:then>
+	<f:else>
+		<img src="{image.baseUrl}{image.filename}" alt="{image.altText}"/>
+	</f:else>
+</f:if>

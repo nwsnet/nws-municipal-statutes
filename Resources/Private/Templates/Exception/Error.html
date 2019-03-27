@@ -1,0 +1,24 @@
+<f:layout name="Default"/>
+<f:section name="main">
+	<f:flashMessages/>
+	<h2>
+		<f:translate key="template.exception.error.headline"/>
+	</h2>
+	<div class="warning bg-warning">
+		<p>
+			<strong>
+				<f:translate key="template.exception.error.code" arguments="{0:exception.code}"/>
+			</strong>
+		</p>
+		<f:if condition="{f:translate(key: 'template.exception.error.{exception.code}')}">
+			<f:then>
+				<p>
+					<strong>
+						<f:translate key="template.exception.error.{exception.code}"/>
+					</strong>
+				</p>
+			</f:then>
+			<f:else>{exception.message}</f:else>
+		</f:if>
+	</div>
+</f:section>

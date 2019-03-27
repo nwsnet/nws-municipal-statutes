@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.0">
+	<file
+			product-name="nws-municipal-statutes"
+			source-language="en"
+			original="messages" date="2019-03-15T00:00:00Z">
+		<header/>
+		<body>
+			<trans-unit id="tx_nwsmunicipalstatutes_pi1.title">
+				<source>Local law system</source>
+			</trans-unit>
+			<trans-unit id="tx_nwsmunicipalstatutes_pi1.wiz_description">
+				<source>Provides the municipal law information about the TSA Full Rest interface.</source>
+			</trans-unit>
+
+			<trans-unit id="flexform.sdef.sheettitle">
+				<source>Selection views</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.switchableControllerActions">
+				<source>Default action of the plugin</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.switchableControllerActions.I.0">
+				<source>Single view of the organizational unit</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.switchableControllerActions.I.1">
+				<source>General view of all organizational units</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.switchableControllerActions.I.2">
+				<source>Detail view</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.transmit.pagerLimit">
+				<source>Maximum number of pages in the page selection</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.transmit.listLimit">
+				<source>Maximum number of entries per page</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.zip">
+				<source>Postal code of the starting selection of the place for the first call</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.city">
+				<source>Place of the starting selection of the place for the first call</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.showSingleViewPid">
+				<source>Single view of the events</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.showListViewPid">
+				<source>List view of the events</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.showOrganizerViewPid">
+				<source>View for the Organizer registration</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.showPasswordViewPid">
+				<source>Password Submission View</source>
+			</trans-unit>
+			<trans-unit id="flexform.sdef.enableAuthenticationCode">
+				<source>Activation authentication code with additional client selection</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.sheettitle">
+				<source>Teaser settings</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserMaxEvents">
+				<source>Teaser number of events displayed</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserAlwaysEntries">
+				<source>Always provide the number of events for the teaser</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserLimitationDays">
+				<source>Limitation to the period in days</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserRandom">
+				<source>Random events for the teaser</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserSorting">
+				<source>Sorting of events for the teasers</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserWithoutRestriction">
+				<source>Provide teaser events without any restrictions</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserWithImage">
+				<source>Teaser with image</source>
+			</trans-unit>
+			<trans-unit id="flexform.teaser.teaserWithShortText">
+				<source>Teaser with short text</source>
+			</trans-unit>
+			<trans-unit id="flexform.calendar.sheettitle">
+				<source>Calendar settings</source>
+			</trans-unit>
+			<trans-unit id="flexform.calendar.calendarMonthSelection">
+				<source>Provide monthly selection for calendar</source>
+			</trans-unit>
+			<trans-unit id="flexform.calendar.calendarAjaxList">
+				<source>Provide list view for daily selection via Ajax</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.sheettitle">
+				<source>Other restriction options</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.category">
+				<source>Category selection restriction</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.provinces">
+				<source>Provinces selection restriction</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification">
+				<source>Selection of classifications of events</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.provinceSelection">
+				<source>Enable province selection for calendar search</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.districtSelection">
+				<source>Enable district selection for calendar search</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.placeSelection">
+				<source>Enable place selection for calendar search</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.categorySelection">
+				<source>Enable category selection for calendar search</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification.I.0">
+				<source>1 star</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification.I.1">
+				<source>2 stars</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification.I.2">
+				<source>3 stars</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification.I.3">
+				<source>4 stars</source>
+			</trans-unit>
+			<trans-unit id="flexform.restrictions.classification.I.4">
+				<source>5 stars - Highlights</source>
+			</trans-unit>
+			<trans-unit id="template.events.footer.note">
+				<source>The responsibility for the factual correctness of the information lies with the Operators.</source>
+			</trans-unit>
+			<trans-unit id="template.events.footer.uri">
+				<source>https://www.termine-regional.de</source>
+			</trans-unit>
+			<trans-unit id="template.events.footer.title">
+				<source>These events are provided by termine-regional.de</source>
+			</trans-unit>
+			<trans-unit id="template.events.footer.altText">
+				<source>Logo Termine-Regional</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.firstCall">
+				<source>Here you will find a selection of current events.</source>
+			</trans-unit>
+			<trans-unit id="template.events.table.table-date">
+				<source>Date</source>
+			</trans-unit>
+			<trans-unit id="template.events.table.table-description">
+				<source>Short description</source>
+			</trans-unit>
+			<trans-unit id="template.events.table.table-place">
+				<source>Place</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-numbers">
+				<source><![CDATA[Page <strong>%s</strong> of <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-notice">
+				<source>events</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-notice-found">
+				<source>Events found</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-icon-first-page">
+				<source>Icon first page</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-icon-previous-page">
+				<source>Icon previous page</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-icon-next-page">
+				<source>Icon next page</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.pager-icon-last-page">
+				<source>Icon last page</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.button-more">
+				<source>more info</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-found">
+				<source>You have filtered events according to the following criteria:</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-not-found">
+				<source>No search results found, please select a different month, category, search term, location or other region.</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-searchday">
+				<source><![CDATA[Day: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-searchmonth">
+				<source><![CDATA[Month: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-searchperiod">
+				<source><![CDATA[Period: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-search">
+				<source><![CDATA[Full Text Search: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-province">
+				<source><![CDATA[Province: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-district">
+				<source><![CDATA[District: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-region">
+				<source><![CDATA[Region: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-place">
+				<source><![CDATA[Place: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-category">
+				<source><![CDATA[Category: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.notice-categoryMain">
+				<source><![CDATA[Main category: <strong>%s</strong>]]></source>
+			</trans-unit>
+			<trans-unit id="template.events.list.table-summary">
+				<source>Overview of Events</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.title-booking">
+				<source>Book your event:</source>
+			</trans-unit>
+			<trans-unit id="template.events.list.button-booking">
+				<source>Book</source>
+			</trans-unit>
+			<trans-unit id="template.events.teaser.button-more">
+				<source>Read more</source>
+			</trans-unit>
+			<trans-unit id="template.events.teaser.notice-not-found">
+				<source>Unfortunately we cannot present you any events.</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.01">
+				<source>category image culture</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.02">
+				<source>category image economy</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.03">
+				<source>category image tourism</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.04">
+				<source>category image education</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.05">
+				<source>category image entertainment</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.06">
+				<source>category image youth</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.07">
+				<source>category image seniors</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.08">
+				<source>category image policy</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.09">
+				<source>category image sports</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.10">
+				<source>category image other</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.11">
+				<source>category image fire fighting</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.12">
+				<source>category image health</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.13">
+				<source>category image nature</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.14">
+				<source>category image agriculture</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.15">
+				<source>category image church</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.16">
+				<source>category image banks</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.17">
+				<source>category image pets</source>
+			</trans-unit>
+			<trans-unit id="template.events.category-image.18">
+				<source>category image active region</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.search-label">
+				<source>Please enter a search term</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.search-placeholder">
+				<source>Enter search term</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.month-year-label">
+				<source>Month</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.month-year-select">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.province-label">
+				<source>Province</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.province-select">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.district-label">
+				<source>District</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.district-select">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.place-label">
+				<source>Place</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.place-select">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.category-label">
+				<source>Category</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.category-select">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.events.search.search-button">
+				<source>Search</source>
+			</trans-unit>
+			<trans-unit id="template.calendar.modal-headline">
+				<source>Events</source>
+			</trans-unit>
+			<trans-unit id="template.calendar.modal-button-close">
+				<source>Close</source>
+			</trans-unit>
+			<trans-unit id="template.calendar.modal-button-close-view">
+				<source>Close View</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.table-summary">
+				<source>Calendar representation of the month</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.mondayShort">
+				<source>Mo</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.tuesdayShort">
+				<source>Tu</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.wednesdayShort">
+				<source>We</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.thursdayShort">
+				<source>Th</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.fridayShort">
+				<source>Fr</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.saturdayShort">
+				<source>Sa</source>
+			</trans-unit>
+			<trans-unit id="template.partials.calendar.sundayShort">
+				<source>Su</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.back-list">
+				<source>Back to selection</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.descriptionShort">
+				<source>Short Description:</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.when">
+				<source>When?</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.time">
+				<source>Time:</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.where">
+				<source>Where exactly?</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.costs">
+				<source>Costs:</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.ticket-booking">
+				<source>Booking a ticket:</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.ticket-online-booking">
+				<source>Online booking</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.ticket-request-booking">
+				<source>On request</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.category">
+				<source>Category:</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.descriptionLong">
+				<source>Long description</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.collapse-show">
+				<source>Show more</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.collapse-hide">
+				<source>Hide text</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.contact">
+				<source>Contact</source>
+			</trans-unit>
+			<trans-unit id="template.events.show.source">
+				<source>Source</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.headline-enter-event">
+				<source>Enter event</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.note-enter-event">
+				<source>Are you an organizer and want to enter an appointment? Register Here for FREE!</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.button-enter-event">
+				<source>Sign up for free</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.headline-access">
+				<source>Access for organizers</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.placeholder-access-username">
+				<source>Username</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.placeholder-access-password">
+				<source>Password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.title-access-password-visible">
+				<source>Show password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.button-access-login">
+				<source>Login</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.button-access-send">
+				<source>Send</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.showregistration.button-password">
+				<source>Forgot your password?</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.headline-organizer-registration">
+				<source>Promoter Registration</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.text-organizer-registration">
+				<source><![CDATA[<strong>Register here for free as an organizer.</strong> <br/> After the successful Registration you will receive an e-mail, where you have to confirm the registration so that you can log into the event database.]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.legend-organizer">
+				<source>Organizer data</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.legend-access">
+				<source>Access to data maintenance</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.title-password-visible">
+				<source>Show password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.title-password-refresh">
+				<source>Renew Password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.headline">
+				<source>Forgot your password?</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.content">
+				<source><![CDATA[
+				<p><strong>You have forgotten or misplaced your personal password for the online service of the event calendar? </strong> </p>
+				<p>No problem!<br/>We will gladly send you your Access data to the e-mail address provided to us. </p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.note">
+				<source><![CDATA[
+				<p><strong>Note:</strong><br/>If you do not receive an answer from us within a few minutes, we probably have a wrong Email address, and our email cannot reach you. </p>
+				<p>Please contact us in this case so that we can correct your email address! </p>
+				<p>You can reach us by the following way:</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.button-send">
+				<source>Request password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.headline-send">
+				<source>Password has been sent</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.password.content-send">
+				<source><![CDATA[
+				<p>We will contact you immediately and send you your password via email.<br/>With the data you have then you can easily register with us and take full advantage of the benefits as an organizer.</p>
+				<p>The delivery of your message is usually within a few minutes. If you do not receive a message from us, our customer support will be happy to help you and check your email address.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.text-mandatory-information">
+				<source><![CDATA[The fields marked with <strong>*</strong> are obligatory and must be filled in.]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-contact-data">
+				<source>Contact details</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-access-data">
+				<source>Access data</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-signed-to">
+				<source>Signed in to</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration">
+				<source>Type of registration</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration.I.0">
+				<source>Administrator</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration.I.1">
+				<source>Coordinator</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration.I.2">
+				<source>Adapted organizer</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration.I.3">
+				<source>Organizer</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-type-registration.I.4">
+				<source>Press</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-organizer">
+				<source>Organizer</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-contactperson">
+				<source>Contact person</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-street">
+				<source>Street/No.</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-zip">
+				<source>Zip</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-city">
+				<source>Place</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-telephone">
+				<source>Telephone</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-fax">
+				<source>Fax</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-email">
+				<source>E-Mail</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-homepage">
+				<source>Homepage</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-username-alone">
+				<source>User name</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-username">
+				<source>User name (E-Mail)</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-password">
+				<source><![CDATA[Password<br/>(min. 8 characters)]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-password-alone">
+				<source>Password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-passwordconfirm">
+				<source>Repeat password</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-useremail">
+				<source>Your email address</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-disclaimer">
+				<source><![CDATA[By submitting the organizer registration I agree to the %s of use.]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-disclaimer-linkname">
+				<source>terms</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-privacy">
+				<source><![CDATA[By submitting the organizer registration I agree with the %s.]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.label-privacy-linkname">
+				<source>privacy policy (EU-GDPR)</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.modal-headline">
+				<source>Document</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.modal-button-close">
+				<source>Close</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.modal-button-close-view">
+				<source>Close View</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-organizer">
+				<source>Organizer</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-contactPerson">
+				<source>Contact person</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-street">
+				<source>Street/No.</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-zip">
+				<source>Zip</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-city">
+				<source>Place</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-telephone">
+				<source>Telephone</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-fax">
+				<source>Fax</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-email">
+				<source>E-Mail</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-homepage">
+				<source>Homepage</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-username">
+				<source>User name</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.placeholder-useremail">
+				<source>Email address</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.add.button-next">
+				<source>Next</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.button-break">
+				<source>Cancel</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.button-back">
+				<source>Back</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.headline-similar-organizers">
+				<source>The following identical organizers were found:</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.note-similar-organizers">
+				<source><![CDATA[<strong>Note:</strong> If you have forgotten your password, you can have it sent to you.]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.headline-organizer">
+				<source>You have made the following information:</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.question-organizer">
+				<source>Are all entries correct?</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.button-password">
+				<source>Forgot your password?</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.confirm.button-save">
+				<source>Save Login</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.save.headline">
+				<source><![CDATA[Thank you &#8230;,]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.save.headline">
+				<source><![CDATA[Thank you &#8230;,]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.save.content">
+				<source><![CDATA[
+					<p>&#8230; that you took the time to enter the database as organizer "%s". </p>
+					<p>Your data has been transmitted correctly.<br/>Your registration confirmation will be emailed shortly Sent.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.organizer.save.button-events">
+				<source>Back to Event overview</source>
+			</trans-unit>
+			<trans-unit id="template.organizer.register.succsess">
+				<source><![CDATA[
+					<p>Thank you for confirming your registration. You can register now and take care of your events.</p>
+					<p><strong>Note: </strong> the activation of the registered event will be carried out by different coordinators. This can take up to 24 hours.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.headline">
+				<source>Registration canceled</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.content">
+				<source><![CDATA[
+					<p>You have canceled the registration. <br/>All entered data has been deleted. <br/>You can restart the application at any time.</p>
+					<p>Please tell us the reason for your cancellation with: </p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.content-succsess">
+				<source><![CDATA[
+					<p>Thank you for your reference. We will record and review your notice.</p>
+					<p>All entered data has been deleted. You can restart the application at any time.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.item.0">
+				<source>Registration is too complicated for me</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.item.1">
+				<source>Wanted to test the registration only times</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.item.2">
+				<source>I don't want to enter my contact information over the Internet</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.item.3">
+				<source>I was already registered as an organizer</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.item.4">
+				<source>Other</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.headline">
+				<source>Password Mailing canceled</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.content">
+				<source><![CDATA[
+					<p>You have canceled the password delivery.<br/>All entered data has been deleted.<br/>You can start the password delivery again at any time.</p>
+					<p>Please let us know the reason for your cancellation with:</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.password.content-succsess">
+				<source><![CDATA[
+					<p>Thank you for your reference. We will record and review your notice.</p>
+					<p>All entered data has been deleted. You can start the password delivery again at any time.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.password.item.0">
+				<source>I know the email address no longer</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.item.1">
+				<source>I wanted to test the password sending only times</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.item.2">
+				<source>I would not like to enter my contact information over the Internet</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.item.3">
+				<source>I have found my password again</source>
+			</trans-unit>
+			<trans-unit id="template.break.password.item.4">
+				<source>Other</source>
+			</trans-unit>
+			<trans-unit id="template.break.item">
+				<source>Please select</source>
+			</trans-unit>
+			<trans-unit id="template.break.item.value">
+				<source>Not specified</source>
+			</trans-unit>
+			<trans-unit id="template.break.label-reason">
+				<source>Share reason</source>
+			</trans-unit>
+			<trans-unit id="template.break.button-send">
+				<source>Send Reason</source>
+			</trans-unit>
+			<trans-unit id="template.break.button-events">
+				<source>Back to Event overview</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-contact-person">
+				<source>Contact person:</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-phone">
+				<source>Phone:</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-fax">
+				<source>Fax:</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-email">
+				<source>E-Mail:</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-web">
+				<source>Web:</source>
+			</trans-unit>
+			<trans-unit id="template.global.title-opening-times">
+				<source>Opening times:</source>
+			</trans-unit>
+			<trans-unit id="template.global.error">
+				<source>Please fill in the fields marked with red fields correctly.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1221560718">
+				<source>Please fill out.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1221559976">
+				<source>Email address is incorrect</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1238108068">
+				<source>Please correct.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1411056121">
+				<source>The location could not be clearly determined. Please select the town.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1411053981">
+				<source>Please select the town</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1411062621">
+				<source>Please specify new.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1411044198">
+				<source>No location selection found.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496751121">
+				<source>The passwords do not match.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496773299">
+				<source>The user name is already assigned.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496939618">
+				<source>You have not submitted the correct confirmation code.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496949551">
+				<source>The organizer has already been confirmed.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496949214">
+				<source>The organizer could not be found.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496985212">
+				<source>The user name or password is incorrect.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1514396628">
+				<source>The account has not yet been confirmed.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1497015494">
+				<source>Your connection could not be verified.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1496928276">
+				<source>The email could not be sent. Please try again.</source>
+			</trans-unit>
+			<trans-unit id="template.global.error.1497206242">
+				<source><![CDATA[
+					<p>Unfortunately we could not find them in our database with the entered email address.<br/>Please check your entry again and note the following:</p>
+					<p>If your email address has changed, please log in with your old address (registered with us) and change it in your master data!</p>
+					<p>Or your access has not yet been unlocked or access has not been activated by the coordinators.</p>]]></source>
+			</trans-unit>
+			<trans-unit id="template.exception.error.headline">
+				<source>Error!</source>
+			</trans-unit>
+			<trans-unit id="template.exception.error.code">
+				<source>Error number #%s!</source>
+			</trans-unit>
+			<trans-unit id="template.exception.error.1414697388">
+				<source>An error has occurred. The authentication code is not correctly specified. Contact your system administrator.</source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.mail-subject">
+				<source><![CDATA[Organizer registration at %s canceled]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.password.mail-subject">
+				<source><![CDATA[Password sent to %s canceled]]></source>
+			</trans-unit>
+			<trans-unit id="template.password.mail-subject">
+				<source><![CDATA[Information on the event calendar of on %s]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.mail-subject">
+				<source><![CDATA[Thank you for registering on %s]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.mail-subject-admin">
+				<source><![CDATA[Registration of an organizer on %s]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.binder">
+				<source><![CDATA[
+Powered by www.termine-regional.de
+
+Register for FREE dates! Register for FREE as an organizer! Free Press Interface!
+Make your dates known! Easy and fast on the internet!
+Report 1x dates and the distribution on different regional websites and in the various regional printed products is automatic!
+Questions? Just email us at info@termine-regional.de!
+
+Have fun with the Termine-Regional team!]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.mail-content">
+				<source><![CDATA[
+Thank you for registering as organizer "%s"
+
+Please confirm by calling the following link, the successful registration:
+%s
+
+Afterwards you can register and maintain your appointments.
+Note: The registered events are always checked before they are activated. This can take up to 24 hours.
+We wish you a lot of success with our event calendar.]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.mail-content-admin">
+				<source><![CDATA[
+An organizer registered with the domain (%s) on %s.
+
+The following information has been made:]]></source>
+			</trans-unit>
+			<trans-unit id="template.mail.register.binder-admin">
+				<source><![CDATA[
+This is the online organizer registration
+
+Sincerely
+Your die NetzWerkstatt Team]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.mail-content">
+				<source><![CDATA[
+This is an automatic notification.
+An organizer registration was cancelled at the domain (%s) on %s.
+
+The following reason has been specified:]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.registration.mail-binder">
+				<source><![CDATA[
+Sincerely
+Your die NetzWerkstatt Team]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.password.mail-content">
+				<source><![CDATA[
+This is an automatic notification.
+A password delivery was cancelled at the domain (%s) on %s.
+
+The following reason has been specified:]]></source>
+			</trans-unit>
+			<trans-unit id="template.break.password.mail-binder">
+				<source><![CDATA[
+Sincerely
+Your die NetzWerkstatt Team]]></source>
+			</trans-unit>
+			<trans-unit id="template.password.mail-content">
+				<source><![CDATA[
+Dear Organizer,
+
+You asked us to provide you with your Access data for access to the event calendar. Of course we are happy to meet this wish.
+
+Please write down the following information:]]></source>
+			</trans-unit>
+			<trans-unit id="template.password.mail-binder">
+				<source><![CDATA[
+We recommend that you change your password on your next visit to prevent misuse of your access.
+
+We are available to you personally and are happy to help you further:
+
+E-mail: info@termine-regional.de
+
+We will also be happy to help you with any questions about our products or your organizer account.
+
+We sincerely thank you for your trust, hope that you will be satisfied with our services and look forward to your next visit.
+
+Your Team Termine-Regional
+Powered by die NetzWerkstatt]]></source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
