@@ -100,7 +100,8 @@ class LocalLawController extends AbstractController
 					'jurisPromulgationDate',
 					'jurisAmendDate',
 					'jurisEnactmentFrom'
-				)
+				),
+				'sortAttribute' => 'longTitle'
 			);
 			if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
 				$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
@@ -131,7 +132,8 @@ class LocalLawController extends AbstractController
 					'jurisPromulgationDate',
 					'jurisAmendDate',
 					'jurisEnactmentFrom'
-				)
+				),
+				'sortAttribute' => 'longTitle'
 			);
 			if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
 				$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
