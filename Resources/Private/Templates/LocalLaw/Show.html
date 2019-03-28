@@ -63,10 +63,12 @@
 							<f:if condition="{element.header}">
 								<f:if condition="{element.content}">
 									<f:then>
+										<a name="{element.header.section}" id="{element.header.section}" class="anchor"></a>
 										<h3 id="{element.header.section}">{element.header.headline}</h3>
 									</f:then>
 									<f:else>
-										<h2 id="{element.header.section}">{element.header.headline}</h2>
+										<a name="{element.header.section}" id="{element.header.section}" class="anchor"></a>
+										<h2 class="anchor" id="{element.header.section}">{element.header.headline}</h2>
 									</f:else>
 								</f:if>
 
