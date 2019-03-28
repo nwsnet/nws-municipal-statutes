@@ -24,7 +24,8 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
+use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 
 /**
  * ItemsProcFunc Controller for reading and providing alternative selection fields for the media elemete (Flexform)
@@ -33,83 +34,75 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @subpackage nws_municipal_statutes
  *
  */
-class ItemsProcFuncController extends AbstractController {
-
+class ItemsProcFuncController extends AbstractController
+{
 	/**
-	 * ItemsProcFuncApiCall
+	 * localLawApiCall get data
 	 *
-	 * @var \Nwsnet\NwsMunicipalStatutes\Api\GetItemsProcFunc
+	 * @var \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw
 	 */
-	protected $apiCall;
+	protected $apiLocalLaw;
 
 	/**
-	 * Patter for transmitted get parameter
+	 * jurisdictionFinderApiCall get data
 	 *
-	 * @var string
+	 * @var \Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder
 	 */
-	private $arrayPattern = 'tx_nwsmunicipalstatutes_items1';
+	protected $apiJurisdictionFinder;
 
 	/**
-	 * @param \Nwsnet\NwsMunicipalStatutes\Api\GetItemsProcFunc $apiCallGet
+	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiLocalLaw
 	 */
-	public function injectGetEvents(\Nwsnet\NwsMunicipalStatutes\Api\GetItemsProcFunc $apiCall) {
-		$this->apiCall = $apiCall;
+	public function injectApiLocalLaw(LocalLaw $apiLocalLaw)
+	{
+		$this->apiLocalLaw = $apiLocalLaw;
 	}
 
 	/**
-	 * Deploy category selection
-	 *
-	 * @return string (json-array)
+	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder $apiJurisdictionFinder
 	 */
-	public function showCategoriesAction() {
-		//check whether there is an error with the API
-		if ($this->apiCall->hasExceptionError()) {
-			$error = $this->apiCall->getExceptionError();
-			$exception = new \stdClass;
-			$exception->categories[0]['name'] = $error['message'];
-			$exception->categories[0]['id'] = 0;
-			return $this->apiCall->jsonEncode($exception);
-		}
-		$params = '';
-		if (isset($this->settings['transmit'])) {
-			$params = $this->settings['transmit'];
-			$params['localeAll'] = $GLOBALS['TSFE']->config['config']["locale_all"];
-		}
-		$request = $this->request->getArguments();
-		if (count($request) == 0) {
-			// Extract parameters based on the extension patter
-			$request = GeneralUtility::_GP($this->arrayPattern);
-		}
-		$categoriesShowData = $this->apiCall->getCategoriesData($request, $params);
-		return $categoriesShowData;
+	public function injectApiJurisdictionFinder(JurisdictionFinder $apiJurisdictionFinder)
+	{
+		$this->apiJurisdictionFinder = $apiJurisdictionFinder;
 	}
 
 	/**
-	 * Deploying the province selection
+	 * deactivates flashmessages -> they are being generated for validation errrors for example
 	 *
-	 * @return string (json-array)
+	 * @see ActionController::getErrorFlashMessage()
 	 */
-	public function showProvincesAction() {
-		//check whether there is an error with the API
-		if ($this->apiCall->hasExceptionError()) {
-			$error = $this->apiCall->getExceptionError();
-			$exception = new \stdClass;
-			$exception->provinces[0]['name'] = $error['message'];
-			$exception->provinces[0]['id'] = 0;
-			return $this->apiCall->jsonEncode($exception);
-		}
-		$params = '';
-		if (isset($this->settings['transmit'])) {
-			$params = $this->settings['transmit'];
-			$params['localeAll'] = $GLOBALS['TSFE']->config['config']["locale_all"];
-		}
-		$request = $this->request->getArguments();
-		if (count($request) == 0) {
-			// Extract parameters based on the extension patter
-			$request = GeneralUtility::_GP($this->arrayPattern);
-		}
+	protected function getErrorFlashMessage()
+	{
+		return false;
+	}
 
-		$statesShowData = $this->apiCall->getProvincesData($request, $params);
-		return $statesShowData;
+	/**
+	 * Read the legislators and put them to the selection
+	 *
+	 * @return string
+	 */
+	public function showLegislatorAction()
+	{
+		$filter = array(
+			'sortAttribute' => array('name')
+		);
+		if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
+			$error = $this->apiLocalLaw->legislator()->getExceptionError();
+			$exception = new \stdClass;
+			$exception->legislator[0]['name'] = $error['message'];
+			$exception->legislator[0]['id'] = 0;
+			return $this->apiLocalLaw->jsonEncode($exception);
+		}
+		$items = array();
+		$legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
+		if ($legislator['count'] > 0) {
+			foreach ($legislator['results'] as $item) {
+				$items['legislator'][] = array(
+					'id' => $item['object']['id'],
+					'name' => $item['object']['name']
+				);
+			}
+		}
+		return $this->apiLocalLaw->jsonEncode($items);
 	}
 }

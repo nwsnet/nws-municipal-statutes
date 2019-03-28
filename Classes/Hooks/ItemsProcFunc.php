@@ -35,7 +35,8 @@ use TYPO3\CMS\Extbase\Core\Bootstrap;
  * @package    TYPO3
  * @subpackage nws_municipal_statutes
  */
-class ItemsProcFunc {
+class ItemsProcFunc
+{
 
 	/**
 	 * vendorName
@@ -78,7 +79,7 @@ class ItemsProcFunc {
 	 * @var array
 	 */
 	private $controllerActions = array(  // Allowed controller action combinations
-		'ItemsProcFunc' => 'showCategories,showProvinces',
+		'ItemsProcFunc' => 'showCategories,showProvinces,showLegislator',
 	);
 
 	/**
@@ -86,7 +87,8 @@ class ItemsProcFunc {
 	 *
 	 * @see Bootstrap::run()
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		//set the configuration
 		$this->configuration = array(
 			'vendorName' => $this->vendorName,
@@ -104,30 +106,28 @@ class ItemsProcFunc {
 	}
 
 	/**
-	 * Items Proc function read the categories to extend the selection in the plugin
+	 * Provides a selection of legislators for the plugin
 	 *
-	 *
-	 * @param array &$params configuration array
-	 *
-	 * @return void
+	 * @param array $params
 	 */
-	public function readCategories(array &$params) {
-		$authCode = '';
+	public function readLegislator(array &$params)
+	{
+		$apiKey = '';
 		//read and provide flexform
 		if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
 			$data = GeneralUtility::xml2array($params['row']['pi_flexform']);
-			$authCode = $this->pi_getFFvalue($data, 'settings.enableAuthenticationCode', 'sDEF');
+			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
 		} elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
 			$pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
 			$data = GeneralUtility::xml2array($pi_flexform);
-			$authCode = $this->pi_getFFvalue($data, 'settings.enableAuthenticationCode', 'sDEF');
+			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
 		}
 		//test for double call
 		$post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
 		//first call
 		if (!isset($post['jsonCategories']) || empty($post['jsonCategories']) || $params['config']['action'] != $post['action']) {
 			unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['enableAuthenticationCode'] = $request['settings']['enableAuthenticationCode'] = $authCode;
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['enableAuthenticationCode'] = $request['settings']['apiKey'] = $apiKey;
 			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
 			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
 			//For TYPO3 9.5 put query parameters in the backend
@@ -142,10 +142,10 @@ class ItemsProcFunc {
 			//start of Extbase bootstrap program
 			$json = $this->bootstrap->run('', $this->configuration);
 
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonCategories'] = addslashes($json);
-			$items = json_decode($json, TRUE);
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonLegislator'] = addslashes($json);
+			$items = json_decode($json, true);
 			if (!empty($items) && is_array($items)) {
-				foreach ($items['categories'] as $item) {
+				foreach ($items['legislator'] as $item) {
 					$params['items'][] = array($item['name'], $item['id']);
 				}
 			}
@@ -153,7 +153,7 @@ class ItemsProcFunc {
 		} else {
 			if (isset($post['jsonCategories']) && !empty($post['jsonCategories'])) {
 				$json = $post['jsonCategories'];
-				$items = json_decode($json, TRUE);
+				$items = json_decode($json, true);
 				if (!empty($items) && is_array($items)) {
 					foreach ($items['categories'] as $item) {
 						$params['items'][] = array($item['name'], $item['id']);
@@ -167,104 +167,44 @@ class ItemsProcFunc {
 	}
 
 	/**
-	 * Items Proc function read the provinces to extend the selection in the plugin
-	 *
-	 * @param array &$params configuration array
-	 *
-	 * @return void
-	 */
-	public function readProvinces(array &$params) {
-		$authCode = '';
-		//read and provide flexform
-		if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
-			$data = GeneralUtility::xml2array($params['row']['pi_flexform']);
-			$authCode = $this->pi_getFFvalue($data, 'settings.enableAuthenticationCode', 'sDEF');
-		} elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
-			$pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
-			$data = GeneralUtility::xml2array($pi_flexform);
-			$authCode = $this->pi_getFFvalue($data, 'settings.enableAuthenticationCode', 'sDEF');
-		}
-		//test for double call
-		$post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
-		//first call
-		if (!isset($post['jsonProvinces']) || empty($post['jsonProvinces']) || $params['config']['action'] != $post['action']) {
-			unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['enableAuthenticationCode'] = $request['settings']['enableAuthenticationCode'] = $authCode;
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
-			//For TYPO3 9.5 put query parameters in the backend
-			if (isset($GLOBALS['TYPO3_REQUEST']) && $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
-				$queryParams = $GLOBALS['TYPO3_REQUEST']->getQueryParams();
-				$queryParams['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)] = $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)];
-				$GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withQueryParams($queryParams);
-			}
-			$this->configuration['controller'] = $params['config']['controller'];
-			$this->configuration['action'] = $params['config']['action'];
-			$this->configuration = array_merge($this->configuration, $request);
-			//start of Extbase bootstrap program
-			$json = $this->bootstrap->run('', $this->configuration);
-
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonStates'] = addslashes($json);
-			$items = json_decode($json, TRUE);
-			if (!empty($items) && is_array($items)) {
-				foreach ($items['provinces'] as $item) {
-					$params['items'][] = array($item['name'], $item['id']);
-				}
-			}
-			//second call
-		} else {
-			if (isset($post['jsonProvinces']) && !empty($post['jsonProvinces'])) {
-				$json = $post['jsonProvinces'];
-				$items = json_decode($json, TRUE);
-				if (!empty($items) && is_array($items)) {
-					foreach ($items['provinces'] as $item) {
-						$params['items'][] = array($item['name'], $item['id']);
-					}
-				}
-			}
-			if (isset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)])) {
-				unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-			}
-		}
-	}
-
-	/**
 	 * Return value from somewhere inside a FlexForm structure
 	 *
-	 * @param array  $T3FlexForm_array FlexForm data
-	 * @param string $fieldName        Field name to extract. Can be given like
+	 * @param array $T3FlexForm_array FlexForm data
+	 * @param string $fieldName Field name to extract. Can be given like
 	 *                                 "test/el/2/test/el/field_templateObject" where each part will dig a level deeper
 	 *                                 in the FlexForm data.
-	 * @param string $sheet            Sheet pointer, eg. "sDEF
-	 * @param string $lang             Language pointer, eg. "lDEF
-	 * @param string $value            Value pointer, eg. "vDEF
+	 * @param string $sheet Sheet pointer, eg. "sDEF
+	 * @param string $lang Language pointer, eg. "lDEF
+	 * @param string $value Value pointer, eg. "vDEF
 	 *
 	 * @return string|NULL The content.
 	 */
-	public function pi_getFFvalue($T3FlexForm_array, $fieldName, $sheet = 'sDEF', $lang = 'lDEF', $value = 'vDEF') {
+	public function pi_getFFvalue($T3FlexForm_array, $fieldName, $sheet = 'sDEF', $lang = 'lDEF', $value = 'vDEF')
+	{
 		$sheetArray = is_array($T3FlexForm_array) ? $T3FlexForm_array['data'][$sheet][$lang] : '';
 		if (is_array($sheetArray)) {
 			return $this->pi_getFFvalueFromSheetArray($sheetArray, explode('/', $fieldName), $value);
 		}
-		return NULL;
+		return null;
 	}
 
 	/**
 	 * Returns part of $sheetArray pointed to by the keys in $fieldNameArray
 	 *
-	 * @param array  $sheetArray   Multidimensiona array, typically FlexForm contents
-	 * @param array  $fieldNameArr Array where each value points to a key in the FlexForms content - the input array
+	 * @param array $sheetArray Multidimensiona array, typically FlexForm contents
+	 * @param array $fieldNameArr Array where each value points to a key in the FlexForms content - the input array
 	 *                             will have the value returned pointed to by these keys. All integer keys will not
 	 *                             take their integer counterparts, but rather traverse the current position in the
 	 *                             array an return element number X (whether this is right behavior is not settled
 	 *                             yet...)
-	 * @param string $value        Value for outermost key, typ. "vDEF" depending on language.
+	 * @param string $value Value for outermost key, typ. "vDEF" depending on language.
 	 *
 	 * @return mixed The value, typ. string.
 	 * @access private
 	 * @see    pi_getFFvalue()
 	 */
-	public function pi_getFFvalueFromSheetArray($sheetArray, $fieldNameArr, $value) {
+	public function pi_getFFvalueFromSheetArray($sheetArray, $fieldNameArr, $value)
+	{
 		$tempArr = $sheetArray;
 		foreach ($fieldNameArr as $k => $v) {
 			if (MathUtility::canBeInterpretedAsInteger($v)) {
@@ -288,12 +228,13 @@ class ItemsProcFunc {
 	/**
 	 * Read the Flex form from the database
 	 *
-	 * @param string  $table
+	 * @param string $table
 	 * @param integer $uid
 	 *
 	 * @return string $pi_flexform
 	 */
-	protected function getPiFlexformFromTable($table, $uid) {
+	protected function getPiFlexformFromTable($table, $uid)
+	{
 		$pi_flexform = '';
 		if (isset($GLOBALS['TYPO3_DB'])) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pi_flexform', $table, 'uid=' . $uid);
