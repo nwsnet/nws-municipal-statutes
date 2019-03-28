@@ -25,7 +25,7 @@
 											</f:if>
 											<f:for each="{district.child}" as="location">
 												<li class="nav-item">
-													<f:if condition="<f:count>{location.child}</f:count> > 1">
+													<f:if condition="{location.child}">
 														<f:then>
 															<a href="#a{location.id}" data-toggle="collapse"
 															   role="button" aria-expanded="false"
