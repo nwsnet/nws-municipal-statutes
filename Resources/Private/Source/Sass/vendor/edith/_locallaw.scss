@@ -12,6 +12,11 @@
   #accordionContent .card-header a {
 	cursor: pointer;
   }
+  .alert-default {
+	color: #323232;
+	background-color: #dfdfdf;
+	border-color: #d2d2d2;
+  }
 }
 
 @media (max-width: 480px) {
