@@ -137,6 +137,14 @@ class LocalLawController extends AbstractController
 				),
 				'sortAttribute' => 'longTitle'
 			);
+			if ($this->settings['structureId']) {
+				if(strpos($this->settings['structureId'],',')!== false) {
+					$ids= explode(',',$this->settings['structureId']);
+					$filter['structureIds'] = $ids;
+				} else {
+					$filter['structureIds'] = array($this->settings['structureId']);
+				}
+			}
 			if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
 				$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
 				throw new UnsupportedRequestTypeException($error['message'], $error['code']);
