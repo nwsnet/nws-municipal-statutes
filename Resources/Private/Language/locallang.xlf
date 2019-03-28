@@ -28,109 +28,22 @@
 			<trans-unit id="flexform.sdef.switchableControllerActions.I.2">
 				<source>Detail view</source>
 			</trans-unit>
-			<trans-unit id="flexform.sdef.transmit.pagerLimit">
-				<source>Maximum number of pages in the page selection</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.transmit.listLimit">
-				<source>Maximum number of entries per page</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.zip">
-				<source>Postal code of the starting selection of the place for the first call</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.city">
-				<source>Place of the starting selection of the place for the first call</source>
+			<trans-unit id="flexform.sdef.apiKey">
+				<source>Another API key for calling the TSA information services</source>
 			</trans-unit>
 			<trans-unit id="flexform.sdef.showSingleViewPid">
-				<source>Single view of the events</source>
+				<source>Single view of the legal norm</source>
 			</trans-unit>
 			<trans-unit id="flexform.sdef.showListViewPid">
-				<source>List view of the events</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.showOrganizerViewPid">
-				<source>View for the Organizer registration</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.showPasswordViewPid">
-				<source>Password Submission View</source>
-			</trans-unit>
-			<trans-unit id="flexform.sdef.enableAuthenticationCode">
-				<source>Activation authentication code with additional client selection</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.sheettitle">
-				<source>Teaser settings</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserMaxEvents">
-				<source>Teaser number of events displayed</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserAlwaysEntries">
-				<source>Always provide the number of events for the teaser</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserLimitationDays">
-				<source>Limitation to the period in days</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserRandom">
-				<source>Random events for the teaser</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserSorting">
-				<source>Sorting of events for the teasers</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserWithoutRestriction">
-				<source>Provide teaser events without any restrictions</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserWithImage">
-				<source>Teaser with image</source>
-			</trans-unit>
-			<trans-unit id="flexform.teaser.teaserWithShortText">
-				<source>Teaser with short text</source>
-			</trans-unit>
-			<trans-unit id="flexform.calendar.sheettitle">
-				<source>Calendar settings</source>
-			</trans-unit>
-			<trans-unit id="flexform.calendar.calendarMonthSelection">
-				<source>Provide monthly selection for calendar</source>
-			</trans-unit>
-			<trans-unit id="flexform.calendar.calendarAjaxList">
-				<source>Provide list view for daily selection via Ajax</source>
+				<source>List view of the legal norm</source>
 			</trans-unit>
 			<trans-unit id="flexform.restrictions.sheettitle">
-				<source>Other restriction options</source>
+				<source>Municipal selection and restrictions</source>
 			</trans-unit>
-			<trans-unit id="flexform.restrictions.category">
-				<source>Category selection restriction</source>
+			<trans-unit id="flexform.restrictions.legislatorId">
+				<source>Selection of the municipality to be displayed</source>
 			</trans-unit>
-			<trans-unit id="flexform.restrictions.provinces">
-				<source>Provinces selection restriction</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification">
-				<source>Selection of classifications of events</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.provinceSelection">
-				<source>Enable province selection for calendar search</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.districtSelection">
-				<source>Enable district selection for calendar search</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.placeSelection">
-				<source>Enable place selection for calendar search</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.categorySelection">
-				<source>Enable category selection for calendar search</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification.I.0">
-				<source>1 star</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification.I.1">
-				<source>2 stars</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification.I.2">
-				<source>3 stars</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification.I.3">
-				<source>4 stars</source>
-			</trans-unit>
-			<trans-unit id="flexform.restrictions.classification.I.4">
-				<source>5 stars - Highlights</source>
-			</trans-unit>
-			<trans-unit id="template.events.footer.note">
+					<trans-unit id="template.events.footer.note">
 				<source>The responsibility for the factual correctness of the information lies with the Operators.</source>
 			</trans-unit>
 			<trans-unit id="template.events.footer.uri">
