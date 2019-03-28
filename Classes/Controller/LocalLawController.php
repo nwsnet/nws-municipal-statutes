@@ -81,7 +81,10 @@ class LocalLawController extends AbstractController
 
 	public function listAction()
 	{
-		if ($this->apiLocalLaw->legislator()->findAll()->hasExceptionError()) {
+		$filter = array(
+			'sortAttribute' => array('name')
+		);
+		if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
 			$error = $this->apiLocalLaw->legislator()->getExceptionError();
 			throw new UnsupportedRequestTypeException($error['message'], $error['code']);
 		}
