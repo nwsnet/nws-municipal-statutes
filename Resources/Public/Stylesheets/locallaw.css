@@ -1163,6 +1163,14 @@
 	border-color: #d2d2d2;
 }
 
+.tx-nwsmunicipalstatutes .card-header h3 {
+	margin: 0;
+}
+
+.tx-nwsmunicipalstatutes .card-header a:hover {
+	text-decoration: none;
+}
+
 @media (max-width: 480px) {
 	#tx-nwsmunicipalstatutes-list tbody td {
 		border: none;

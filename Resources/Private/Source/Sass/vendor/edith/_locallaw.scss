@@ -17,6 +17,14 @@
 	background-color: #dfdfdf;
 	border-color: #d2d2d2;
   }
+  .card-header {
+	h3 {
+	  margin: 0;
+	}
+	a:hover {
+	  text-decoration: none;
+	}
+  }
 }
 
 @media (max-width: 480px) {
