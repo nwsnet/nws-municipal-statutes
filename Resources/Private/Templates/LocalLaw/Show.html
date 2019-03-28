@@ -26,19 +26,21 @@
 			<div class="btn-group dropdown">
 				<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
 						aria-haspopup="true" aria-expanded="false">
-					Schnellfinder<span class="caret"></span>
+					Schnellfinder <span class="caret"></span>
 				</button>
-				<div class="dropdown-menu">
+				<ul class="dropdown-menu">
 					<f:if condition="{legalNorm.parseContent.nav}">
 						<f:alias map="{nav : legalNorm.parseContent.nav}">
 							<f:for each="{nav}" as="navItems">
-								<f:link.page class="dropdown-item" addQueryString="1" section="{navItems.section}">
-									{navItems.name}
-								</f:link.page>
+								<li>
+									<f:link.page class="dropdown-item" addQueryString="1" section="{navItems.section}">
+										{navItems.name}
+									</f:link.page>
+								</li>
 							</f:for>
 						</f:alias>
 					</f:if>
-				</div>
+				</ul>
 			</div>
 		</div>
 		<div class="col-md-4">
