@@ -2,10 +2,10 @@
 <f:if condition="{treeMenu}">
 	<f:for each="{treeMenu}" as="state">
 		<nav class="navbar">
-			<ul class="nav">
+			<ul class="nav flex-column">
 				<li class="nav-item"><h3>{state.displayName}</h3>
 					<f:if condition="{state.child}">
-						<ul class="nav ml-3">
+						<ul class="nav flex-column ml-3">
 							<f:for each="{state.child}" as="district">
 								<li class="nav-item">
 									<a href="#a{district.id}" data-toggle="collapse" role="button"
