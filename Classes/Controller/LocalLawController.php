@@ -88,7 +88,6 @@ class LocalLawController extends AbstractController
 		$legislator = $this->apiLocalLaw->getLegalNormByLegislator($this->apiLocalLaw->legislator()->getJsonDecode());
 		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator);
 		$legalNorm = array();
-		$singeleLegislator = array();
 		if ($this->request->hasArgument('legislator')) {
 			$filter = array(
 				'legislatorId' => $this->request->getArgument('legislator'),
