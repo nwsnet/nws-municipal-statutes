@@ -94,7 +94,7 @@ plugin.tx_nwsmunicipalstatutes {
 [global]
 
 plugin.tx_nwsmunicipalstatutes._CSS_DEFAULT_STYLE (
-	div.tx_nwsmunicipalstatutes .anchor{display: block; position: relative; top: -{$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}px; visibility: hidden;}
+	div.tx-nwsmunicipalstatutes .anchor{display: block; position: relative; top: -{$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}px; visibility: hidden;}
 )
 
 page.includeJS.tx_nwsmunicipalstatutes_js = {$plugin.tx_nwsmunicipalstatutes.files.javascriptPath}
