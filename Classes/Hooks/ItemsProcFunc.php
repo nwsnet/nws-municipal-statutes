@@ -79,7 +79,7 @@ class ItemsProcFunc
 	 * @var array
 	 */
 	private $controllerActions = array(  // Allowed controller action combinations
-		'ItemsProcFunc' => 'showCategories,showProvinces,showLegislator',
+		'ItemsProcFunc' => 'showLegislator,showStructure',
 	);
 
 	/**
@@ -125,9 +125,9 @@ class ItemsProcFunc
 		//test for double call
 		$post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
 		//first call
-		if (!isset($post['jsonCategories']) || empty($post['jsonCategories']) || $params['config']['action'] != $post['action']) {
+		if (!isset($post['jsonLegislator']) || empty($post['jsonLegislator']) || $params['config']['action'] != $post['action']) {
 			unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['enableAuthenticationCode'] = $request['settings']['apiKey'] = $apiKey;
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
 			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
 			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
 			//For TYPO3 9.5 put query parameters in the backend
@@ -151,11 +151,75 @@ class ItemsProcFunc
 			}
 			//second call
 		} else {
-			if (isset($post['jsonCategories']) && !empty($post['jsonCategories'])) {
-				$json = $post['jsonCategories'];
+			if (isset($post['jsonLegislator']) && !empty($post['jsonLegislator'])) {
+				$json = $post['jsonLegislator'];
 				$items = json_decode($json, true);
 				if (!empty($items) && is_array($items)) {
-					foreach ($items['categories'] as $item) {
+					foreach ($items['legislator'] as $item) {
+						$params['items'][] = array($item['name'], $item['id']);
+					}
+				}
+			}
+			if (isset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)])) {
+				unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
+			}
+		}
+	}
+
+	/**
+	 * Reads the structure of the legal norms in connection with the legislator.
+	 *
+	 * @param array $params
+	 */
+	public function readStructure(array &$params)
+	{
+		$apiKey = $legislatorId = '';
+		//read and provide flexform
+		if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
+			$data = GeneralUtility::xml2array($params['row']['pi_flexform']);
+			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
+			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'restrictions');
+		} elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
+			$pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
+			$data = GeneralUtility::xml2array($pi_flexform);
+			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
+			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'restrictions');
+		}
+		//test for double call
+		$post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
+		//first call
+		if (!isset($post['jsonStructure']) || empty($post['jsonStructure']) || $params['config']['action'] != $post['action']) {
+			unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legislatorId'] = $request['settings']['legislatorId'] = $legislatorId;
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
+			//For TYPO3 9.5 put query parameters in the backend
+			if (isset($GLOBALS['TYPO3_REQUEST']) && $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
+				$queryParams = $GLOBALS['TYPO3_REQUEST']->getQueryParams();
+				$queryParams['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)] = $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)];
+				$GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withQueryParams($queryParams);
+			}
+			$this->configuration['controller'] = $params['config']['controller'];
+			$this->configuration['action'] = $params['config']['action'];
+			$this->configuration = array_merge($this->configuration, $request);
+			//start of Extbase bootstrap program
+			$json = $this->bootstrap->run('', $this->configuration);
+
+			$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonStructure'] = addslashes($json);
+			$items = json_decode($json, true);
+			if (!empty($items) && is_array($items)) {
+				foreach ($items['structure'] as $item) {
+					$params['items'][] = array($item['name'], $item['id']);
+				}
+			}
+			//second call
+		} else {
+			if (isset($post['jsonStructure']) && !empty($post['jsonStructure'])) {
+				$json = $post['jsonStructure'];
+				$items = json_decode($json, true);
+				if (!empty($items) && is_array($items)) {
+					foreach ($items['structure'] as $item) {
 						$params['items'][] = array($item['name'], $item['id']);
 					}
 				}

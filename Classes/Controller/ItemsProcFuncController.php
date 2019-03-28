@@ -105,4 +105,40 @@ class ItemsProcFuncController extends AbstractController
 		}
 		return $this->apiLocalLaw->jsonEncode($items);
 	}
+
+	/**
+	 * Reads the structure of a legislator and adds it to the selection
+	 *
+	 * @return string
+	 */
+	public function showStructureAction()
+	{
+		$filter = array(
+			'legislatorId' => $this->settings['legislatorId'],
+			'sortAttribute' => array(
+				'name'
+			)
+		);
+
+		if ($this->apiLocalLaw->structure()->find($filter)->hasExceptionError()) {
+			$error = $this->apiLocalLaw->structure()->getExceptionError();
+			$exception = new \stdClass;
+			$exception->structure[0]['name'] = $error['message'];
+			$exception->structure[0]['id'] = 0;
+			return $this->apiLocalLaw->jsonEncode($exception);
+		}
+		$items = array();
+		$structure = $this->apiLocalLaw->structure()->getJsonDecode();
+		if ($structure['count'] > 0) {
+			foreach ($structure['results'] as $value) {
+				foreach ($value['object']['structure']['subStructurNodes'] as $item) {
+					$items['structure'][] = array(
+						'id' => $item['id'],
+						'name' => $item['structureText']
+					);
+				}
+			}
+		}
+		return $this->apiLocalLaw->jsonEncode($items);
+	}
 }

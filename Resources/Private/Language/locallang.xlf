@@ -43,7 +43,10 @@
 			<trans-unit id="flexform.restrictions.legislatorId">
 				<source>Selection of the municipality to be displayed</source>
 			</trans-unit>
-					<trans-unit id="template.events.footer.note">
+			<trans-unit id="flexform.restrictions.structureId">
+				<source>Selection of the municipality to be displayed</source>
+			</trans-unit>
+			<trans-unit id="template.events.footer.note">
 				<source>The responsibility for the factual correctness of the information lies with the Operators.</source>
 			</trans-unit>
 			<trans-unit id="template.events.footer.uri">

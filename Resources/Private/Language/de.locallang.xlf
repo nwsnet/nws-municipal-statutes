@@ -55,6 +55,10 @@
 				<source>Selection of the municipality to be displayed</source>
 				<target>Auswahl der anzuzeigenden Kommune</target>
 			</trans-unit>
+			<trans-unit id="flexform.restrictions.structureId">
+				<source>Selection of the structure to be displayed</source>
+				<target>Auswahl der anzuzeigenenden Struktur</target>
+			</trans-unit>
 			<trans-unit id="template.events.footer.note">
 				<source>The responsibility for the factual correctness of the information lies with the Operators.</source>
 				<target>Die Verantwortung für die sachliche Richtigkeit der Angaben liegt bei den Veranstaltern.</target>
