@@ -25,6 +25,7 @@
 namespace Nwsnet\NwsMunicipalStatutes\Realurl;
 
 use DmitryDulepov\Realurl\Configuration\ConfigurationReader;
+use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 
@@ -35,7 +36,8 @@ use TYPO3\CMS\Extbase\Core\Bootstrap;
  * @subpackage nws_jurisdictionfinder_sh
  *
  */
-class ReadRealurlTitle {
+class ReadRealurlTitle
+{
 
 	const MAX_ALIAS_LENGTH = 100;
 	/**
@@ -117,7 +119,8 @@ class ReadRealurlTitle {
 	 *
 	 * @see \TYPO3\CMS\Extbase\Core\Bootstrap::run()
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		//set the configuration
 		$this->configurationBootstrap = array(
 			'vendorName' => $this->vendorName,
@@ -133,26 +136,28 @@ class ReadRealurlTitle {
 	/**
 	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiCall
 	 */
-	public function injectApiLocalLaw(\Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiCall)
+	public function injectApiLocalLaw(LocalLaw $apiCall)
 	{
 		$this->apiCall = $apiCall;
 	}
 
 	/**
-	 * Providing the employee name for the link title
+	 * Providing the legislator name for the link title
 	 *
-	 * @param array  $params tx_realurl
-	 * @param object $ref    tx_realurl
+	 * @param array $params tx_realurl
+	 * @param object $ref tx_realurl
 	 *
 	 * @return string NULL|$title
 	 */
-	public function getLegislatorTitle(&$params, $ref) {
+	public function getLegislatorTitle(&$params, $ref)
+	{
 		/** @var \DmitryDulepov\Realurl\Encoder\UrlEncoder $ref */
 		$this->ref = $ref;
 		if (method_exists($ref, 'getConfiguration')) {
 			$this->configuration = $ref->getConfiguration();
 		} else {
-			$this->configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader', ConfigurationReader::MODE_DECODE);
+			$this->configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader',
+				ConfigurationReader::MODE_DECODE);
 		}
 		if (method_exists($ref, 'getOriginalUrlParameters')) {
 			$this->originalUrlParameters = $ref->getOriginalUrlParameters();
@@ -167,28 +172,30 @@ class ReadRealurlTitle {
 					return $this->getAliasById($params['setup'], $params['value'], __FUNCTION__);
 				}
 			} else {
-				return NULL;
+				return null;
 			}
 		} else {
-			return NULL;
+			return null;
 		}
 	}
 
 	/**
-	 * Providing the services name for the link title
+	 * Providing the legal norm name for the link title
 	 *
-	 * @param array  $params tx_realurl
-	 * @param object $ref    tx_realurl
+	 * @param array $params tx_realurl
+	 * @param object $ref \DmitryDulepov\Realurl\Encoder\UrlEncoder
 	 *
 	 * @return string NULL|$title
 	 */
-	public function getLegalNormTitle(&$params, $ref) {
+	public function getLegalNormTitle(&$params, $ref)
+	{
 		/** @var \DmitryDulepov\Realurl\Encoder\UrlEncoder $ref */
 		$this->ref = $ref;
 		if (method_exists($ref, 'getConfiguration')) {
 			$this->configuration = $ref->getConfiguration();
 		} else {
-			$this->configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader', ConfigurationReader::MODE_DECODE);
+			$this->configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader',
+				ConfigurationReader::MODE_DECODE);
 		}
 		if (method_exists($ref, 'getOriginalUrlParameters')) {
 			$this->originalUrlParameters = $ref->getOriginalUrlParameters();
@@ -203,27 +210,28 @@ class ReadRealurlTitle {
 					return $this->getAliasById($params['setup'], $params['value'], __FUNCTION__);
 				}
 			} else {
-				return NULL;
+				return null;
 			}
 		} else {
-			return NULL;
+			return null;
 		}
 	}
 
 	/**
-	 * Providing the employee name using the API for the link title
+	 * Providing the legislator name using the API for the link title
 	 *
 	 * @param int $param ID of the record
 	 *
 	 * @return string NULL|$title
 	 */
-	protected function getLegislatorTitleData($param) {
+	protected function getLegislatorTitleData($param)
+	{
 
-		$controller = 'Employee';
-		$action = 'showTitle';
+		$controller = 'LocalLaw';
+		$action = 'showTitleLegislator';
 		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $controller;
 		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $action;
-		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['empid'] = intval($param);
+		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legislator'] = intval($param);
 		$this->configurationBootstrap['controller'] = $controller;
 		$this->configurationBootstrap['action'] = $action;
 		//start of Extbase bootstrap program
@@ -231,42 +239,44 @@ class ReadRealurlTitle {
 		if (isset($title) && !empty($title)) {
 			return $title;
 		}
-		return NULL;
+		return null;
 	}
 
 	/**
-	 * Providing the services name using the API for the link title
+	 * Providing the legal norm name using the API for the link title
 	 *
-	 * @param int $param ID of the record
+	 * @param integer $param ID of the record
 	 *
 	 * @return string NULL|$title
 	 */
-	protected function getLegalNormTitleData($param) {
-		$controller = 'Services';
+	protected function getLegalNormTitleData($param)
+	{
+		$controller = 'LocalLaw';
 		$action = 'showTitle';
 		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $controller;
 		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $action;
-		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['svid'] = ($param == '*') ? $param : intval($param);
+		$_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legalnorm'] = ($param == '*') ? $param : intval($param);
 		$this->configurationBootstrap['controller'] = $controller;
 		$this->configurationBootstrap['action'] = $action;
 		$title = $this->bootstrap->run('', $this->configurationBootstrap);
 		if (isset($title) && !empty($title)) {
 			return $title;
 		}
-		return NULL;
+		return null;
 	}
 
 	/**
 	 * Database search for the alias with the ID
 	 *
 	 *
-	 * @param    array  $setup     Configuration of look-up table, field names etc.
-	 * @param    string $value     Value to match field in database to.
+	 * @param    array $setup Configuration of look-up table, field names etc.
+	 * @param    string $value Value to match field in database to.
 	 * @param    string $setMethod Method to the determine the alias
 	 *
 	 * @return    string        Result value of lookup. If no value was found the $value is returned.
 	 */
-	protected function getAliasById($setup, $value, $setMethod) {
+	protected function getAliasById($setup, $value, $setMethod)
+	{
 		$aliasBaseValue = '';
 
 		//Cache of the existing POST data before the title query is performed
@@ -303,11 +313,12 @@ class ReadRealurlTitle {
 	 *
 	 * @return array|NULL $titleData Result array of lookup.
 	 */
-	protected function getAliasWithId($setClass) {
+	protected function getAliasWithId($setClass)
+	{
 		$this->apiCall = GeneralUtility::makeInstance('Nwsnet\\NwsJurisdictionfinderSh\\Api\\' . $setClass);
 		//check whether there is an error with the API
 		if ($this->apiCall->hasExceptionError()) {
-			return NULL;
+			return null;
 		}
 		$params = '';
 		$request['svid'] = $request['empid'] = '*';
@@ -321,16 +332,18 @@ class ReadRealurlTitle {
 	 * Database search for the ID with the Alias
 	 *
 	 *
-	 * @param    array  $setup     Configuration of look-up table, field names etc.
-	 * @param    string $value     Value to match field in database to.
+	 * @param    array $setup Configuration of look-up table, field names etc.
+	 * @param    string $value Value to match field in database to.
 	 * @param    string $setMethod Method to the determine the alias
 	 *
 	 * @return    string        Result value of lookup. If no value was found the $value is returned.
 	 */
-	protected function getIdByAlias($setup, $value, $setMethod) {
+	protected function getIdByAlias($setup, $value, $setMethod)
+	{
 
 		$aliasBaseValues = '';
-		$configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader', ConfigurationReader::MODE_ENCODE, array());
+		$configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader',
+			ConfigurationReader::MODE_ENCODE, array());
 		$utility = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Utility', $configuration);
 
 		if ($setMethod) {
@@ -363,7 +376,8 @@ class ReadRealurlTitle {
 	 *
 	 * @return string
 	 */
-	protected function createUniqueAlias($newAliasValue, $idValue) {
+	protected function createUniqueAlias($newAliasValue, $idValue)
+	{
 		$uniqueAlias = '';
 		$counter = 0;
 		$maxTry = 100;
@@ -389,7 +403,8 @@ class ReadRealurlTitle {
 	 *
 	 * @return int ID integer. If none is found: false
 	 */
-	protected function getFromPathCacheByAliasValue($aliasValue) {
+	protected function getFromPathCacheByAliasValue($aliasValue)
+	{
 		$rootPageId = (int)$this->configuration->get('pagePath/rootpage_id');
 		$acceptHTMLsuffix = $this->configuration->get('fileName/acceptHTMLsuffix');
 		$pageId = (int)$this->originalUrlParameters['id'];
@@ -398,14 +413,15 @@ class ReadRealurlTitle {
 
 		$row = $this->databaseConnection->exec_SELECTgetSingleRow('*', 'tx_realurl_urldata',
 			'rootpage_id=' . (int)$rootPageId . ' AND ' .
-			'speaking_url like ' . $this->databaseConnection->fullQuoteStr($speakingUrl, 'tx_realurl_urldata') . ' AND ' .
+			'speaking_url like ' . $this->databaseConnection->fullQuoteStr($speakingUrl,
+				'tx_realurl_urldata') . ' AND ' .
 			'page_id=' . $pageId,
 			'', 'expire'
 		);
 		if (is_array($row)) {
-			$variables = (array)@json_decode($row['request_variables'], TRUE);
+			$variables = (array)@json_decode($row['request_variables'], true);
 		}
 
-		return (isset($variables[$this->getVarKey]) ? $variables[$this->getVarKey] : FALSE);
+		return (isset($variables[$this->getVarKey]) ? $variables[$this->getVarKey] : false);
 	}
 }

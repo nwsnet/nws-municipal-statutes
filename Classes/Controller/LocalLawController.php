@@ -212,5 +212,30 @@ class LocalLawController extends AbstractController
 		return '';
 	}
 
+	/**
+	 * Providing the legislator name for the page and link title generation
+	 *
+	 * @return string
+	 */
+	public function showTitleLegislatorAction()
+	{
+		$request = $this->request->getArguments();
+		$legislatorId = $request['legislator'];
+		$filter = array(
+			'selectAttributes' => array(
+				'id',
+				'name'
+			)
+		);
+		if ($this->apiLocalLaw->legislator()->findById($legislatorId, $filter)->hasExceptionError()) {
+			return '';
+		}
+		$legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
+
+		if (isset($legislator['name']) && !empty($legislator['name'])) {
+			return $legislator['name'];
+		}
+		return '';
+	}
 
 }
