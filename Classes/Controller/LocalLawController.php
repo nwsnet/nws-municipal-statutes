@@ -82,15 +82,23 @@ class LocalLawController extends AbstractController
 
 	public function listAction()
 	{
-		$filter = array(
-			'sortAttribute' => array('name')
-		);
-		if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
-			$error = $this->apiLocalLaw->legislator()->getExceptionError();
-			throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+		if (!empty($this->settings['legislatorId']) && strpos($this->settings['legislatorId'], ',') !== false) {
+			$items = explode(',', $this->settings['legislatorId']);
+			$legislator['count'] = count($items);
+			$legislator['results'] = $items;
+			$legislator = $this->apiLocalLaw->getLegalNormByLegislatorId($legislator);
+		} else {
+			$filter = array(
+				'sortAttribute' => array('name')
+			);
+			if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
+				$error = $this->apiLocalLaw->legislator()->getExceptionError();
+				throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+			}
+			$legislator = $this->apiLocalLaw->getLegalNormByLegislator($this->apiLocalLaw->legislator()->getJsonDecode());
 		}
-		$legislator = $this->apiLocalLaw->getLegalNormByLegislator($this->apiLocalLaw->legislator()->getJsonDecode());
-		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator);
+		$recursive = $this->configurationManager->getContentObject()->data['recursive'];
+		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator, $recursive);
 		$legalNorm = array();
 		if ($this->request->hasArgument('legislator')) {
 			$filter = array(

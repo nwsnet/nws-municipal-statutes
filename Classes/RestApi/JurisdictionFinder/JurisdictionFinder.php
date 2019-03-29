@@ -58,9 +58,10 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 	 * Creates a hierarchical menu with area and legislator
 	 *
 	 * @param array $legislator
+	 * @param integer $recursive
 	 * @return array
 	 */
-	public function getTreeMenu(array $legislator)
+	public function getTreeMenu(array $legislator, $recursive)
 	{
 		$cacheIdentifier = md5(
 			$this->jsonEncode($legislator) . '-' . __FUNCTION__
@@ -76,7 +77,8 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 						if ($this->recursiveArraySearch($result['parentId'], $treeMenu)) {
 							$treeMenu = $this->setAvailableParentResult($result, $treeMenu);
 						} else {
-							$treeMenu = $this->setParentResult($result, $treeMenu);
+							$recursive = !empty($recursive) ? $recursive : -1;
+							$treeMenu = $this->setParentResult($result, $treeMenu, $recursive);
 						}
 					}
 				}
@@ -114,10 +116,11 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 	 *
 	 * @param array $result
 	 * @param array $treeMenu
+	 * @param integer $recursive
 	 * @param array $parents
 	 * @return array
 	 */
-	protected function setParentResult(array $result, array $treeMenu, $parents = array())
+	protected function setParentResult(array $result, array $treeMenu, $recursive = -1, $parents = array())
 	{
 		$id = $result['id'];
 		$parentId = $result['parentId'];
@@ -131,10 +134,11 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 			if (count($parents) == 0) {
 				$parents[$result['id']] = $result;
 			}
-			if ($ags != $this->agsKey) {
+			if ($ags != $this->agsKey && $recursive != 0) {
 				$data = $this->area()->findById($result['parentId'])->getJsonDecode();
 				$parents[$data['id']] = $data;
-				return $this->setParentResult($data, $treeMenu, $parents);
+				$recursive -= 1;
+				return $this->setParentResult($data, $treeMenu, $recursive, $parents);
 			}
 
 		}
@@ -146,7 +150,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 			$parentId = $value['parentId'];
 			$ags = $value['ags'];
 			if (!$this->recursiveArraySearch($parentId, $treeMenu)) {
-				if ($ags == $this->agsKey) {
+				if ($ags == $this->agsKey || $recursive == 0) {
 					$treeMenu[$id] = $value;
 				}
 			} else {

@@ -113,6 +113,43 @@ class LocalLaw extends AbstractLocalLaw
 	}
 
 	/**
+	 * Finds the legislator with the ID and returns the full record
+	 *
+	 * @param array $legislators
+	 * @return array
+	 */
+	public function getLegalNormByLegislatorId(array $items)
+	{
+
+		$cacheIdentifier = md5(
+			$this->jsonEncode($items) . '-' . __FUNCTION__
+		);
+		if ($this->cacheInstance->has($cacheIdentifier)) {
+			$legislators = $this->cacheInstance->get($cacheIdentifier);
+		} else {
+			$count = $items['count'];
+			foreach ($items['results'] as $legislator) {
+				$filter = array(
+					'legislatorId' => $legislator,
+					'selectAttributes' => array(
+						'id'
+					)
+				);
+				$data = $this->legalNorm()->find($filter)->getJsonDecode();
+				if ($data['count'] == 0) {
+					$count -= 1;
+				} else {
+					$legislators['results'][]['object'] = $this->legislator()->findById($legislator)->getJsonDecode();
+				}
+			}
+			$legislators['count'] = $count;
+			$this->cacheInstance->set($cacheIdentifier, $legislators, array('callRestApi'));
+
+		}
+		return $legislators;
+	}
+
+	/**
 	 * Finds the legislators have deposited the rules
 	 *
 	 * @param array $legislators
