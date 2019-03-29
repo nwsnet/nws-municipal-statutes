@@ -44,26 +44,11 @@ class ItemsProcFuncController extends AbstractController
 	protected $apiLocalLaw;
 
 	/**
-	 * jurisdictionFinderApiCall get data
-	 *
-	 * @var \Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder
-	 */
-	protected $apiJurisdictionFinder;
-
-	/**
 	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiLocalLaw
 	 */
 	public function injectApiLocalLaw(LocalLaw $apiLocalLaw)
 	{
 		$this->apiLocalLaw = $apiLocalLaw;
-	}
-
-	/**
-	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder $apiJurisdictionFinder
-	 */
-	public function injectApiJurisdictionFinder(JurisdictionFinder $apiJurisdictionFinder)
-	{
-		$this->apiJurisdictionFinder = $apiJurisdictionFinder;
 	}
 
 	/**
