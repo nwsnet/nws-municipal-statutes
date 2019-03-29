@@ -25,6 +25,8 @@
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
 use Nwsnet\NwsMunicipalStatutes\Dom\Converter;
+use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
+use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 
@@ -55,7 +57,7 @@ class LocalLawController extends AbstractController
 	/**
 	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiLocalLaw
 	 */
-	public function injectApiLocalLaw(\Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiLocalLaw)
+	public function injectApiLocalLaw(LocalLaw $apiLocalLaw)
 	{
 		$this->apiLocalLaw = $apiLocalLaw;
 	}
@@ -63,9 +65,8 @@ class LocalLawController extends AbstractController
 	/**
 	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder $apiJurisdictionFinder
 	 */
-	public function injectApiJurisdictionFinder(
-		\Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder $apiJurisdictionFinder
-	) {
+	public function injectApiJurisdictionFinder(JurisdictionFinder $apiJurisdictionFinder)
+	{
 		$this->apiJurisdictionFinder = $apiJurisdictionFinder;
 	}
 
