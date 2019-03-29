@@ -138,8 +138,8 @@ class LocalLawController extends AbstractController
 				'sortAttribute' => 'longTitle'
 			);
 			if ($this->settings['structureId']) {
-				if(strpos($this->settings['structureId'],',')!== false) {
-					$ids= explode(',',$this->settings['structureId']);
+				if (strpos($this->settings['structureId'], ',') !== false) {
+					$ids = explode(',', $this->settings['structureId']);
 					$filter['structureIds'] = $ids;
 				} else {
 					$filter['structureIds'] = array($this->settings['structureId']);
@@ -177,6 +177,10 @@ class LocalLawController extends AbstractController
 		$converter = GeneralUtility::makeInstance(Converter::class);
 		$legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
 
+		if (isset($legalNorm['longTitle'])) {
+			$GLOBALS['TSFE']->page['title'] = $legalNorm['longTitle'];
+			$GLOBALS['TSFE']->indexedDocTitle = $legalNorm['longTitle'];
+		}
 
 		$this->view->assign('legalNorm', $legalNorm);
 	}
