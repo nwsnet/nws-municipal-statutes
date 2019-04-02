@@ -24,7 +24,6 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
-use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 
 /**
