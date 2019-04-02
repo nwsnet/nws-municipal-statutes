@@ -152,7 +152,7 @@ class ItemsProcFunc
 			//second call
 		} else {
 			if (isset($post['jsonLegislator']) && !empty($post['jsonLegislator'])) {
-				$json = $post['jsonLegislator'];
+				$json = stripslashes($post['jsonLegislator']);
 				$items = json_decode($json, true);
 				if (!empty($items) && is_array($items)) {
 					foreach ($items['legislator'] as $item) {
@@ -216,7 +216,7 @@ class ItemsProcFunc
 			//second call
 		} else {
 			if (isset($post['jsonStructure']) && !empty($post['jsonStructure'])) {
-				$json = $post['jsonStructure'];
+				$json = stripslashes($post['jsonStructure']);
 				$items = json_decode($json, true);
 				if (!empty($items) && is_array($items)) {
 					foreach ($items['structure'] as $item) {
