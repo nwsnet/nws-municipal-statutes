@@ -14,11 +14,11 @@ $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['apiKey'] = $_EXTCONF['apiKey'] ? $_EXTCON
 	'Nwsnet.' . $_EXTKEY,
 	'Pi1',
 	array(
-		'LocalLaw' => 'list,singlelist,search,show,showTitle,showTitleLegislator',
+		'LocalLaw' => 'list,singlelist,show,showTitle,showTitleLegislator',
 	),
 	// non-cacheable actions
 	array(
-		'LocalLaw' => 'list,singlelist,search',
+		'LocalLaw' => 'list,singlelist',
 
 	)
 );
