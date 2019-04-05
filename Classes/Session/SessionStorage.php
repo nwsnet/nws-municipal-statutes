@@ -21,9 +21,10 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
 namespace Nwsnet\NwsMunicipalStatutes\Session;
 
-use \TYPO3\CMS\Core\SingletonInterface;
+use TYPO3\CMS\Core\SingletonInterface;
 
 /**
  * Class for the storage of user data
@@ -31,7 +32,8 @@ use \TYPO3\CMS\Core\SingletonInterface;
  * @package    TYPO3
  * @subpackage nws_municipal_statutes
  */
-class SessionStorage implements SingletonInterface {
+class SessionStorage implements SingletonInterface
+{
 
 	/**
 	 * Session namespace
@@ -47,7 +49,8 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return object the stored object
 	 */
-	public function get($key) {
+	public function get($key)
+	{
 		$sessionData = $this->getFrontendUser()->getKey('ses', self::SESSIONNAMESPACE . $key);
 		if ($sessionData == '') {
 			throw new \LogicException('No value for key found in session ' . $key);
@@ -62,12 +65,13 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return boolean
 	 */
-	public function has($key) {
+	public function has($key)
+	{
 		$sessionData = $this->getFrontendUser()->getKey('ses', self::SESSIONNAMESPACE . $key);
 		if ($sessionData == '') {
-			return FALSE;
+			return false;
 		}
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -78,7 +82,8 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return    void
 	 */
-	public function set($key, $value) {
+	public function set($key, $value)
+	{
 		$this->getFrontendUser()->setKey('ses', self::SESSIONNAMESPACE . $key, $value);
 		$this->getFrontendUser()->storeSessionData();
 	}
@@ -91,7 +96,8 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return    void
 	 */
-	public function storeObject($object, $key = NULL) {
+	public function storeObject($object, $key = null)
+	{
 		if (is_null($key)) {
 			$key = get_class($object);
 		}
@@ -105,7 +111,8 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return    object
 	 */
-	public function getObject($key) {
+	public function getObject($key)
+	{
 		return unserialize($this->get($key));
 	}
 
@@ -116,8 +123,9 @@ class SessionStorage implements SingletonInterface {
 	 *
 	 * @return    void
 	 */
-	public function clean($key) {
-		$this->getFrontendUser()->setKey('ses', self::SESSIONNAMESPACE . $key, NULL);
+	public function clean($key)
+	{
+		$this->getFrontendUser()->setKey('ses', self::SESSIONNAMESPACE . $key, null);
 		$this->getFrontendUser()->storeSessionData();
 	}
 
@@ -128,7 +136,8 @@ class SessionStorage implements SingletonInterface {
 	 *                                                                             object
 	 * @throws    \LogicException
 	 */
-	protected function getFrontendUser() {
+	protected function getFrontendUser()
+	{
 		if ($GLOBALS ['TSFE']->fe_user) {
 			return $GLOBALS ['TSFE']->fe_user;
 		}
