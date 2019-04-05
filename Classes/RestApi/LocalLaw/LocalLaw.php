@@ -223,6 +223,66 @@ class LocalLaw extends AbstractLocalLaw
 	}
 
 	/**
+	 * Determines the structure name and saves it to the legal norm
+	 *
+	 * @param $legislatorId
+	 * @param array $legalNorm
+	 * @return array|mixed
+	 */
+	public function getLegalNormByStructure($legislatorId, array $legalNorm)
+	{
+		$cacheIdentifier = md5(
+			$legislatorId . '-' . $this->jsonEncode($legalNorm) . '-' . __FUNCTION__
+		);
+		if ($this->cacheInstance->has($cacheIdentifier)) {
+			$legalNorm = $this->cacheInstance->get($cacheIdentifier);
+		} else {
+			$structure = array();
+			$filter = array(
+				'legislatorId' => $legislatorId
+			);
+			$result = $this->structure()->find($filter)->getJsonDecode();
+			if ($result['count'] == 1) {
+				$structure = $result['results'][0]['object']['structure']['subStructurNodes'];
+				$legalNorm['id'] = $result['results'][0]['object']['id'];
+				$legalNorm['name'] = $result['results'][0]['object']['name'];
+				$legalNorm['legislator'] = $result['results'][0]['object']['legislator'];
+
+			}
+			$count = 0;
+			foreach ($legalNorm['results'] as $items) {
+				$legalNorm['results'][$count] = $items['object'];
+				$legalNorm['results'][$count]['structureNodes'] = $this->getStructureByLegalNorm($legalNorm['results'][$count]['structureNodes'],
+					$structure);
+				$count += 1;
+			}
+			//unset($legalNorm['results']);
+			$this->cacheInstance->set($cacheIdentifier, $legalNorm, array('callRestApi'));
+		}
+		return $legalNorm;
+	}
+
+	/**
+	 * Find the structure id and set the structure name
+	 *
+	 * @param array $structurNodes
+	 * @param array $structure
+	 * @return array
+	 */
+	protected function getStructureByLegalNorm(array $structurNodes, array $structure)
+	{
+		$result = array();
+		foreach ($structurNodes as $structurNode) {
+			foreach ($structure as $structureItem) {
+				if ($structureItem['id'] == $structurNode['id']) {
+					$result[] = !empty($structureItem['structureText']) ? $structureItem['structureText'] : $structureItem['structureNumber'];
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
 	 * Finds the structure id of a legal norm and returns the legal norm
 	 *
 	 * @param integer $structureId
