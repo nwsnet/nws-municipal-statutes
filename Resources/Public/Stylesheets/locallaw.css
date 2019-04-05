@@ -1171,6 +1171,18 @@
 	text-decoration: none;
 }
 
+.tx-nwsmunicipalstatutes .tx-nwsmunicipalstatutes-clear {
+	margin-left: 5px !important;
+}
+
+.tx-nwsmunicipalstatutes .badge {
+	border-radius: .25em;
+}
+
+.tx-nwsmunicipalstatutes .tx-nwsmunicipalstatutes-attachment {
+	margin-bottom: 1em;
+}
+
 @media (max-width: 480px) {
 	#tx-nwsmunicipalstatutes-list tbody td {
 		border: none;
