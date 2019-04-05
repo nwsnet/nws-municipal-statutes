@@ -178,12 +178,12 @@ class ItemsProcFunc
 		if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
 			$data = GeneralUtility::xml2array($params['row']['pi_flexform']);
 			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'restrictions');
+			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
 		} elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
 			$pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
 			$data = GeneralUtility::xml2array($pi_flexform);
 			$apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'restrictions');
+			$legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
 		}
 		//test for double call
 		$post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
