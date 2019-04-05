@@ -23,71 +23,64 @@
 		<div class="col-md-8">
 			<f:if condition="{legalNorm}">
 				<f:then>
-					<h2>{legalNorm.name}</h2>
-					<p>Vorschriften ({legalNorm.count} Treffer)</p>
-					<f:if condition="{legalNorm.structure.subStructurNodes}">
-						<div class="panel-group accordion" id="accordionContent" role="tablist"
-							 aria-multiselectable="true">
-							<f:for each="{legalNorm.structure.subStructurNodes}" as="structure">
-								<div class="panel panel-default card">
-									<div class="panel-heading card-header" role="tab"
-										 id="lg{structure.id}">
-										<h3 class="margin-y-0 my-0">
-											<a class="show d-block" role="button" data-toggle="collapse"
-											   data-parent="#accordionContent" data-target="#lg{structure.id}Cont"
-											   aria-expanded="false" aria-controls="lg{structure.id}Cont">
-												<f:if condition="{structure.structureText}">
-													<f:then>
-														{structure.structureText}
-													</f:then>
-													<f:else>
-														{structure.structureNumber}
-													</f:else>
-												</f:if>
-											</a>
-										</h3>
-									</div>
-									<div id="lg{structure.id}Cont" class="panel-collapse collapse"
-										 data-parent="#accordionContent" role="tabpanel"
-										 aria-labelledby="lg{structure.id}">
-										<div class="panel-body card-body">
-											<ul>
-												<f:if condition="{structure.legalNorm}">
-													<f:for each="{structure.legalNorm}" as="legalNormItem">
-														<li>
-															<p>
-																<f:link.action action="show"
-																			   arguments="{legalnorm: legalNormItem.id}">
-																	{legalNormItem.longTitle}
-																</f:link.action>
-																<span class="small" style="display:block">
-								erlassen am:
-								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisPromulgationDate}</f:format.date>
-								|i.d.F.v.
-								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisAmendDate}</f:format.date>
-								| gültig ab
-								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisEnactmentFrom}</f:format.date>
-								</span>
-															</p>
-														</li>
-													</f:for>
-												</f:if>
-											</ul>
+					<f:comment>Search by legal forms</f:comment>
+					<f:if condition="{settings.searchSelection}">
+						<div class="row">
+							<div class="col-sm-12">
+								<f:form action="list" arguments="{legislator: legalNorm.legislator.id}" method="POST" class="tx-nwsmunicipalstatutes-form">
+									<f:comment>Full text search</f:comment>
+									<div class="form-group">
+										<label class="control-label col-form-label" for="tx-nwsmunicipalstatutes-searchText">
+											<f:translate key="template.locallaw.search.search-label"/>
+										</label>
+										<div class="input-group">
+											<f:form.textfield class="form-control" type="text" id="tx-nwsmunicipalstatutes-searchText"
+															  name="search"
+															  placeholder="{f:translate(key:'template.locallaw.search.search-placeholder')}"
+															  value="{legalNorm.currentSearch}"/>
+											<span class="input-group-btn">
+								<f:form.button class="btn btn-default btn-secondary" name="searchButton" type="submit"
+											   title="{f:translate(key:'template.locallaw.search.title-search')}">
+									<i class="glyphicon glyphicon-search" aria-hidden="true"></i>
+								</f:form.button>
+								<f:form.button class="btn btn-default btn-secondary tx-nwsmunicipalstatutes-clear"
+											   disabled="{f:if(condition: '{legalNorm.search}', then: '', else: 'disabled')}"
+											   name="clearButton" type="submit">
+									<f:translate key="template.locallaw.search.search-clear"/>
+								</f:form.button>
+							</span>
 										</div>
 									</div>
-								</div>
-							</f:for>
+								</f:form>
+							</div>
 						</div>
+					</f:if>
+					<h2>{legalNorm.name}</h2>
+					<p>
+						<f:translate key="template.locallaw.list.legal-norm-headline" arguments="{0:legalNorm.count}"/>
+					</p>
+					<f:if condition="{legalNorm.search}">
+						<f:then>
+							<f:comment>if search was selected</f:comment>
+							<f:render partial="LocalLaw/FindLegalNorm" arguments="{legalNorm: '{legalNorm}'}"/>
+						</f:then>
+						<f:else>
+							<f:comment>if standard selection</f:comment>
+							<f:render partial="LocalLaw/SubStructurNodes" arguments="{legalNorm: '{legalNorm}'}"/>
+						</f:else>
 					</f:if>
 				</f:then>
 				<f:else>
 					<div class="alert alert-default" role="alert">
-						<h3>Ihr direkter Weg zu kommunalen Rechtsinformationen</h3>
-						<p>Bitte wählen Sie Ihre Verwaltung aus um nützliche Rechtsinformationen zu erhalten.</p>
+						<h3>
+							<f:translate key="template.locallaw.list.warning-headline"/>
+						</h3>
+						<p>
+							<f:translate key="template.locallaw.list.warning-text"/>
+						</p>
 					</div>
 				</f:else>
 			</f:if>
 		</div>
 	</div>
-
 </f:section>
