@@ -17,16 +17,17 @@
 							<label>
 								LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.switchableControllerActions
 							</label>
+							<onChange>reload</onChange>
 							<config>
 								<type>select</type>
 								<items>
 									<numIndex index="0">
 										<numIndex index="0">LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.switchableControllerActions.I.0</numIndex>
-										<numIndex index="1"><![CDATA[LocalLaw->singlelist;LocalLaw->search;LocalLaw->show;]]></numIndex>
+										<numIndex index="1"><![CDATA[LocalLaw->singlelist;LocalLaw->show;]]></numIndex>
 									</numIndex>
 									<numIndex index="1">
 										<numIndex index="0">LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.switchableControllerActions.I.1</numIndex>
-										<numIndex index="1"><![CDATA[LocalLaw->list;LocalLaw->search;LocalLaw->show;]]></numIndex>
+										<numIndex index="1"><![CDATA[LocalLaw->list;LocalLaw->show;]]></numIndex>
 									</numIndex>
 									<numIndex index="2">
 										<numIndex index="0">LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.switchableControllerActions.I.2</numIndex>
