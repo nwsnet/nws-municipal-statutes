@@ -80,10 +80,35 @@ class LocalLawController extends AbstractController
 		return false;
 	}
 
+	/**
+	 * List view for legal standards with tree menu
+	 *
+	 * @throws UnsupportedRequestTypeException
+	 */
 	public function listAction()
 	{
-		if (!empty($this->settings['legislatorId']) && strpos($this->settings['legislatorId'], ',') !== false) {
-			$items = explode(',', $this->settings['legislatorId']);
+		//Empty session data when the first call
+		if (count($this->request->getArguments()) == 0) {
+			$this->userSession->cleanSearch();
+			$this->userSession->cleanReferrer();
+		}
+		//Check if a search session exists
+		if (!$this->request->hasArgument('searchButton') && !$this->request->hasArgument('clearButton')) {
+			$search = $this->userSession->getSearch();
+			if (!empty($search)) {
+				foreach ($search as $key => $value) {
+					$this->request->setArgument($key, $value);
+				}
+			}
+		}
+
+		//when legislators have been selected
+		if (!empty($this->settings['legislatorIds'])) {
+			if (strpos($this->settings['legislatorIds'], ',') !== false) {
+				$items = explode(',', $this->settings['legislatorIds']);
+			} else {
+				$items[] = $this->settings['legislatorIds'];
+			}
 			$legislator['count'] = count($items);
 			$legislator['results'] = $items;
 			$legislator = $this->apiLocalLaw->getLegalNormByLegislatorId($legislator);
@@ -99,74 +124,209 @@ class LocalLawController extends AbstractController
 		}
 		$recursive = $this->configurationManager->getContentObject()->data['recursive'];
 		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator, $recursive);
+
+
 		$legalNorm = array();
-		if ($this->request->hasArgument('legislator')) {
-			$filter = array(
-				'legislatorId' => $this->request->getArgument('legislator'),
-				'selectAttributes' => array(
-					'id',
-					'categories',
-					'structureNodes',
-					'longTitle',
-					'jurisPromulgationDate',
-					'jurisAmendDate',
-					'jurisEnactmentFrom'
-				),
-				'sortAttribute' => 'longTitle'
-			);
-			if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
-				$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
-				throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+		//When a search request has been made
+		if ($this->request->hasArgument('searchButton') && $this->request->hasArgument('search') && !$this->request->hasArgument('clearButton')) {
+			if ($this->request->hasArgument('legislator')) {
+				$search = $this->request->getArgument('search');
+				$filter = array(
+					'legislatorId' => $this->request->getArgument('legislator'),
+					'selectAttributes' => array(
+						'id',
+						'categories',
+						'structureNodes',
+						'longTitle',
+						'jurisPromulgationDate',
+						'jurisAmendDate',
+						'jurisEnactmentFrom',
+						'jurisEnactmentTo',
+						'jurisPublicationDate',
+						'jurisApprovalDate'
+					),
+					'sortAttribute' => 'longTitle',
+					'searchWord' => $search,
+					'searchFullText' => 'true',
+
+				);
+				if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
+					$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+					throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+				}
+				$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+				$legalNorm = $this->apiLocalLaw->getLegalNormByStructure($this->request->getArgument('legislator'),
+					$legalNorm);
+				$legalNorm['search'] = true;
+				$legalNorm['currentSearch'] = $search;
+				$this->userSession->saveSearch(array('searchButton' => 'search', 'search' => $search));
 			}
-			$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-			$legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->request->getArgument('legislator'),
-				$legalNorm);
-
-
+		} else {
+			$this->userSession->cleanSearch();
+			if ($this->request->hasArgument('legislator')) {
+				$filter = array(
+					'legislatorId' => $this->request->getArgument('legislator'),
+					'selectAttributes' => array(
+						'id',
+						'categories',
+						'structureNodes',
+						'longTitle',
+						'jurisPromulgationDate',
+						'jurisAmendDate',
+						'jurisEnactmentFrom',
+						'jurisEnactmentTo',
+						'jurisPublicationDate',
+						'jurisApprovalDate'
+					),
+					'sortAttribute' => 'longTitle'
+				);
+				if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
+					$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+					throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+				}
+				$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+				$legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->request->getArgument('legislator'),
+					$legalNorm);
+			}
+		}
+		//Save referrer data for transmission
+		if (isset($this->settings['showSingleViewPid']) && !empty($this->settings['showSingleViewPid'])) {
+			$page = array();
+			$this->userSession->cleanReferrer();
+			$page['controllerName'] = $this->request->getControllerName();
+			$page['actionName'] = $this->request->getControllerActionName();
+			$page['extensionName'] = $this->request->getControllerExtensionName();
+			$page['pid'] = $GLOBALS['TSFE']->id;
+			$page['arguments'] = $this->request->getArguments();
+			$this->userSession->saveReferrer($page);
 		}
 
 		$this->view->assign('treeMenu', $treeMenu);
 		$this->view->assign('legalNorm', $legalNorm);
 	}
 
+	/**
+	 * Single view for legal norms without tree menu
+	 *
+	 * @throws UnsupportedRequestTypeException
+	 */
 	public function singlelistAction()
 	{
-		$legalNorm = array();
-		if ($this->settings['legislatorId']) {
-			$filter = array(
-				'legislatorId' => $this->settings['legislatorId'],
-				'selectAttributes' => array(
-					'id',
-					'categories',
-					'structureNodes',
-					'longTitle',
-					'jurisPromulgationDate',
-					'jurisAmendDate',
-					'jurisEnactmentFrom'
-				),
-				'sortAttribute' => 'longTitle'
-			);
-			if ($this->settings['structureId']) {
-				if (strpos($this->settings['structureId'], ',') !== false) {
-					$ids = explode(',', $this->settings['structureId']);
-					$filter['structureIds'] = $ids;
-				} else {
-					$filter['structureIds'] = array($this->settings['structureId']);
+		//Empty session data when the first call
+		if (count($this->request->getArguments()) == 0) {
+			$this->userSession->cleanSearch();
+			$this->userSession->cleanReferrer();
+		}
+		//Check if a search session exists
+		if (!$this->request->hasArgument('searchButton') && !$this->request->hasArgument('clearButton')) {
+			$search = $this->userSession->getSearch();
+			if (!empty($search)) {
+				foreach ($search as $key => $value) {
+					$this->request->setArgument($key, $value);
 				}
 			}
-			if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
-				$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
-				throw new UnsupportedRequestTypeException($error['message'], $error['code']);
-			}
-			$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-			$legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->settings['legislatorId'], $legalNorm);
-
-
 		}
+
+		$legalNorm = array();
+		//When a search request has been made
+		if ($this->request->hasArgument('searchButton') && $this->request->hasArgument('search') && !$this->request->hasArgument('clearButton')) {
+			if ($this->settings['legislatorId']) {
+				$search = $this->request->getArgument('search');
+				$filter = array(
+					'legislatorId' => $this->settings['legislatorId'],
+					'selectAttributes' => array(
+						'id',
+						'categories',
+						'structureNodes',
+						'longTitle',
+						'jurisPromulgationDate',
+						'jurisAmendDate',
+						'jurisEnactmentFrom',
+						'jurisEnactmentTo',
+						'jurisPublicationDate',
+						'jurisApprovalDate'
+					),
+					'sortAttribute' => 'longTitle',
+					'searchWord' => $search,
+					'searchFullText' => 'true',
+
+				);
+				if ($this->settings['structureId']) {
+					if (strpos($this->settings['structureId'], ',') !== false) {
+						$ids = explode(',', $this->settings['structureId']);
+						$filter['structureIds'] = $ids;
+					} else {
+						$filter['structureIds'] = array($this->settings['structureId']);
+					}
+				}
+
+				if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
+					$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+					throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+				}
+				$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+				$legalNorm = $this->apiLocalLaw->getLegalNormByStructure($this->settings['legislatorId'],
+					$legalNorm);
+				$legalNorm['search'] = true;
+				$legalNorm['currentSearch'] = $search;
+				$this->userSession->saveSearch(array('searchButton' => 'search', 'search' => $search));
+			}
+		} else {
+			$this->userSession->cleanSearch();
+			if ($this->settings['legislatorId']) {
+				$filter = array(
+					'legislatorId' => $this->settings['legislatorId'],
+					'selectAttributes' => array(
+						'id',
+						'categories',
+						'structureNodes',
+						'longTitle',
+						'jurisPromulgationDate',
+						'jurisAmendDate',
+						'jurisEnactmentFrom',
+						'jurisEnactmentTo',
+						'jurisPublicationDate',
+						'jurisApprovalDate'
+					),
+					'sortAttribute' => 'longTitle'
+				);
+				if ($this->settings['structureId']) {
+					if (strpos($this->settings['structureId'], ',') !== false) {
+						$ids = explode(',', $this->settings['structureId']);
+						$filter['structureIds'] = $ids;
+					} else {
+						$filter['structureIds'] = array($this->settings['structureId']);
+					}
+				}
+				if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
+					$error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+					throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+				}
+				$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+				$legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->settings['legislatorId'],
+					$legalNorm);
+			}
+		}
+		//Save referrer data for transmission
+		if (isset($this->settings['showSingleViewPid']) && !empty($this->settings['showSingleViewPid'])) {
+			$page = array();
+			$this->userSession->cleanReferrer();
+			$page['controllerName'] = $this->request->getControllerName();
+			$page['actionName'] = $this->request->getControllerActionName();
+			$page['extensionName'] = $this->request->getControllerExtensionName();
+			$page['pid'] = $GLOBALS['TSFE']->id;
+			$page['arguments'] = $this->request->getArguments();
+			$this->userSession->saveReferrer($page);
+		}
+
 		$this->view->assign('legalNorm', $legalNorm);
 	}
 
-
+	/**
+	 * Single view of the legal norm
+	 *
+	 * @throws UnsupportedRequestTypeException
+	 */
 	public function showAction()
 	{
 		$legalNormId = 0;
@@ -220,7 +380,6 @@ class LocalLawController extends AbstractController
 	 */
 	public function showTitleAction()
 	{
-
 		$request = $this->request->getArguments();
 		$legalNormId = $request['legalnorm'];
 		$filter = array(
