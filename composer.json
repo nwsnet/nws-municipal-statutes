@@ -1,7 +1,7 @@
 {
 	"name": "nwsnet/nws-municipal-statutes",
 	"type": "typo3-cms-extension",
-	"description": "It provides events and registrations for the appointment system of www.termine-regional.de.",
+	"description": "Reads all available municipal statutes from the TSA FullRest interface.",
 	"homepage": "https://git.die-netzwerkstatt.de/t3x/tx-nws-municipal-statutes.git",
 	"keywords": [
 		"TYPO3",
