@@ -183,13 +183,32 @@ class LocalLawController extends AbstractController
 
 		$legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
 
+		//Check if attachments exist and set document type
+		if (isset($legalNorm['jurisAttachments']) && !empty($legalNorm['jurisAttachments'])) {
+			foreach ($legalNorm['jurisAttachments'] as $key => $value) {
+				if (strpos($value['mimeType'], '/') !== false) {
+					$legalNorm['jurisAttachments'][$key]['docType'] = substr($value['mimeType'],
+						strpos($value['mimeType'], '/') + 1
+					);
+				}
+			}
+		}
+
+		//HTML parser for the structure of the content
+		/** @var \Nwsnet\NwsMunicipalStatutes\Dom\Converter $converter */
 		$converter = GeneralUtility::makeInstance(Converter::class);
 		$legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
 
+
+		//Set the page title for the page and the search
 		if (isset($legalNorm['longTitle'])) {
 			$GLOBALS['TSFE']->page['title'] = $legalNorm['longTitle'];
 			$GLOBALS['TSFE']->indexedDocTitle = $legalNorm['longTitle'];
 		}
+
+		//Get referrer data from the transmission
+		$referrer = $this->userSession->getReferrer();
+		$this->view->assign('referrer', $referrer);
 
 		$this->view->assign('legalNorm', $legalNorm);
 	}
