@@ -1,0 +1,82 @@
+<f:comment>Selection with structure view</f:comment>
+<f:if condition="{legalNorm.structure.subStructurNodes}">
+	<div class="panel-group accordion" id="accordionContent" role="tablist"
+		 aria-multiselectable="true">
+		<f:for each="{legalNorm.structure.subStructurNodes}" as="structure">
+			<div class="panel panel-default card">
+				<div class="panel-heading card-header" role="tab"
+					 id="lg{structure.id}">
+					<h3 class="margin-y-0 my-0">
+						<a class="show d-block" role="button" data-toggle="collapse"
+						   data-parent="#accordionContent" data-target="#lg{structure.id}Cont"
+						   aria-expanded="false" aria-controls="lg{structure.id}Cont">
+							<f:if condition="{structure.structureText}">
+								<f:then>
+									{structure.structureText}
+								</f:then>
+								<f:else>
+									{structure.structureNumber}
+								</f:else>
+							</f:if>
+						</a>
+					</h3>
+				</div>
+				<div id="lg{structure.id}Cont" class="panel-collapse collapse"
+					 data-parent="#accordionContent" role="tabpanel"
+					 aria-labelledby="lg{structure.id}">
+					<div class="panel-body card-body">
+						<ul>
+							<f:if condition="{structure.legalNorm}">
+								<f:for each="{structure.legalNorm}" as="legalNormItem">
+									<li>
+										<p>
+											<f:if condition="{settings.showSingleViewPid}">
+												<f:then>
+													<f:link.action pageUid="{settings.showSingleViewPid}" action="show"
+																   arguments="{legalnorm: legalNormItem.id}">
+														{legalNormItem.longTitle}
+													</f:link.action>
+												</f:then>
+												<f:else>
+													<f:link.action action="show"
+																   arguments="{legalnorm: legalNormItem.id}">
+														{legalNormItem.longTitle}
+													</f:link.action>
+												</f:else>
+											</f:if>
+											<span class="small" style="display:block">
+												<f:translate key="partials.locallaw.date.promulgation-date"/>
+												<f:format.date
+														format="%d.%m.%Y">{legalNormItem.jurisPromulgationDate}</f:format.date>
+												<f:translate key="partials.locallaw.date.amend-date"/>
+												<f:format.date
+														format="%d.%m.%Y">{legalNormItem.jurisAmendDate}</f:format.date>
+												<f:translate key="partials.locallaw.date.enactment-from"/>
+												<f:format.date
+														format="%d.%m.%Y">{legalNormItem.jurisEnactmentFrom}</f:format.date>
+												<f:if condition="{legalNormItem.jurisEnactmentTo}">
+													<f:translate key="partials.locallaw.date.enactment-to"/>
+													<f:format.date
+															format="%d.%m.%Y">{legalNormItem.jurisEnactmentTo}</f:format.date>
+												</f:if>
+												<f:if condition="{legalNormItem.jurisPublicationDate}">
+													<f:translate key="partials.locallaw.date.publication-date"/>
+													<f:format.date format="%d.%m.%Y">{legalNormItem.jurisPublicationDate}</f:format.date>
+												</f:if>
+												<f:if condition="{legalNormItem.jurisApprovalDate}">
+													<f:translate key="partials.locallaw.date.approval-date"/>
+													<f:format.date
+															format="%d.%m.%Y">{legalNormItem.jurisApprovalDate}</f:format.date>
+												</f:if>
+											</span>
+										</p>
+									</li>
+								</f:for>
+							</f:if>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</f:for>
+	</div>
+</f:if>

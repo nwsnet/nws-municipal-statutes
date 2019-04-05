@@ -1,0 +1,59 @@
+<f:comment>Selection with found entries</f:comment>
+<f:if condition="{legalNorm.count}">
+	<f:then>
+		<ul>
+			<f:for each="{legalNorm.results}" as="legalNormItem">
+				<li>
+					<p>
+						<f:if condition="{settings.showSingleViewPid}">
+							<f:then>
+								<f:link.action pageUid="{settings.showSingleViewPid}" action="show"
+											   arguments="{legalnorm: legalNormItem.id}">
+									{legalNormItem.longTitle}
+								</f:link.action>
+							</f:then>
+							<f:else>
+								<f:link.action action="show"
+											   arguments="{legalnorm: legalNormItem.id}">
+									{legalNormItem.longTitle}
+								</f:link.action>
+							</f:else>
+						</f:if>
+						<span class="small" style="display:block">
+							<f:translate key="partials.locallaw.date.promulgation-date"/>
+							<f:format.date format="%d.%m.%Y">{legalNormItem.jurisPromulgationDate}</f:format.date>
+							<f:translate key="partials.locallaw.date.amend-date"/>
+							<f:format.date format="%d.%m.%Y">{legalNormItem.jurisAmendDate}</f:format.date>
+							<f:translate key="partials.locallaw.date.enactment-from"/>
+							<f:format.date format="%d.%m.%Y">{legalNormItem.jurisEnactmentFrom}</f:format.date>
+							<f:if condition="{legalNormItem.jurisEnactmentTo}">
+								<f:translate key="partials.locallaw.date.enactment-to"/>
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisEnactmentTo}</f:format.date>
+							</f:if>
+							<f:if condition="{legalNormItem.jurisPublicationDate}">
+								<f:translate key="partials.locallaw.date.publication-date"/>
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisPublicationDate}</f:format.date>
+							</f:if>
+							<f:if condition="{legalNormItem.jurisApprovalDate}">
+								<f:translate key="partials.locallaw.date.approval-date"/>
+								<f:format.date format="%d.%m.%Y">{legalNormItem.jurisApprovalDate}</f:format.date>
+							</f:if>
+						</span>
+						<span style="display:block">
+							<f:for each="{legalNormItem.structureNodes}" as="structure">
+								<span class="label label-default badge badge-secondary">{structure}</span>
+							</f:for>
+						</span>
+					</p>
+				</li>
+			</f:for>
+		</ul>
+	</f:then>
+	<f:else>
+		<div class="alert alert-warning" role="alert">
+			<p>
+				<f:translate key="partials.locallaw.search.search-empty"/>
+			</p>
+		</div>
+	</f:else>
+</f:if>
