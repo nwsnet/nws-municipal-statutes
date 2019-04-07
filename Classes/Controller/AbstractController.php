@@ -131,44 +131,17 @@ abstract class AbstractController extends ActionController {
 	}
 
 	/**
-	 * Renewing the template call after creating the mail templates
-	 *
-	 * @param string $actionName
-	 *
-	 * @return void
-	 */
-	protected function renewTemplateName($actionName) {
-		$controllerContext = $this->getControllerContext();
-		$controllerContext->getRequest()->setControllerActionName($actionName);
-		$this->view->setControllerContext($controllerContext);
-	}
-
-	/**
 	 * Provide the libraries for OpenStreet map
 	 *
 	 * @return void
 	 */
-	protected function includeLeafletAssets() {
-		$this->pageRenderer->addCssFile('//cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.css', 'stylesheet', 'all', '', FALSE, FALSE, '', TRUE);
-		$this->pageRenderer->addJsLibrary('leaflet', '//cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.js', 'text/javascript', FALSE, FALSE, '', TRUE);
-	}
-
-	/**
-	 * Setting the submitted error messages for the forms
-	 *
-	 * @param string $argumentName
-	 * @param array  $validation
-	 */
-	protected function setErrorsProperty($argumentName, array $validation) {
-		$errors = $this->request->getOriginalRequestMappingResults();
-		foreach ($validation['errors'] as $error) {
-			if ($error['propertyName'] == $argumentName) {
-				$errors->forProperty($argumentName)->addError(new Error($error['message'], $error['code']));
-			} else {
-				$errors->forProperty($argumentName)->forProperty($error['propertyName'])->addError(new Error($error['message'], $error['code']));
-			}
-		}
-		$this->request->setOriginalRequestMappingResults($errors);
+	protected function includeLeafletAssets()
+	{
+		$this->pageRenderer->addCssFile('//cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.css',
+			'stylesheet', 'all', '', false, false, '', true);
+		$this->pageRenderer->addJsLibrary('leaflet',
+			'//cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.js', 'text/javascript', false, false,
+			'', true);
 	}
 
 	/**
@@ -176,7 +149,8 @@ abstract class AbstractController extends ActionController {
 	 *
 	 * @return array $settings
 	 */
-	protected function getTypoScript() {
+	protected function getTypoScript()
+	{
 		$configuration = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
 		/** @var \TYPO3\CMS\Extbase\Service\TypoScriptService $typoScriptService */
 		$typoScriptService = GeneralUtility::makeInstance(TypoScriptService::class);
@@ -194,7 +168,8 @@ abstract class AbstractController extends ActionController {
 	 *
 	 * @return array
 	 */
-	protected function overrideParameterFromTypoScript(array $overrideKeys, array $params, array $localSettings) {
+	protected function overrideParameterFromTypoScript(array $overrideKeys, array $params, array $localSettings)
+	{
 		if (is_array($params) && is_array($localSettings)) {
 			foreach ($params as $key => $value) {
 				if (is_array($value)) {
