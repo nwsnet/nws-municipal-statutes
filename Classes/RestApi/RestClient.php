@@ -54,8 +54,7 @@ class RestClient
 	 * @var array $additionalHeaders
 	 */
 	protected $additionalHeaders = array();
-
-
+	
 	/**
 	 * Json return from the response
 	 *
@@ -193,6 +192,8 @@ class RestClient
 	}
 
 	/**
+	 * Create a query from arrays
+	 *
 	 * @param $array
 	 * @param bool $qs
 	 * @return string

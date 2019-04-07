@@ -34,7 +34,8 @@ use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
  * @package    TYPO3
  * @subpackage nws_municipal_statutes
  */
-class JsonViewHelper extends AbstractViewHelper {
+class JsonViewHelper extends AbstractViewHelper
+{
 
 	/**
 	 * Initialize arguments.
@@ -42,9 +43,10 @@ class JsonViewHelper extends AbstractViewHelper {
 	 * @return void
 	 * @api
 	 */
-	public function initializeArguments() {
+	public function initializeArguments()
+	{
 		$this->registerArgument('subject', 'mixed', 'The object or array of objects to serialize');
-		$this->registerArgument('mapping', 'array', 'The name of the properties, that should be imploded as array where key is the json object-key and value is the PHP object property. Can also be list of keys for a 1:1 mapping');
+		$this->registerArgument('mapping', 'array','The name of the properties, that should be imploded as array where key is the json object-key and value is the PHP object property. Can also be list of keys for a 1:1 mapping');
 		$this->registerArgument('properties', 'string', 'List of properties to serialize (1:1 mapping)');
 	}
 
@@ -53,7 +55,8 @@ class JsonViewHelper extends AbstractViewHelper {
 	 *
 	 * @return string
 	 */
-	public function render() {
+	public function render()
+	{
 		$subject = $this->arguments['subject'];
 		if (empty($subject)) {
 			$subject = $this->renderChildren();
@@ -80,7 +83,8 @@ class JsonViewHelper extends AbstractViewHelper {
 	 *
 	 * @return array
 	 */
-	private function objectCollectionToArray($collection, array $mapping) {
+	private function objectCollectionToArray($collection, array $mapping)
+	{
 		$ret = array();
 		foreach ($collection as $key => $item) {
 			if (is_array($item)) {
@@ -96,12 +100,13 @@ class JsonViewHelper extends AbstractViewHelper {
 
 	/**
 	 * @param object $object
-	 * @param array  $mapping
+	 * @param array $mapping
 	 *
 	 * @return \stdClass
 	 * @throws \TYPO3\CMS\Extbase\Reflection\Exception\PropertyNotAccessibleException
 	 */
-	private function objectToStdClass($object, array $mapping) {
+	private function objectToStdClass($object, array $mapping)
+	{
 		$stdClass = new \stdClass();
 
 		foreach ($mapping as $jsonKey => $property) {

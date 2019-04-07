@@ -62,7 +62,8 @@ use TYPO3\CMS\Frontend\Utility\EidUtility;
  *        (depending on the current page and your TS configuration)
  * </output>
  */
-class Dispatcher {
+class Dispatcher
+{
 
 	/**
 	 * vendorName
@@ -90,14 +91,14 @@ class Dispatcher {
 	 *
 	 * @var string
 	 */
-	private $defaultController = 'Calendar';
+	private $defaultController = 'LocalLaw';
 
 	/**
 	 * Default action
 	 *
 	 * @var string
 	 */
-	private $defaultAction = 'month';
+	private $defaultAction = 'list';
 
 	/**
 	 * Patter for transmitted get parameter
@@ -136,7 +137,8 @@ class Dispatcher {
 	 * @return ResponseInterface
 	 *
 	 */
-	public function processRequest(ServerRequestInterface $request) {
+	public function processRequest(ServerRequestInterface $request)
+	{
 
 		$versionAsInt = \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
 		if ($versionAsInt > 8999999) {
@@ -175,7 +177,7 @@ class Dispatcher {
 				$typoScriptFrontendController->cHash = $cHash;
 			}
 			//Read ContextRecord for Flexform
-			if (isset($params['context']) && strpos($params['context'], ':') !== FALSE) {
+			if (isset($params['context']) && strpos($params['context'], ':') !== false) {
 				list($table, $uid) = explode(':', $params['context']);
 			}
 
@@ -211,7 +213,8 @@ class Dispatcher {
 			 * Initialize Extbase bootstrap
 			 */
 			$bootstrap = new Bootstrap();
-			$bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer', $typoScriptFrontendController);
+			$bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+				$typoScriptFrontendController);
 
 			//initalize the data us the content element
 			if (isset($table) && isset($uid)) {
@@ -222,7 +225,7 @@ class Dispatcher {
 			}
 			//output
 			$typoScriptFrontendController->content = $bootstrap->run('', $this->configuration);
-			$isOutputting = !empty($typoScriptFrontendController->content) ? TRUE : FALSE;
+			$isOutputting = !empty($typoScriptFrontendController->content) ? true : false;
 			// Create a Response object when sending content
 			$response = new Response();
 
@@ -239,12 +242,13 @@ class Dispatcher {
 	/**
 	 * Read the Flex form from the database
 	 *
-	 * @param string  $table
+	 * @param string $table
 	 * @param integer $uid
 	 *
 	 * @return array $row
 	 */
-	protected function getContentDataArray($table, $uid) {
+	protected function getContentDataArray($table, $uid)
+	{
 		if (isset($GLOBALS['TYPO3_DB'])) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'uid=' . $uid);
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
@@ -266,7 +270,8 @@ class Dispatcher {
 	 *
 	 * @return ResponseInterface
 	 */
-	protected function handle(ServerRequestInterface $request): ResponseInterface {
+	protected function handle(ServerRequestInterface $request): ResponseInterface
+	{
 		/** @var \Nwsnet\NwsMunicipalStatutes\Http\RequestHandler $requestHandler */
 		$requestHandler = GeneralUtility::makeInstance($this->requestHandler);
 		$dispatcher = $this->createMiddlewareDispatcher($requestHandler);
@@ -279,7 +284,8 @@ class Dispatcher {
 	 *
 	 * @return MiddlewareDispatcher
 	 */
-	protected function createMiddlewareDispatcher(RequestHandlerInterface $requestHandler) {
+	protected function createMiddlewareDispatcher(RequestHandlerInterface $requestHandler)
+	{
 		$middlewares = $this->middlewares;
 
 		return new MiddlewareDispatcher($requestHandler, $middlewares);

@@ -21,6 +21,7 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
 namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers;
 
 /**
@@ -48,7 +49,8 @@ namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers;
  * </output>
  */
 
-class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelper {
+class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelper
+{
 
 	/**
 	 * @var array
@@ -61,7 +63,8 @@ class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelpe
 	 * @return string rendered tag.
 	 * @api
 	 */
-	public function render() {
+	public function render()
+	{
 
 		// convert options array into fluid options array to get selectFieldViewHelper work under 6.2.11
 		if (is_array($this->arguments['options']) || $this->arguments['options'] instanceof \Traversable) {
@@ -82,11 +85,14 @@ class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelpe
 	 * @return void
 	 * @api
 	 */
-	public function initializeArguments() {
+	public function initializeArguments()
+	{
 		parent::initializeArguments();
 		if (!method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
-			$this->registerArgument('prependOptionLabel', 'string', 'If specified, will provide an option at first position with the specified label.');
-			$this->registerArgument('prependOptionValue', 'string', 'If specified, will provide an option at first position with the specified value.');
+			$this->registerArgument('prependOptionLabel', 'string',
+				'If specified, will provide an option at first position with the specified label.');
+			$this->registerArgument('prependOptionValue', 'string',
+				'If specified, will provide an option at first position with the specified value.');
 		}
 	}
 
@@ -97,19 +103,20 @@ class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelpe
 	 *
 	 * @return string rendered tags.
 	 */
-	protected function renderOptionTags($options) {
+	protected function renderOptionTags($options)
+	{
 		$output = '';
 		if (method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
 			if ($this->hasArgument('prependOptionLabel')) {
 				$value = $this->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
 				$label = $this->arguments['prependOptionLabel'];
-				$output .= $this->renderOptionTag($value, $label, FALSE) . chr(10);
+				$output .= $this->renderOptionTag($value, $label, false) . chr(10);
 			}
 		} else {
 			if ($this->arguments->hasArgument('prependOptionLabel')) {
 				$value = $this->arguments->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
 				$label = $this->arguments['prependOptionLabel'];
-				$output .= $this->renderOptionTag($value, $label, FALSE) . chr(10);
+				$output .= $this->renderOptionTag($value, $label, false) . chr(10);
 			}
 		}
 		foreach ($this->selectOptions as $value => $label) {
@@ -141,12 +148,13 @@ class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelpe
 	/**
 	 * Render the option group tag.
 	 *
-	 * @param string $label       the label for the option group.
+	 * @param string $label the label for the option group.
 	 * @param string $optionsList the rendering options list
 	 *
 	 * @return string rendered tag.
 	 */
-	protected function renderOptionGroupTag($label, $optionsList) {
+	protected function renderOptionGroupTag($label, $optionsList)
+	{
 		return '<optgroup label="' . htmlspecialchars($label) . '">' . $optionsList . '</optgroup>';
 	}
 }

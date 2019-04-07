@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2017 Dirk Meinke <typo3@die-netzwerkstatt.de>
+ *  (c) 2019 Dirk Meinke <typo3@die-netzwerkstatt.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -24,9 +24,10 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
+use Nwsnet\NwsMunicipalStatutes\Session\UserSession;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidRequestMethodException;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
@@ -40,8 +41,10 @@ use TYPO3\CMS\Extbase\Service\TypoScriptService;
  * @subpackage nws_municipal_statutes
  *
  */
-abstract class AbstractController extends ActionController {
+abstract class AbstractController extends ActionController
+{
 
+	const MAX_ALIAS_LENGTH = 100;
 	/**
 	 * UserSession
 	 *
@@ -71,21 +74,24 @@ abstract class AbstractController extends ActionController {
 	/**
 	 * @param \Nwsnet\NwsMunicipalStatutes\Session\UserSession $userSession
 	 */
-	public function injectUserSession(\Nwsnet\NwsMunicipalStatutes\Session\UserSession $userSession) {
+	public function injectUserSession(UserSession $userSession)
+	{
 		$this->userSession = $userSession;
 	}
 
 	/**
 	 * @param \TYPO3\CMS\Core\Page\PageRenderer $pageRenderer
 	 */
-	public function injectPageRenderer(\TYPO3\CMS\Core\Page\PageRenderer $pageRenderer) {
+	public function injectPageRenderer(PageRenderer $pageRenderer)
+	{
 		$this->pageRenderer = $pageRenderer;
 	}
 
 	/**
 	 * @param ConfigurationManagerInterface $configurationManager
 	 */
-	public function injectConfigurationManagerInterface(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager) {
+	public function injectConfigurationManagerInterface(ConfigurationManagerInterface $configurationManager)
+	{
 		$this->configurationManager = $configurationManager;
 	}
 
@@ -95,7 +101,8 @@ abstract class AbstractController extends ActionController {
 	 * @return void
 	 * @override \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 	 */
-	protected function callActionMethod() {
+	protected function callActionMethod()
+	{
 		try {
 			parent::callActionMethod();
 		} catch (\Exception $exception) {
@@ -121,7 +128,8 @@ abstract class AbstractController extends ActionController {
 	 *
 	 * @return void
 	 */
-	protected function handleError(\Exception $e) {
+	protected function handleError(\Exception $e)
+	{
 		$controllerContext = $this->buildControllerContext();
 		$controllerContext->getRequest()->setControllerName('Exception');
 		$controllerContext->getRequest()->setControllerActionName('error');

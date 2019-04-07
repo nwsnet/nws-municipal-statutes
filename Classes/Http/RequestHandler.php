@@ -49,7 +49,8 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  *
  * Then the right HTTP response headers are compiled together and sent as well.
  */
-class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterface {
+class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterface
+{
 	/**
 	 * vendorName
 	 *
@@ -76,14 +77,14 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @var string
 	 */
-	private $defaultController = 'Calendar';
+	private $defaultController = 'LocalLaw';
 
 	/**
 	 * Default action
 	 *
 	 * @var string
 	 */
-	private $defaultAction = 'month';
+	private $defaultAction = 'list';
 
 	/**
 	 * Patter for transmitted get parameter
@@ -99,7 +100,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @return ResponseInterface
 	 */
-	public function handleRequest(ServerRequestInterface $request): ResponseInterface {
+	public function handleRequest(ServerRequestInterface $request): ResponseInterface
+	{
 		return $this->handle($request);
 	}
 
@@ -111,9 +113,10 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @return ServerRequestInterface
 	 */
-	protected function addModifiedGlobalsToIncomingRequest(ServerRequestInterface $request): ServerRequestInterface {
-		$originalGetParameters = $request->getAttribute('_originalGetParameters', NULL);
-		if ($originalGetParameters !== NULL && !empty($_GET) && $_GET !== $originalGetParameters) {
+	protected function addModifiedGlobalsToIncomingRequest(ServerRequestInterface $request): ServerRequestInterface
+	{
+		$originalGetParameters = $request->getAttribute('_originalGetParameters', null);
+		if ($originalGetParameters !== null && !empty($_GET) && $_GET !== $originalGetParameters) {
 			// Find out what has been changed.
 			$modifiedGetParameters = ArrayUtility::arrayDiffAssocRecursive($_GET ?? [], $originalGetParameters);
 			if (!empty($modifiedGetParameters)) {
@@ -123,8 +126,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 			}
 		}
 		// do same for $_POST if the request is a POST request
-		$originalPostParameters = $request->getAttribute('_originalPostParameters', NULL);
-		if ($request->getMethod() === 'POST' && $originalPostParameters !== NULL && !empty($_POST) && $_POST !== $originalPostParameters) {
+		$originalPostParameters = $request->getAttribute('_originalPostParameters', null);
+		if ($request->getMethod() === 'POST' && $originalPostParameters !== null && !empty($_POST) && $_POST !== $originalPostParameters) {
 			// Find out what has been changed
 			$modifiedPostParameters = ArrayUtility::arrayDiffAssocRecursive($_POST ?? [], $originalPostParameters);
 			if (!empty($modifiedPostParameters)) {
@@ -146,7 +149,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @internal this safety net will be removed in TYPO3 v10.0.
 	 */
-	protected function resetGlobalsToCurrentRequest(ServerRequestInterface $request) {
+	protected function resetGlobalsToCurrentRequest(ServerRequestInterface $request)
+	{
 		if ($request->getQueryParams() !== $_GET) {
 			$queryParams = $request->getQueryParams();
 			$_GET = $queryParams;
@@ -168,7 +172,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @return ResponseInterface|null
 	 */
-	public function handle(ServerRequestInterface $request): ResponseInterface {
+	public function handle(ServerRequestInterface $request): ResponseInterface
+	{
 		/** @var TypoScriptFrontendController $controller */
 		$typoScriptFrontendController = $GLOBALS['TSFE'];
 
@@ -182,7 +187,7 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 			$typoScriptFrontendController->cHash = $cHash;
 		}
 		//Read ContextRecord for Flexform
-		if (isset($params['context']) && strpos($params['context'], ':') !== FALSE) {
+		if (isset($params['context']) && strpos($params['context'], ':') !== false) {
 			list($table, $uid) = explode(':', $params['context']);
 		}
 
@@ -212,7 +217,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 		 * Initialize Extbase bootstrap
 		 */
 		$bootstrap = new Bootstrap();
-		$bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer', $typoScriptFrontendController);
+		$bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+			$typoScriptFrontendController);
 
 		//initalize the data us the content element
 		if (isset($table) && isset($uid)) {
@@ -223,7 +229,7 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 		}
 		//output
 		$typoScriptFrontendController->content = $bootstrap->run('', $configuration);
-		$isOutputting = !empty($typoScriptFrontendController->content) ? TRUE : FALSE;
+		$isOutputting = !empty($typoScriptFrontendController->content) ? true : false;
 		// Create a Response object when sending content
 		$response = new Response();
 
@@ -238,12 +244,13 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	/**
 	 * Read the Flex form from the database
 	 *
-	 * @param string  $table
+	 * @param string $table
 	 * @param integer $uid
 	 *
 	 * @return array $row
 	 */
-	protected function getContentDataArray($table, $uid) {
+	protected function getContentDataArray($table, $uid)
+	{
 
 		/** @var \TYPO3\CMS\Core\Database\ConnectionPool $queryBuilder */
 		$queryBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\ConnectionPool::class)->getQueryBuilderForTable($table);
@@ -264,8 +271,9 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @return bool If the request is not an eID request, TRUE otherwise FALSE
 	 */
-	public function canHandleRequest(ServerRequestInterface $request): bool {
-		return TRUE;
+	public function canHandleRequest(ServerRequestInterface $request): bool
+	{
+		return true;
 	}
 
 	/**
@@ -274,7 +282,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
 	 *
 	 * @return int The priority of the request handler.
 	 */
-	public function getPriority(): int {
+	public function getPriority(): int
+	{
 		return 50;
 	}
 }
