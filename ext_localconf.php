@@ -37,8 +37,8 @@ if (TYPO3_MODE === 'BE') {
 		}
 	}
 }
-//Add TSconfig
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nws_municipal_statutes/Configuration/TSconfig/pageTSConfig.ts">');
+//Add TSConfig
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nws_municipal_statutes/Configuration/TSConfig/pageTSConfig.ts">');
 //Add Eid
 $GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['nwsMunicipalStatutesDispatcher'] = \Nwsnet\NwsMunicipalStatutes\Eid\Dispatcher::class . '::processRequest';
 
