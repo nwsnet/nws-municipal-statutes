@@ -115,7 +115,7 @@ class LocalLaw extends AbstractLocalLaw
 	/**
 	 * Finds the legislator with the ID and returns the full record
 	 *
-	 * @param array $legislators
+	 * @param array $items
 	 * @return array
 	 */
 	public function getLegalNormByLegislatorId(array $items)
