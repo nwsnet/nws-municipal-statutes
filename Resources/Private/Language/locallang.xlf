@@ -49,8 +49,26 @@
 			<trans-unit id="flexform.restrictions.sheettitle">
 				<source>Selection and restrictions</source>
 			</trans-unit>
+			<trans-unit id="flexform.restrictions.searchSelection">
+				<source>Search input for regulations Activate search</source>
+			</trans-unit>
 			<trans-unit id="flexform.restrictions.structureId">
 				<source>Selection of the structure to be displayed</source>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.sheettitle">
+				<source>PDF Creation</source>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.enablePdf">
+				<source>Enable PDF download for single view</source>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.enableContents">
+				<source>View the contents of the PDF creation directory</source>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.headlineImage">
+				<source>Provide emblem / logo for PDF creation</source>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.headlineText">
+				<source>Provide emblem / logo heading</source>
 			</trans-unit>
 
 			<trans-unit id="template.locallaw.list.legal-norm-headline">
@@ -67,11 +85,13 @@
 				<source>Your direct route to municipal legal information</source>
 			</trans-unit>
 			<trans-unit id="template.locallaw.singlelist.warning-text">
-				<source>Unfortunately, we could not find a proper administration with the municipal legal information.
-				</source>
+				<source>Unfortunately, we could not find a proper administration with the municipal legal information.</source>
 			</trans-unit>
 			<trans-unit id="template.locallaw.show.quick-finder">
 				<source>Quick Finder</source>
+			</trans-unit>
+			<trans-unit id="template.locallaw.show.pdf-download">
+				<source>Download PDF</source>
 			</trans-unit>
 			<trans-unit id="template.locallaw.show.back-list">
 				<source>Back to selection</source>
@@ -84,6 +104,9 @@
 			</trans-unit>
 			<trans-unit id="template.locallaw.show.attachment-anchor-title">
 				<source>Attachments</source>
+			</trans-unit>
+			<trans-unit id="template.locallaw.pdf.nav-headline">
+				<source>Contents</source>
 			</trans-unit>
 
 			<trans-unit id="template.locallaw.search.search-label">
@@ -100,30 +123,25 @@
 			</trans-unit>
 
 			<trans-unit id="partials.locallaw.search.search-empty">
-				<source>Unfortunately, the search could not find any matches. Please carry out another search with
-					another selection.
-				</source>
-				<target>Leider konnte die Suche keine Übereinstimmungen finden. Bitte führen Sie mit einer anderen
-					Auswahl eine erneute Suche durch.
-				</target>
+				<source>Unfortunately, the search could not find any matches. Please carry out another search with another selection.</source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.promulgation-date">
-				<source>Promulgation date:</source>
+				<source>Promulgation date: </source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.amend-date">
-				<source>| Amend date:</source>
+				<source>| Amend date: </source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.enactment-from">
-				<source>| Enactment from:</source>
+				<source>| Enactment from: </source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.enactment-to">
-				<source>| Enactment to:</source>
+				<source>| Enactment to: </source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.publication-date">
-				<source>| Publication date:</source>
+				<source>| Publication date: </source>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.approval-date">
-				<source>| Approval date:</source>
+				<source>| Approval date: </source>
 			</trans-unit>
 
 			<trans-unit id="template.exception.error.headline">
@@ -137,7 +155,6 @@
 					administrator.
 				</source>
 			</trans-unit>
-
 		</body>
 	</file>
 </xliff>

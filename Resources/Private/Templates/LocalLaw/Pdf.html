@@ -2,14 +2,19 @@
 <f:layout name="Default"/>
 <f:section name="main">
 	<f:flashMessages/>
-	<f:if condition="{settings.substitutePageTitle}== 0">
-		<f:then>
-			<h2>{legalNorm.longTitle}</h2>
-		</f:then>
-		<f:else>
-			<h2 class="hidden-md hidden-lg d-md-none d-lg-none">{legalNorm.longTitle}</h2>
-		</f:else>
+	<f:if condition="{settings.headlineImage}">
+		<div class="row">
+			<div class="col-md-12 tx-nwsmunicipalstatutes-pdf-headline">
+				<div>
+					<f:image src="{settings.headlineImage}" maxHeight="100"/>
+					<f:if condition="{settings.headlineText}"><h1>{settings.headlineText}</h1></f:if>
+				</div>
+				<hr>
+			</div>
+		</div>
 	</f:if>
+
+	<h1>{legalNorm.longTitle}</h1>
 	<div class="row">
 		<div class="col-md-12">
 			<p>
@@ -34,82 +39,41 @@
 			</p>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-8">
-			<f:if condition="{legalNorm.parseContent.nav}">
-				<div class="btn-group dropdown">
-					<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
-							aria-haspopup="true" aria-expanded="false">
-						<f:translate key="template.locallaw.show.quick-finder"/>
-						<span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu">
-						<f:if condition="{legalNorm.parseContent.nav}">
-							<f:alias map="{nav : legalNorm.parseContent.nav}">
-								<f:for each="{nav}" as="navItems">
+	<f:if condition="{settings.enableContents}">
+		<div class="row">
+			<div class="col-md-12">
+				<f:if condition="{legalNorm.parseContent.nav}">
+					<div>
+						<h2>
+							<f:translate key="template.locallaw.pdf.nav-headline"/>
+						</h2>
+						<ul>
+							<f:if condition="{legalNorm.parseContent.nav}">
+								<f:alias map="{nav : legalNorm.parseContent.nav}">
+									<f:for each="{nav}" as="navItems">
+										<li>
+											<a class="dropdown-item"
+											   href="#{navItems.section}">
+												{navItems.name}
+											</a>
+										</li>
+									</f:for>
+								</f:alias>
+								<f:if condition="{legalNorm.jurisAttachments}">
 									<li>
-										<f:link.page class="dropdown-item" addQueryString="1"
-													 section="{navItems.section}">
-											{navItems.name}
-										</f:link.page>
+										<a class="dropdown-item"
+										   href="#jurisAttachments">
+											<f:translate key="template.locallaw.show.attachment-anchor-title"/>
+										</a>
 									</li>
-								</f:for>
-							</f:alias>
-							<f:if condition="{legalNorm.jurisAttachments}">
-								<li>
-									<f:link.page class="dropdown-item" addQueryString="1"
-												 section="jurisAttachments">
-										<f:translate key="template.locallaw.show.attachment-anchor-title"/>
-									</f:link.page>
-								</li>
+								</f:if>
 							</f:if>
-						</f:if>
-					</ul>
-				</div>
-			</f:if>
-		</div>
-		<div class="col-md-4">
-			<p class="text-right">
-				<f:if condition="{settings.enablePdf}">
-					<nws:uri.ajaxAction action="pdf" pageType="6363" arguments="{legalnorm: legalNorm.id}"
-										class="btn btn-default btn-secondary">
-						<span class="glyphicon glyphicon-save"></span>
-						<f:translate key="template.locallaw.show.pdf-download"/>
-					</nws:uri.ajaxAction>
+						</ul>
+					</div>
 				</f:if>
-			</p>
+			</div>
 		</div>
-		<div class="col-md-4">
-			<p class="text-right">
-				<f:if condition="{settings.showListViewPid}">
-					<f:then>
-						<f:link.action pageUid="{settings.showListViewPid}"
-									   arguments="{legislator: legalNorm.legislator.id}"
-									   class="button btn btn-default btn-secondary">
-							{f:translate(key:'template.locallaw.show.back-list')}
-						</f:link.action>
-					</f:then>
-					<f:else>
-						<f:if condition="{referrer.pid}">
-							<f:then>
-								<f:link.action pageUid="{referrer.pid}"
-											   arguments="{legislator: legalNorm.legislator.id}"
-											   class="btn btn-default btn-secondary">
-									{f:translate(key:'template.locallaw.show.back-list')}
-								</f:link.action>
-							</f:then>
-							<f:else>
-								<f:link.action arguments="{legislator: legalNorm.legislator.id}"
-											   class="button btn btn-default btn-secondary">
-									{f:translate(key:'template.locallaw.show.back-list')}
-								</f:link.action>
-							</f:else>
-						</f:if>
-					</f:else>
-				</f:if>
-			</p>
-		</div>
-	</div>
+	</f:if>
 	<hr>
 	<div class="row">
 		<div class="col-md-12">

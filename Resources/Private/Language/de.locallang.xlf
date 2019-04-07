@@ -71,6 +71,26 @@
 				<source>Selection of the structure to be displayed</source>
 				<target>Auswahl der anzuzeigenenden Struktur</target>
 			</trans-unit>
+			<trans-unit id="flexform.pdf.sheettitle">
+				<source>PDF Creation</source>
+				<target>PDF-Erstellung</target>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.enablePdf">
+				<source>Enable PDF download for single view</source>
+				<target>PDF-Download für die Einzelansicht aktivieren</target>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.enableContents">
+				<source>View the contents of the PDF creation directory</source>
+				<target>Inhaltsverzeichnis für die PDF-Erstellung anzeigen</target>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.headlineImage">
+				<source>Provide emblem / logo for PDF creation</source>
+				<target>Wappen / Logo für die PDF-Erstellung bereitstellen</target>
+			</trans-unit>
+			<trans-unit id="flexform.pdf.headlineText">
+				<source>Provide emblem / logo heading</source>
+				<target>Für Wappen / Logo Überschrift bereitstellen</target>
+			</trans-unit>
 
 			<trans-unit id="template.locallaw.list.legal-norm-headline">
 				<source>Legal norm (%s hits)</source>
@@ -97,6 +117,10 @@
 				<source>Quick Finder</source>
 				<target>Schnellfinder</target>
 			</trans-unit>
+			<trans-unit id="template.locallaw.show.pdf-download">
+				<source>Download PDF</source>
+				<target>PDF herunterladen</target>
+			</trans-unit>
 			<trans-unit id="template.locallaw.show.back-list">
 				<source>Back to selection</source>
 				<target>Zurück zur Auswahl</target>
@@ -112,6 +136,10 @@
 			<trans-unit id="template.locallaw.show.attachment-anchor-title">
 				<source>Attachments</source>
 				<target>Anlagen</target>
+			</trans-unit>
+			<trans-unit id="template.locallaw.pdf.nav-headline">
+				<source>Contents</source>
+				<target>Inhaltsverzeichnis</target>
 			</trans-unit>
 
 

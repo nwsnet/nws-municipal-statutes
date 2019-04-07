@@ -100,13 +100,15 @@ plugin.tx_nwsmunicipalstatutes._CSS_DEFAULT_STYLE (
 page.includeJS.tx_nwsmunicipalstatutes_js = {$plugin.tx_nwsmunicipalstatutes.files.javascriptPath}
 page.includeCSS.tx_nwsmunicipalstatutes = {$plugin.tx_nwsmunicipalstatutes.files.cssPath}
 
-nws_regionalevents_pdf = PAGE
-nws_regionalevents_ical {
+nws_municipalstatutes_pdf = PAGE
+nws_municipalstatutes_pdf {
 	typeNum = 6363
+	includeCSS < page.includeCSS
+	includeCSSLibs < page.includeCSSLibs
+	cssInline < page.cssInline
 	config {
-		disableAllHeaderCode = 1
 		xhtml_cleaning = 0
-		additionalHeaders = Content-type:text/calendar
+		additionalHeaders = Content-type:text/html
 	}
 
 	20 = USER_INT

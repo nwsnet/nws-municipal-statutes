@@ -374,6 +374,113 @@ class LocalLawController extends AbstractController
 	}
 
 	/**
+	 * Creates a PDF with table of contents of the legal norm
+	 *
+	 * @return string
+	 * @throws UnsupportedRequestTypeException
+	 */
+	public function pdfAction()
+	{
+		$params = GeneralUtility::_GET();
+		if (isset($params['cHash'])) {
+			unset($params['cHash']);
+		}
+
+		$legalNormId = 0;
+		if ($this->request->hasArgument('legalnorm')) {
+			$legalNormId = $this->request->getArgument('legalnorm');
+		}
+
+		if ($this->request->hasArgument('create')) {
+
+			$settings = array();
+			//Read ContextRecord for Flexform
+			if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos($params['tx_nwsmunicipalstatutes_pi1']['context'],
+					':') !== false) {
+				list($table, $uid) = explode(':', $params['tx_nwsmunicipalstatutes_pi1']['context']);
+			}
+			//initalize the data us the content element
+			if (isset($table) && isset($uid)) {
+				$data = $this->getContentDataArray($table, $uid);
+				if (isset($data['pi_flexform'])) {
+					/** @var \TYPO3\CMS\Extbase\Service\FlexFormService $flexFormService */
+					$flexFormService = GeneralUtility::makeInstance('TYPO3\\CMS\Extbase\\Service\\FlexFormService');
+					$flexform = $flexFormService->convertFlexFormContentToArray($data['pi_flexform']);
+					if (isset($flexform['settings'])) {
+						$settings = array_merge($this->settings, $flexform['settings']);
+					}
+				}
+			}
+			if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
+				$error = $this->apiLocalLaw->legislator()->getExceptionError();
+				throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+			}
+			$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+			$legislatorId = $legalNorm['legislator']['id'];
+
+			$legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
+
+			//Check if attachments exist and set document type
+			if (isset($legalNorm['jurisAttachments']) && !empty($legalNorm['jurisAttachments'])) {
+				foreach ($legalNorm['jurisAttachments'] as $key => $value) {
+					if (strpos($value['mimeType'], '/') !== false) {
+						$legalNorm['jurisAttachments'][$key]['docType'] = substr($value['mimeType'],
+							strpos($value['mimeType'], '/') + 1
+						);
+					}
+				}
+			}
+
+			//HTML parser for the structure of the content
+			/** @var \Nwsnet\NwsMunicipalStatutes\Dom\Converter $converter */
+			$converter = GeneralUtility::makeInstance(Converter::class);
+			$legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
+
+			$this->view->assign('settings', $settings);
+			$this->view->assign('legalNorm', $legalNorm);
+		} else {
+			$params['tx_nwsmunicipalstatutes_pi1']['create'] = 'true';
+			$uri = $this->request->getBaseUri() . 'index.php?' . $this->httpBuildQuery($params);
+			$html = @file_get_contents($uri, false);
+			if (!empty($html)) {
+				$filter = array(
+					'selectAttributes' => array(
+						'id',
+						'longTitle',
+						'shortTitle',
+
+					)
+				);
+				if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
+					$error = $this->apiLocalLaw->legislator()->getExceptionError();
+					throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+				}
+				$legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+				$fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
+				$fileName = $this->convertToSafeString($fileName);
+				$fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH) . '.pdf';
+
+				/** @var \Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf $pdfFile */
+				$pdfFile = $this->objectManager->get(
+					'Nwsnet\\NwsMunicipalStatutes\\Pdf\\Writer\\LegalNormPdf'
+				);
+				$pdfFilePath = PATH_site . 'typo3temp/' . md5(mt_rand()) . '.pdf';
+				if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
+					return '';
+				}
+
+				$pdf = @file_get_contents($pdfFilePath);
+				unlink($pdfFilePath);
+				$this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
+				$this->response->setHeader('Content-Length', strlen($pdf));
+				$this->response->setHeader('Connection', 'close');
+				echo $pdf;
+			}
+			return '';
+		}
+	}
+
+	/**
 	 * Providing the legal norm name for the page and link title generation
 	 *
 	 * @return string NULL|$legalNorm['longTitle']

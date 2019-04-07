@@ -199,4 +199,89 @@ abstract class AbstractController extends ActionController
 		}
 		return $params;
 	}
+
+	/**
+	 * Create a query from arrays
+	 *
+	 * @param $array
+	 * @param bool $qs
+	 * @return string
+	 */
+	protected function httpBuildQuery($array, $qs = false)
+	{
+		$parts = array();
+		if ($qs) {
+			$parts[] = $qs;
+		}
+		foreach ($array as $key => $value) {
+			if (is_array($value)) {
+				foreach ($value as $key2 => $value2) {
+					if (is_int($key2)) {
+						$parts[] = http_build_query(array($key => $value2));
+					} else {
+						$parts[] = http_build_query(array($key . '[' . $key2 . ']' => $value2));
+					}
+				}
+			} else {
+				$parts[] = http_build_query(array($key => $value));
+			}
+		}
+		return join('&', $parts);
+	}
+
+	/**
+	 * Converts a given string to a string that can be used as a URL segment.
+	 * The result is not url-encoded.
+	 *
+	 * @param string $processedTitle
+	 * @param string $spaceCharacter
+	 * @param bool $strToLower
+	 * @return string
+	 */
+	protected function convertToSafeString($processedTitle, $spaceCharacter = '-', $strToLower = true)
+	{
+		/** @var \TYPO3\CMS\Core\Charset\CharsetConverter $csConvertor */
+		$csConvertor = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Charset\\CharsetConverter');
+		if ($strToLower) {
+			$processedTitle = mb_strtolower($processedTitle, 'UTF-8');
+		}
+		$processedTitle = strip_tags($processedTitle);
+		$processedTitle = preg_replace('/[ \t\x{00A0}\-+_]+/u', $spaceCharacter, $processedTitle);
+		$processedTitle = $csConvertor->specCharsToASCII('utf-8', $processedTitle);
+		$processedTitle = preg_replace('/[^\p{L}0-9' . preg_quote($spaceCharacter) . ']/u', '', $processedTitle);
+		$processedTitle = preg_replace('/' . preg_quote($spaceCharacter) . '{2,}/', $spaceCharacter, $processedTitle);
+		$processedTitle = trim($processedTitle, $spaceCharacter);
+
+		if ($strToLower) {
+			$processedTitle = strtolower($processedTitle);
+		}
+
+		return $processedTitle;
+	}
+
+	/**
+	 * Read the Flex form from the database
+	 *
+	 * @param string $table
+	 * @param integer $uid
+	 *
+	 * @return array $row
+	 */
+	protected function getContentDataArray($table, $uid)
+	{
+		if (isset($GLOBALS['TYPO3_DB'])) {
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'uid=' . $uid);
+			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+		} else {
+			/** @var \TYPO3\CMS\Core\Database\ConnectionPool $queryBuilder */
+			$queryBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\ConnectionPool::class)->getQueryBuilderForTable($table);
+			$res = $queryBuilder->select('*')
+				->from('tt_content')
+				->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT)))
+				->groupBy('uid')
+				->execute();
+			$row = $res->fetch();
+		}
+		return $row;
+	}
 }
