@@ -29,6 +29,7 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 
 /**
  * Events Controller for the delivery of event data
@@ -382,6 +383,14 @@ class LocalLawController extends AbstractController
 	public function pdfAction()
 	{
 		$params = GeneralUtility::_GET();
+
+		$versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+		//if TYPO3 is greater than version 8, use request handlers
+		if ($versionAsInt > 8999999 && !isset($params['id'])) {
+			$params['id'] = $GLOBALS['TYPO3_REQUEST']->getAttribute('routing')->getPageId();
+			$params['type'] = $GLOBALS['TYPO3_REQUEST']->getAttribute('routing')->getPageType();
+		}
+
 		if (isset($params['cHash'])) {
 			unset($params['cHash']);
 		}
