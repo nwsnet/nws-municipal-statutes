@@ -52,8 +52,7 @@
 								<f:alias map="{nav : legalNorm.parseContent.nav}">
 									<f:for each="{nav}" as="navItems">
 										<li>
-											<a class="dropdown-item"
-											   href="#{navItems.section}">
+											<a class="dropdown-item" href="#{navItems.section}">
 												{navItems.name}
 											</a>
 										</li>
@@ -61,8 +60,7 @@
 								</f:alias>
 								<f:if condition="{legalNorm.jurisAttachments}">
 									<li>
-										<a class="dropdown-item"
-										   href="#jurisAttachments">
+										<a class="dropdown-item" href="#jurisAttachments">
 											<f:translate key="template.locallaw.show.attachment-anchor-title"/>
 										</a>
 									</li>
@@ -84,13 +82,11 @@
 							<f:if condition="{element.header}">
 								<f:if condition="{element.content}">
 									<f:then>
-										<a name="{element.header.section}" id="{element.header.section}"
-										   class="anchor"></a>
+										<a name="{element.header.section}" id="{element.header.section}">&nbsp;</a>
 										<h3>{element.header.headline}</h3>
 									</f:then>
 									<f:else>
-										<a name="{element.header.section}" id="{element.header.section}"
-										   class="anchor"></a>
+										<a name="{element.header.section}" id="{element.header.section}">&nbsp;</a>
 										<h2>{element.header.headline}</h2>
 									</f:else>
 								</f:if>
