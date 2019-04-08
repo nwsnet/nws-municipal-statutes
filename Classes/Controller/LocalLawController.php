@@ -440,6 +440,10 @@ class LocalLawController extends AbstractController
 			$this->view->assign('legalNorm', $legalNorm);
 		} else {
 			$params['tx_nwsmunicipalstatutes_pi1']['create'] = 'true';
+			/* @var $cacheHash \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
+			$cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
+			$cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
+			$params['cHash'] = $cHash;
 			$uri = $this->request->getBaseUri() . 'index.php?' . $this->httpBuildQuery($params);
 			$html = @file_get_contents($uri, false);
 			if (!empty($html)) {
