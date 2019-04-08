@@ -67,6 +67,7 @@ class LegalNormPdf
 		$pdf->setArgument('footer-right', 'Seite [page] von [topage]');
 		$pdf->setArgument('footer-spacing', 5);
 		$pdf->setArgument('enable-internal-links', '');
+		$pdf->setArgument('disable-external-links', '');
 
 		$success = $pdf->writeTo($path);
 
