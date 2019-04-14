@@ -48,7 +48,7 @@
 							<f:alias map="{nav : legalNorm.parseContent.nav}">
 								<f:for each="{nav}" as="navItems">
 									<li>
-										<f:link.page class="dropdown-item" addQueryString="1"
+										<f:link.page class="dropdown-item" addQueryStringMethod="GET" addQueryString="1"
 													 section="{navItems.section}">
 											{navItems.name}
 										</f:link.page>
@@ -57,7 +57,7 @@
 							</f:alias>
 							<f:if condition="{legalNorm.jurisAttachments}">
 								<li>
-									<f:link.page class="dropdown-item" addQueryString="1"
+									<f:link.page class="dropdown-item" addQueryStringMethod="GET" addQueryString="1"
 												 section="jurisAttachments">
 										<f:translate key="template.locallaw.show.attachment-anchor-title"/>
 									</f:link.page>
