@@ -405,8 +405,8 @@ class LocalLawController extends AbstractController
 			$settings = array();
 			//Read ContextRecord for Flexform
 			if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos($params['tx_nwsmunicipalstatutes_pi1']['context'],
-					':') !== false) {
-				list($table, $uid) = explode(':', $params['tx_nwsmunicipalstatutes_pi1']['context']);
+					'|') !== false) {
+				list($table, $uid) = explode('|', $params['tx_nwsmunicipalstatutes_pi1']['context']);
 			}
 			//initalize the data us the content element
 			if (isset($table) && isset($uid)) {

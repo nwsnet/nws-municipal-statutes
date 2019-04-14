@@ -200,7 +200,7 @@ class AjaxActionViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagB
 				}
 			}
 		}
-		$arguments['context'] = $contextRecord;
+		$arguments['context'] = str_replace(":", "|", $contextRecord);
 
 		$uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
 		$uri = $uriBuilder
