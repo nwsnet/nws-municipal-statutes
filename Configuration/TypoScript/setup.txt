@@ -40,7 +40,6 @@ plugin.tx_nwsmunicipalstatutes {
 		classification =
 		#Categories Search (unsigned integer) => Multiple entries separated by commas
 		category =
-
 	}
 }
 
@@ -67,8 +66,49 @@ plugin.tx_nwsmunicipalstatutes {
 	page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
 [global]
 
+[request.getQueryParams() ['tx_nwsmunicipalstatutes_pi1']['legalnorm'] > 0]
+	lib.nwsMunicipalStatutesPageTitle = COA
+	lib.nwsMunicipalStatutesPageTitle {
+		data >
+		10 = USER
+		10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+		10.vendorName = Nwsnet
+		10.extensionName = NwsMunicipalStatutes
+		10.pluginName = Pi1
+		10.switchableControllerActions {
+			LocalLaw {
+				1 = showTitle
+			}
+		}
+	}
+
+	lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
+	lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
+	page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
+[global]
+
 #Providing the legal norm name for the page title generation
 [globalVar = GP:tx_nwsmunicipalstatutes_pi1|legalnorm >0]
+	lib.nwsMunicipalStatutesTitle = COA
+	lib.nwsMunicipalStatutesTitle {
+		10 = TEXT
+		10.noTrimWrap = | - ||
+		20 = USER
+		20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+		20.vendorName = Nwsnet
+		20.extensionName = NwsMunicipalStatutes
+		20.pluginName = Pi1
+		20.switchableControllerActions {
+			LocalLaw {
+				1 = showTitle
+			}
+		}
+
+		wrap = |
+	}
+[global]
+
+[request.getQueryParams() ['tx_nwsmunicipalstatutes_pi1']['legalnorm'] > 0]
 	lib.nwsMunicipalStatutesTitle = COA
 	lib.nwsMunicipalStatutesTitle {
 		10 = TEXT
