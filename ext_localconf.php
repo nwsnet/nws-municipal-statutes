@@ -50,4 +50,6 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfiguration
 	// Cache for 24 hour
 	$GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY]['options'] = array('defaultLifetime' => 86400);
 }
-
+//For providing the title links in Sites Configuration
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['NwsLegislatorTitleMapper'] = \Nwsnet\NwsMunicipalStatutes\Routing\Aspect\NwsLegislatorTitleMapper::class;
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['NwsLegalNormTitleMapper'] = \Nwsnet\NwsMunicipalStatutes\Routing\Aspect\NwsLegalNormTitleMapper::class;

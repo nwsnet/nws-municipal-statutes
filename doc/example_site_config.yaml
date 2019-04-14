@@ -3,99 +3,46 @@ routeEnhancers:
     type: PageType
     default: ''
     map:
-      'event.ics': 7878
-  NwsMunicipalStatutesPlugin:
-    type: Extbase
-    extension: NwsMunicipalStatutes
-    plugin: Pi1
-    routes:
-        - { routePath: '/{localized_list}/{browse}', _controller: 'Events::list', _arguments: {'browse': 'browse'} }
-        - { routePath: '/{localized_day}/{year}/{month}/{day}', _controller: 'Events::list', _arguments: {'year': 'searchday/year','month': 'searchday/month','day': 'searchday/day'} }
-        - { routePath: '/{localized_show}/{evid}', _controller: 'Events::show', _arguments: {'evid': 'evid'} }
-        - { routePath: '/ical/{evid}', _controller: 'Events::ical', _arguments: {'evid': 'evid'} }
-        - { routePath: '/{localized_month}/{monthYear}/{context}', _controller: 'Calendar::month', _arguments: {'monthYear': 'monthYear', 'context': 'context'} }
-        - { routePath: '/{localized_day}/{year}/{month}/{day}/{context}', _controller: 'Calendar::ajaxlist', _arguments: {'year': 'searchday/year','month': 'searchday/month','day': 'searchday/day', 'context': 'context'} }
-        - { routePath: '/{localized_list}/{browse}/{context}', _controller: 'Calendar::ajaxlist', _arguments: {'browse': 'browse', 'context': 'context'} }
-        - { routePath: '/{localized_password}', _controller: 'Organizer::password'}
-        - { routePath: '/{localized_registration}', _controller: 'Organizer::registration'}
-        - { routePath: '/{localized_add}', _controller: 'Organizer::add'}
-        - { routePath: '/{localized_confirm}', _controller: 'Organizer::confirm'}
-        - { routePath: '/{localized_save}', _controller: 'Organizer::save'}
-        - { routePath: '/{localized_break}', _controller: 'Organizer::break'}
-        - { routePath: '/{localized_register}', _controller: 'Organizer::register'}
-    defaultController: 'Events::list'
-    defaults:
-      browse: '1'
-      day: '1'
-      month: '1'
-      year: '2019'
-      evid: '0'
-      monthYear: '1_2019'
-      context: ''
-    aspects:
-        localized_list:
-            type: LocaleModifier
-            default: 'list'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'liste'
-        localized_day:
-            type: LocaleModifier
-            default: 'day'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'tag'
-        localized_show:
-            type: LocaleModifier
-            default: 'show'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'ansicht'
-        localized_password:
-            type: LocaleModifier
-            default: 'password'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'passwort'
-        localized_registration:
-            type: LocaleModifier
-            default: 'registration'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'anmeldung'
-        localized_add:
-            type: LocaleModifier
-            default: 'add'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'eintragen'
-        localized_confirm:
-            type: LocaleModifier
-            default: 'confirm'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'pruefen'
-        localized_save:
-            type: LocaleModifier
-            default: 'save'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'speichern'
-        localized_break:
-            type: LocaleModifier
-            default: 'break'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'abbrechen'
-        localized_register:
-            type: LocaleModifier
-            default: 'register'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'registrieren'
-        localized_month:
-            type: LocaleModifier
-            default: 'month'
-            localeMap:
-                - locale: 'de_DE.*'
-                  value: 'monat'
+      'locallaw.pdf': 6363
+  NwsMunicipalStatutes:
+      type: Extbase
+      extension: NwsMunicipalStatutes
+      plugin: Pi1
+      routes:
+          - { routePath: '/{localized_legislator}/{legislator}', _controller: 'LocalLaw::list', _arguments: {'legislator_title': 'legislator'} }
+          - { routePath: '/{localized_legalnorm}/{legalnorm}', _controller: 'LocalLaw::show', _arguments: {'legalnorm_title': 'legalnorm'} }
+          - { routePath: '/pdf/{legalnorm}/{context}', _controller: 'LocalLaw::pdf', _arguments: {'legalnorm_title': 'legalnorm', 'context': 'context' } }
+      defaultController: 'LocalLaw::list'
+      defaults:
+        legislator: '0'
+        legalnorm: '0'
+        context: ''
+      aspects:
+          legislator_title:
+              type: NwsLegislatorTitleMapper
+              tableName: 'notable'
+              fieldName: 'nofield'
+              configuration:
+                  prependSlash: false
+                  fallbackCharacter: '-'
+              maxLength: 100
+          localized_legislator:
+              type: LocaleModifier
+              default: 'legislator'
+              localeMap:
+                  - locale: 'de_DE.*'
+                    value: 'gesetzgeber'
+          legalnorm_title:
+              type: NwsLegalNormTitleMapper
+              tableName: 'notable'
+              fieldName: 'nofield'
+              configuration:
+                  prependSlash: false
+                  fallbackCharacter: '-'
+              maxLength: 100
+          localized_legalnorm:
+              type: LocaleModifier
+              default: 'legalnorm'
+              localeMap:
+                  - locale: 'de_DE.*'
+                    value: 'rechtsnorm'
