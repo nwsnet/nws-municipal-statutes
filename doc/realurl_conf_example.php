@@ -51,6 +51,11 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['realurl']['_DEFAULT'] = array_merge_recu
 							'maxLength' => 80,
 						),
 					),
+					'context' => array(
+						array(
+							'GETvar' => 'tx_nwsmunicipalstatutes_pi1[context]',
+						),
+					),
 				),
 		),
 	)
