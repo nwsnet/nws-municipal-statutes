@@ -1,12 +1,11 @@
 // Variables
 // --------------------------
 
-//EDITH calendar
-$cal-calendar-border-color: "#ccc" !default;
-$cal-calendar-border-width: "1px" !default;
-$cal-calendar-sunday-background-color: "#eee" !default;
-$cal-calendar-current-background-color: "#d9edf7" !default;
-$cal-calendar-search-background-color: "#f0ad4e" !default;
-$cal-calendar-td-hover-color: "#ddd" !default;
-$cal-calendar-td-padding: "0.3em" !default;
-$cal-calendar-error-color: "#a94442" !default;
+//Local Law
+$law-alert-default-color: "#323232" !default;
+$law-alert-default-background-color: "#dfdfdf" !default;
+$law-alert-default-border-color: "#d2d2d2" !default;
+
+$law-badge-border-radius: ".25em" !default;
+
+$law-attachment-margin-bottom: "1em" !default;
