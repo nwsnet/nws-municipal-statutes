@@ -16,7 +16,7 @@
 		<div class="col-md-4">
 			<f:render partial="Menu/TreeMenu" arguments="{treeMenu: '{treeMenu}'}"/>
 		</div>
-		<div class="col-md-8">
+		<div class="col-md-8 tx-nwsmunicipalstatutes-content">
 			<f:if condition="{legalNorm}">
 				<f:then>
 					<f:comment>Search by legal forms</f:comment>
@@ -35,11 +35,11 @@
 															  placeholder="{f:translate(key:'template.locallaw.search.search-placeholder')}"
 															  value="{legalNorm.currentSearch}"/>
 											<span class="input-group-btn">
-								<f:form.button class="btn btn-default btn-secondary" name="searchButton" type="submit"
+								<f:form.button id="tx-nwsmunicipalstatutes-searchButton" class="btn btn-default btn-secondary" name="searchButton" type="submit"
 											   title="{f:translate(key:'template.locallaw.search.title-search')}">
 									<i class="glyphicon glyphicon-search" aria-hidden="true"></i>
 								</f:form.button>
-								<f:form.button class="btn btn-default btn-secondary tx-nwsmunicipalstatutes-clear"
+								<f:form.button id="tx-nwsmunicipalstatutes-clearButton" class="btn btn-default btn-secondary tx-nwsmunicipalstatutes-clear"
 											   disabled="{f:if(condition: '{legalNorm.search}', then: '', else: 'disabled')}"
 											   name="clearButton" type="submit">
 									<f:translate key="template.locallaw.search.search-clear"/>
