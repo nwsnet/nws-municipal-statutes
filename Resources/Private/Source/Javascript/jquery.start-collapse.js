@@ -7,7 +7,7 @@
 $(document).ready(function () {
 	if (typeof NwsMunicipalStatutesId !== "undefined") {
 		$('#lg' + NwsMunicipalStatutesId + 'Cont').collapse({
-			show: trueq
+			show: true
 		});
 	}
 });
