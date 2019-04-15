@@ -6,18 +6,14 @@
 			<f:if condition="{iterator.isFirst}">
 				<f:format.raw>
 					<script type="text/javascript">
-						$(document).ready(function () {
-							$('#lg{script.id}Cont').collapse({
-								show: true
-							});
-						});
+						var NwsMunicipalStatutesId = "{script.id}";
 					</script>
 				</f:format.raw>
 			</f:if>
 		</f:for>
 	</f:if>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-12 tx-nwsmunicipalstatutes-content">
 			<f:if condition="{legalNorm}">
 				<f:then>
 					<f:comment>Search by legal forms</f:comment>
