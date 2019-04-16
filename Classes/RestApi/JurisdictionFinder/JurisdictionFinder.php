@@ -55,13 +55,88 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 	}
 
 	/**
+	 * Detects all possible areas recursive
+	 *
+	 * @param array $searchAreas
+	 * @param $recursive
+	 * @return array|mixed
+	 */
+	public function getAreasRecursiveByAreas(array $searchAreas, $recursive)
+	{
+		$cacheIdentifier = md5(
+			$this->jsonEncode($searchAreas) . '-' . __FUNCTION__
+		);
+		if ($this->cacheInstance->has($cacheIdentifier)) {
+			$areas = $this->cacheInstance->get($cacheIdentifier);
+		} else {
+			$areas = array();
+			foreach ($searchAreas as $key => $value) {
+				$searchItem = $this->area()->findById($key)->getJsonDecode();
+				$this->findAreasBySearchItem($searchItem, $recursive, $areas);
+			}
+			$this->cacheInstance->set($cacheIdentifier, $areas, array('callRestApi'));
+		}
+		return $areas;
+	}
+
+	/**
+	 * Finds all related areas recursive to a search entry
+	 *
+	 * @param array $searchItem
+	 * @param integer $recursive
+	 * @param array $areas
+	 */
+	protected function findAreasBySearchItem(array $searchItem, $recursive, array &$areas)
+	{
+		$filter = array(
+			'parentId' => $searchItem['id']
+		);
+		$dataDown = $this->area()->find($filter)->getJsonDecode();
+		if ($dataDown['count'] > 0) {
+			foreach ($dataDown['results'] as $items) {
+				if ($items['object']['areaType']['key'] !== 'GEMEINDETEIL') {
+					$areas['results'][$items['object']['id']] = $items['object'];
+					$this->findAreasBySearchItem($items['object'], 0, $areas);
+				} else {
+					$areas['results'][$items['object']['id']] = $items['object'];
+				}
+			}
+		} else {
+			$areas['results'][$searchItem['id']] = $searchItem;
+		}
+		$areas['stopId'] = $searchItem['id'];
+		if ($recursive > 0) {
+			for ($i = $recursive; $i > 0; $i--) {
+				$searchItem = $this->area()->findById($searchItem['parentId'])->getJsonDecode();
+				$filter = array(
+					'parentId' => $searchItem['id']
+				);
+				$dataUp = $this->area()->find($filter)->getJsonDecode();
+				if ($dataUp['count'] > 0) {
+					foreach ($dataUp['results'] as $items) {
+						if ($items['object']['areaType']['key'] !== 'GEMEINDETEIL' && array_key_exists($items['object']['id'],
+								$areas) === false) {
+							$areas['results'][$items['object']['id']] = $items['object'];
+							$this->findAreasBySearchItem($items['object'], 0, $areas);
+						} elseif (array_key_exists($items['object']['id'], $areas) === false) {
+							$areas['results'][$items['object']['id']] = $items['object'];
+						}
+					}
+				} else {
+					$areas['results'][$searchItem['id']] = $searchItem;
+				}
+				$areas['stopId'] = $searchItem['id'];
+			}
+		}
+	}
+
+	/**
 	 * Creates a hierarchical menu with area and legislator
 	 *
 	 * @param array $legislator
-	 * @param integer $recursive
 	 * @return array
 	 */
-	public function getTreeMenu(array $legislator, $recursive)
+	public function getTreeMenu(array $legislator)
 	{
 		$cacheIdentifier = md5(
 			$this->jsonEncode($legislator) . '-' . __FUNCTION__
@@ -77,8 +152,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 						if ($this->recursiveArraySearch($result['parentId'], $treeMenu)) {
 							$treeMenu = $this->setAvailableParentResult($result, $treeMenu);
 						} else {
-							$recursive = !empty($recursive) ? $recursive : -1;
-							$treeMenu = $this->setParentResult($result, $treeMenu, $recursive);
+							$treeMenu = $this->setParentResult($result, $treeMenu);
 						}
 					}
 				}
@@ -116,11 +190,10 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 	 *
 	 * @param array $result
 	 * @param array $treeMenu
-	 * @param integer $recursive
 	 * @param array $parents
 	 * @return array
 	 */
-	protected function setParentResult(array $result, array $treeMenu, $recursive = -1, $parents = array())
+	protected function setParentResult(array $result, array $treeMenu, $parents = array())
 	{
 		$id = $result['id'];
 		$parentId = $result['parentId'];
@@ -134,11 +207,10 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 			if (count($parents) == 0) {
 				$parents[$result['id']] = $result;
 			}
-			if ($ags != $this->agsKey && $recursive != 0) {
+			if ($ags != $this->agsKey && $id != $this->stopId) {
 				$data = $this->area()->findById($result['parentId'])->getJsonDecode();
 				$parents[$data['id']] = $data;
-				$recursive -= 1;
-				return $this->setParentResult($data, $treeMenu, $recursive, $parents);
+				return $this->setParentResult($data, $treeMenu, $parents);
 			}
 
 		}
@@ -150,7 +222,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 			$parentId = $value['parentId'];
 			$ags = $value['ags'];
 			if (!$this->recursiveArraySearch($parentId, $treeMenu)) {
-				if ($ags == $this->agsKey || $recursive == 0) {
+				if ($ags == $this->agsKey || $id == $this->stopId) {
 					$treeMenu[$id] = $value;
 				}
 			} else {

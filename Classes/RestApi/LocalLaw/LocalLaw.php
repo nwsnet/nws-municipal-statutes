@@ -150,6 +150,97 @@ class LocalLaw extends AbstractLocalLaw
 	}
 
 	/**
+	 * Merges the legislators with their territories and only pays back the existing legislators
+	 *
+	 * @param array $areas
+	 * @return mixed
+	 */
+	public function mergeLegislatorByAreas(array $areas)
+	{
+		$cacheIdentifier = md5(
+			$this->jsonEncode($areas) . '-' . __FUNCTION__
+		);
+		if ($this->cacheInstance->has($cacheIdentifier)) {
+			$legislators = $this->cacheInstance->get($cacheIdentifier);
+		} else {
+			$filter = array(
+				'sortAttribute' => array('name')
+			);
+			$legislatorsItems = $this->legislator()->findAll($filter)->getJsonDecode();
+			$count = isset($legislatorsItems['count']) && $legislatorsItems['count'] > 0 ? $legislatorsItems['count'] : 0;
+			if (isset($legislatorsItems['count']) && $legislatorsItems['count'] > 0) {
+				foreach ($legislatorsItems['results'] as $legislator) {
+					if ($this->checkAreaId($legislator['object']['areas'], $areas)) {
+						$filter = array(
+							'legislatorId' => $legislator['object']['id'],
+							'selectAttributes' => array(
+								'id'
+							)
+						);
+						$data = $this->legalNorm()->find($filter)->getJsonDecode();
+						if ($data['count'] == 0) {
+							$count -= 1;
+						} else {
+							$legislators['results'][]['object'] = $legislator['object'];
+						}
+					} else {
+						$count -= 1;
+					}
+				}
+			}
+			$legislators['count'] = $count;
+			$this->cacheInstance->set($cacheIdentifier, $legislators, array('callRestApi'));
+
+		}
+		return $legislators;
+	}
+
+	/**
+	 * Picked the areas based on the legislator ID
+	 *
+	 * @param array $items
+	 * @return array|mixed
+	 */
+	public function getAreasByLegislatorId(array $items)
+	{
+
+		$cacheIdentifier = md5(
+			$this->jsonEncode($items) . '-' . __FUNCTION__
+		);
+		if ($this->cacheInstance->has($cacheIdentifier)) {
+			$areas = $this->cacheInstance->get($cacheIdentifier);
+		} else {
+			$areas = array();
+			foreach ($items['results'] as $legislator) {
+				$data = $this->legislator()->findById($legislator)->getJsonDecode();
+				foreach ($data['areas'] as $value) {
+					$areas[$value['id']] = $legislator;
+				}
+			}
+			$this->cacheInstance->set($cacheIdentifier, $areas, array('callRestApi'));
+
+		}
+		return $areas;
+	}
+
+	/**
+	 * Check if the area is present in the selection
+	 *
+	 * @param array $area
+	 * @param array $areas
+	 * @return bool
+	 */
+	protected function checkAreaId(array $area, array $areas)
+	{
+		foreach ($area as $value) {
+			if (array_key_exists($value['id'], $areas)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Finds the legislators have deposited the rules
 	 *
 	 * @param array $legislators
