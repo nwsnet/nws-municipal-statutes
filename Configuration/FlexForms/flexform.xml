@@ -136,6 +136,18 @@
 							</config>
 						</TCEforms>
 					</settings.legislatorIds>
+					<settings.recursiveSelection>
+						<TCEforms>
+							<label>
+								LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.recursiveSelection
+							</label>
+							<displayCond>FIELD:switchableControllerActions:=:LocalLaw->list;LocalLaw->show;</displayCond>
+							<config>
+								<type>check</type>
+								<default>0</default>
+							</config>
+						</TCEforms>
+					</settings.recursiveSelection>
 				</el>
 			</ROOT>
 		</sDEF>

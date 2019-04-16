@@ -46,6 +46,9 @@
 			<trans-unit id="flexform.sdef.legislatorIds">
 				<source>Multiple choice of legislators to be displayed</source>
 			</trans-unit>
+			<trans-unit id="flexform.sdef.recursiveSelection">
+				<source>From the legislators of the multiple selection recursively determine the parents entries of the legislators</source>
+			</trans-unit>
 			<trans-unit id="flexform.restrictions.sheettitle">
 				<source>Selection and restrictions</source>
 			</trans-unit>

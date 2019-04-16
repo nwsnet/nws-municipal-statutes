@@ -59,6 +59,10 @@
 				<source>Multiple choice of legislators to be displayed</source>
 				<target>Mehrfachauswahl der anzuzeigenden Gesetzgeber</target>
 			</trans-unit>
+			<trans-unit id="flexform.sdef.recursiveSelection">
+				<source>From the legislators of the multiple selection recursively determine the parents entries of the legislators</source>
+				<target>Von den Gesetzgebern der Mehrfachauswahl rekursive die Elterneinträge der Gesetzgeber ermitteln</target>
+			</trans-unit>
 			<trans-unit id="flexform.restrictions.sheettitle">
 				<source>Selection and restrictions</source>
 				<target>Auswahl und Einschränkungen</target>
