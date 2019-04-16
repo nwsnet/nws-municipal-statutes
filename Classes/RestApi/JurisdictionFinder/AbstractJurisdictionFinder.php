@@ -78,6 +78,13 @@ class AbstractJurisdictionFinder
 	protected $agsKey = '01';
 
 	/**
+	 * Stop ID for creating the tree menu
+	 *
+	 * @var int
+	 */
+	protected $stopId = 0;
+
+	/**
 	 * cacheUtility
 	 *
 	 * @var \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend
@@ -169,6 +176,17 @@ class AbstractJurisdictionFinder
 		//load the ext conf (ext_conf_template.txt)
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
 	}
+
+	/**
+	 * Overwrite the AGS key
+	 *
+	 * @param string $agsKey
+	 */
+	public function setStopId($stopId)
+	{
+		$this->stopId = $stopId;
+	}
+
 
 	/**
 	 * Encode to the json representation
