@@ -28,8 +28,8 @@ use Nwsnet\NwsMunicipalStatutes\Dom\Converter;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
+use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 
 /**
  * Events Controller for the delivery of event data
@@ -112,7 +112,21 @@ class LocalLawController extends AbstractController
 			}
 			$legislator['count'] = count($items);
 			$legislator['results'] = $items;
-			$legislator = $this->apiLocalLaw->getLegalNormByLegislatorId($legislator);
+			$recursive = $this->configurationManager->getContentObject()->data['recursive'];
+			//From the legislators of the multiple selection recursively determine the parents entries of the legislators
+			if ($this->settings['recursiveSelection']) {
+				$areas = $this->apiLocalLaw->getAreasByLegislatorId($legislator);
+				$areas = $this->apiJurisdictionFinder->getAreasRecursiveByAreas($areas, $recursive);
+				if (isset($areas['stopId'])) {
+					$this->apiJurisdictionFinder->setStopId($areas['stopId']);
+				}
+				if (isset($areas['results'])) {
+					$legislator = $this->apiLocalLaw->mergeLegislatorByAreas($areas['results']);
+				}
+
+			} else {
+				$legislator = $this->apiLocalLaw->getLegalNormByLegislatorId($legislator);
+			}
 		} else {
 			$filter = array(
 				'sortAttribute' => array('name')
@@ -123,8 +137,8 @@ class LocalLawController extends AbstractController
 			}
 			$legislator = $this->apiLocalLaw->getLegalNormByLegislator($this->apiLocalLaw->legislator()->getJsonDecode());
 		}
-		$recursive = $this->configurationManager->getContentObject()->data['recursive'];
-		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator, $recursive);
+
+		$treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator);
 
 
 		$legalNorm = array();
@@ -491,6 +505,7 @@ class LocalLawController extends AbstractController
 			}
 			return '';
 		}
+		return '';
 	}
 
 	/**
