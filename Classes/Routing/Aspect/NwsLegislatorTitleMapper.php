@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2019 Dirk Meinke <typo3@die-netzwerkstatt.de>, Jan Ole Schepler <o.schepler@lichtflut-medien.de>
+ *  (c) 2019 Dirk Meinke <typo3@die-netzwerkstatt.de>
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
  *  free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@ use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
  * Title of the legislator for the link to the list view
  *
  * @package    TYPO3
- * @subpackage nws_regional_events
+ * @subpackage nws_municipal_statutes
  *
  */
 class NwsLegislatorTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface, StaticMappableAspectInterface
@@ -68,7 +68,7 @@ class NwsLegislatorTitleMapper extends AbstractTitleMapper implements PersistedM
 	}
 
 	/**
-	 * Determines the ID and checks if the event still exists
+	 * Determines the ID and checks if the legislator still exists
 	 *
 	 * @param string $value
 	 * @return string|null

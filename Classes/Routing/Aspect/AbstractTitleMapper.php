@@ -33,7 +33,7 @@ use TYPO3\CMS\Extbase\Core\Bootstrap;
  * Initializes the ability to read titles from an API interface and make them available for the link
  *
  * @package    TYPO3
- * @subpackage nws_regional_events
+ * @subpackage nws_municipal_statutes
  *
  */
 class AbstractTitleMapper

@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2019 Dirk Meinke <typo3@die-netzwerkstatt.de>, Jan Ole Schepler <o.schepler@lichtflut-medien.de>
+ *  (c) 2019 Dirk Meinke <typo3@die-netzwerkstatt.de>
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
  *  free software; you can redistribute it and/or modify
@@ -27,10 +27,10 @@ use TYPO3\CMS\Core\Routing\Aspect\PersistedMappableAspectInterface;
 use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
 
 /**
- * Title of the event for the link to the single view
+ * Title of the legal norm for the link to the single view
  *
  * @package    TYPO3
- * @subpackage nws_regional_events
+ * @subpackage nws_municipal_statutes
  *
  */
 class NwsLegalNormTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface, StaticMappableAspectInterface
@@ -68,7 +68,7 @@ class NwsLegalNormTitleMapper extends AbstractTitleMapper implements PersistedMa
 	}
 
 	/**
-	 * Determines the ID and checks if the event still exists
+	 * Determines the ID and checks if the legal norm still exists
 	 *
 	 * @param string $value
 	 * @return string|null
