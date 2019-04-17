@@ -72,6 +72,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
 			$areas = array();
 			foreach ($searchAreas as $key => $value) {
 				$searchItem = $this->area()->findById($key)->getJsonDecode();
+				$areas['results'][$searchItem['id']] = $searchItem;
 				$this->findAreasBySearchItem($searchItem, $recursive, $areas);
 			}
 			$this->cacheInstance->set($cacheIdentifier, $areas, array('callRestApi'));
