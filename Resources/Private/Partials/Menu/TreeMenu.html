@@ -5,121 +5,307 @@
 			<ul class="nav flex-column">
 				<li class="nav-item"><h3>{state.displayName}</h3>
 					<f:if condition="{state.child}">
-						<ul class="nav flex-column ml-3">
-							<f:for each="{state.child}" as="district">
-								<f:if condition="{district.child}">
-									<f:then>
-										<li class="nav-item">
-											<a href="#a{district.id}" data-toggle="collapse" role="button"
-											   aria-expanded="false"
-											   aria-controls="a{district.id}">{district.displayName}</a>
-
-											<ul class="collapse" id="a{district.id}">
-												<f:if condition="{district.legislator}">
-													<f:for each="{district.legislator}" as="legislator">
+						<f:then>
+							<ul class="nav flex-column ml-3">
+								<f:if condition="{state.legislator}">
+									<f:if condition="{state.legislator->f:count()} > 1">
+										<f:then>
+											<li class="nav-item">
+												<a href="#b{state.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="b{state.id}">{state.displayName}</a>
+												<ul class="collapse" id="b{state.id}">
+													<f:for each="{state.legislator}" as="legislator">
 														<li class="nav-item">
-															<f:link.action action="list"
-																		   arguments="{legislator: legislator.id}">
+															<f:link.action action="list" arguments="{legislator: legislator.id}">
 																{legislator.name}
 															</f:link.action>
 														</li>
 													</f:for>
-												</f:if>
-												<f:for each="{district.child}" as="location">
-													<li class="nav-item">
-														<f:if condition="{location.child}">
-															<f:then>
-																<a href="#a{location.id}" data-toggle="collapse"
-																   role="button" aria-expanded="false"
-																   aria-controls="a{location.id}">{location.displayName}</a>
-															</f:then>
-															<f:else>
-																<f:if condition="{location.legislator}">
-																	<f:for each="{location.legislator}"
-																		   as="legislator">
-																		<f:link.action action="list"
-																					   arguments="{legislator: legislator.id}">
-																			{legislator.name}
-																		</f:link.action>
-																	</f:for>
-																</f:if>
-															</f:else>
-														</f:if>
-														<f:if condition="{location.child}">
-															<ul class="collapse" id="a{location.id}">
-																<f:if condition="{location.legislator}">
-																	<f:for each="{location.legislator}"
-																		   as="legislator">
-																		<li class="nav-item">
-																			<f:link.action action="list"
-																						   arguments="{legislator: legislator.id}">
-																				{legislator.name}
-																			</f:link.action>
-																		</li>
-																	</f:for>
-																</f:if>
-																<f:for each="{location.child}" as="sublocation">
-																	<f:if condition="{sublocation.legislator}">
-																		<f:if condition="<f:count>{sublocation.legislator}</f:count> > 1">
-																			<f:then>
-																				<li class="nav-item">
-																					<a href="#b{sublocation.id}"
-																					   data-toggle="collapse"
-																					   role="button"
-																					   aria-expanded="false"
-																					   aria-controls="b{sublocation.id}">{sublocation.displayName}</a>
-																					<ul class="collapse"
-																						id="b{sublocation.id}">
-																						<f:for each="{sublocation.legislator}"
-																							   as="legislator">
-																							<li class="nav-item">
-																								<f:link.action
-																										action="list"
-																										arguments="{legislator: legislator.id}">
-																									{legislator.name}
-																								</f:link.action>
-																							</li>
-																						</f:for>
-																					</ul>
-																				</li>
-																			</f:then>
-																			<f:else>
-																				<f:for each="{sublocation.legislator}"
-																					   as="legislator">
-																					<li class="nav-item">
-																						<f:link.action action="list"
-																									   arguments="{legislator: legislator.id}">
-																							{sublocation.displayName}
-																						</f:link.action>
-																					</li>
-																				</f:for>
-																			</f:else>
-																		</f:if>
-																	</f:if>
-																</f:for>
-															</ul>
-														</f:if>
-													</li>
-												</f:for>
-											</ul>
-
-										</li>
-									</f:then>
-									<f:else>
-										<f:if condition="{district.legislator}">
-											<f:for each="{district.legislator}" as="legislator">
+												</ul>
+											</li>
+										</f:then>
+										<f:else>
+											<f:for each="{state.legislator}" as="legislator">
 												<li class="nav-item">
-													<f:link.action action="list"
-																   arguments="{legislator: legislator.id}">
+													<f:link.action action="list" arguments="{legislator: legislator.id}">
 														{legislator.name}
 													</f:link.action>
 												</li>
 											</f:for>
-										</f:if>
-									</f:else>
+										</f:else>
+									</f:if>
 								</f:if>
-							</f:for>
-						</ul>
+								<f:for each="{state.child}" as="district">
+									<f:if condition="{district.child}">
+										<f:then>
+											<li class="nav-item">
+												<a href="#a{district.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="a{district.id}">{district.displayName}</a>
+												<ul class="collapse" id="a{district.id}">
+													<f:if condition="{district.legislator}">
+														<f:if condition="{district.legislator->f:count()} > 1">
+															<f:then>
+																<li class="nav-item">
+																	<a href="#d{district.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="d{district.id}">{district.displayName}</a>
+																	<ul class="collapse" id="d{district.id}">
+																		<f:for each="{district.legislator}" as="legislator">
+																			<li class="nav-item">
+																				<f:link.action action="list" arguments="{legislator: legislator.id}">
+																					{legislator.name}
+																				</f:link.action>
+																			</li>
+																		</f:for>
+																	</ul>
+																</li>
+															</f:then>
+															<f:else>
+																<f:for each="{district.legislator}" as="legislator">
+																	<li class="nav-item">
+																		<f:link.action action="list" arguments="{legislator: legislator.id}">
+																			{legislator.name}
+																		</f:link.action>
+																	</li>
+																</f:for>
+															</f:else>
+														</f:if>
+													</f:if>
+													<f:for each="{district.child}" as="location">
+														<f:if condition="{location.child}">
+															<f:then>
+																<li class="nav-item">
+																	<a href="#a{location.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="a{location.id}">{location.displayName}</a>
+																	<ul class="collapse" id="a{location.id}">
+																		<f:if condition="{location.legislator}">
+																			<f:if condition="{location.legislator->f:count()} > 1">
+																				<f:then>
+																					<li class="nav-item">
+																						<a href="#l{location.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="l{location.id}">{location.displayName}</a>
+																						<ul class="collapse" id="l{location.id}">
+																							<f:for each="{location.legislator}" as="legislator">
+																								<li class="nav-item">
+																									<f:link.action action="list" arguments="{legislator: legislator.id}">
+																										{legislator.name}
+																									</f:link.action>
+																								</li>
+																							</f:for>
+																						</ul>
+																					</li>
+																				</f:then>
+																				<f:else>
+																					<f:for each="{location.legislator}" as="legislator">
+																						<li class="nav-item">
+																							<f:link.action action="list" arguments="{legislator: legislator.id}">
+																								{legislator.name}
+																							</f:link.action>
+																						</li>
+																					</f:for>
+																				</f:else>
+																			</f:if>
+																		</f:if>
+																		<f:for each="{location.child}" as="sublocation">
+																			<f:if condition="{sublocation.child}">
+																				<f:then>
+																					<f:if condition="{sublocation.legislator}">
+																						<f:if condition="{sublocation.legislator->f:count()} > 1">
+																							<f:then>
+																								<li class="nav-item">
+																									<a href="#d{sublocation.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="d{sublocation.id}">{sublocation.displayName}</a>
+																									<ul class="collapse" id="d{sublocation.id}">
+																										<f:for each="{sublocation.legislator}" as="legislator">
+																											<li class="nav-item">
+																												<f:link.action action="list" arguments="{legislator: legislator.id}">
+																													{legislator.name}
+																												</f:link.action>
+																											</li>
+																										</f:for>
+																									</ul>
+																								</li>
+																							</f:then>
+																							<f:else>
+																								<f:for each="{sublocation.legislator}" as="legislator">
+																									<li class="nav-item">
+																										<f:link.action action="list" arguments="{legislator: legislator.id}">
+																											{legislator.name}
+																										</f:link.action>
+																									</li>
+																								</f:for>
+																							</f:else>
+																						</f:if>
+																						<f:for each="{sublocation.child}" as="subsublocation">
+																							<f:if condition="{subsublocation.legislator}">
+																								<f:if condition="{subsublocation.legislator->f:count()} > 1">
+																									<f:then>
+																										<li class="nav-item">
+																											<a href="#b{subsublocation.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="b{subsublocation.id}">{subsublocation.displayName}</a>
+																											<ul class="collapse" id="b{subsublocation.id}">
+																												<f:for each="{subsublocation.legislator}" as="legislator">
+																													<li class="nav-item">
+																														<f:link.action action="list" arguments="{legislator: legislator.id}">
+																															{legislator.name}
+																														</f:link.action>
+																													</li>
+																												</f:for>
+																											</ul>
+																										</li>
+																									</f:then>
+																									<f:else>
+																										<f:for each="{subsublocation.legislator}" as="legislator">
+																											<li class="nav-item">
+																												<f:link.action action="list" arguments="{legislator: legislator.id}">
+																													{subsublocation.displayName}
+																												</f:link.action>
+																											</li>
+																										</f:for>
+																									</f:else>
+																								</f:if>
+																							</f:if>
+																						</f:for>
+																					</f:if>
+																				</f:then>
+																				<f:else>
+																					<f:if condition="{sublocation.legislator}">
+																						<f:if condition="{sublocation.legislator->f:count()} > 1">
+																							<f:then>
+																								<li class="nav-item">
+																									<a href="#b{sublocation.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="b{sublocation.id}">{sublocation.displayName}</a>
+																									<ul class="collapse" id="b{sublocation.id}">
+																										<f:for each="{sublocation.legislator}" as="legislator">
+																											<li class="nav-item">
+																												<f:link.action action="list" arguments="{legislator: legislator.id}">
+																													{legislator.name}
+																												</f:link.action>
+																											</li>
+																										</f:for>
+																									</ul>
+																								</li>
+																							</f:then>
+																							<f:else>
+																								<f:for each="{sublocation.legislator}" as="legislator">
+																									<li class="nav-item">
+																										<f:link.action action="list" arguments="{legislator: legislator.id}">
+																											{sublocation.displayName}
+																										</f:link.action>
+																									</li>
+																								</f:for>
+																							</f:else>
+																						</f:if>
+																					</f:if>
+																				</f:else>
+																			</f:if>
+																		</f:for>
+																	</ul>
+																</li>
+															</f:then>
+															<f:else>
+																<f:if condition="{location.legislator}">
+																	<f:if condition="{location.legislator->f:count()} > 1">
+																		<f:then>
+																			<li class="nav-item">
+																				<a href="#b{location.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="b{location.id}">{location.displayName}</a>
+																				<ul class="collapse" id="b{location.id}">
+																					<f:for each="{location.legislator}" as="legislator">
+																						<li class="nav-item">
+																							<f:link.action action="list" arguments="{legislator: legislator.id}">
+																								{legislator.name}
+																							</f:link.action>
+																						</li>
+																					</f:for>
+																				</ul>
+																			</li>
+																		</f:then>
+																		<f:else>
+																			<f:for each="{location.legislator}" as="legislator">
+																				<li class="nav-item">
+																					<f:link.action action="list" arguments="{legislator: legislator.id}">
+																						<f:if condition="{0:location.areaType.key} == {0:'GEMEINDE'}">
+																							<f:then>
+																								{location.displayName}
+																							</f:then>
+																							<f:else>
+																								{legislator.name}
+																							</f:else>
+																						</f:if>
+																					</f:link.action>
+																				</li>
+																			</f:for>
+																		</f:else>
+																	</f:if>
+																</f:if>
+															</f:else>
+														</f:if>
+													</f:for>
+												</ul>
+											</li>
+										</f:then>
+										<f:else>
+											<f:if condition="{district.legislator}">
+												<f:if condition="{district.legislator->f:count()} > 1">
+													<f:then>
+														<li class="nav-item">
+															<a href="#b{district.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="b{district.id}">{district.displayName}</a>
+															<ul class="collapse" id="b{district.id}">
+																<f:for each="{district.legislator}" as="legislator">
+																	<li class="nav-item">
+																		<f:link.action action="list" arguments="{legislator: legislator.id}">
+																			{legislator.name}
+																		</f:link.action>
+																	</li>
+																</f:for>
+															</ul>
+														</li>
+													</f:then>
+													<f:else>
+														<f:for each="{district.legislator}" as="legislator">
+															<li class="nav-item">
+																<f:link.action action="list" arguments="{legislator: legislator.id}">
+																	<f:if condition="{0:district.areaType.key} == {0:'GEMEINDE'}">
+																		<f:then>
+																			{district.displayName}
+																		</f:then>
+																		<f:else>
+																			{legislator.name}
+																		</f:else>
+																	</f:if>
+																</f:link.action>
+															</li>
+														</f:for>
+													</f:else>
+												</f:if>
+											</f:if>
+										</f:else>
+									</f:if>
+								</f:for>
+							</ul>
+						</f:then>
+						<f:else>
+							<f:if condition="{state.legislator}">
+								<ul class="nav flex-column ml-3">
+									<f:if condition="{state.legislator->f:count()} > 1">
+										<f:then>
+											<li class="nav-item">
+												<a href="#s{state.id}" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="s{state.id}">{state.displayName}</a>
+												<ul class="collapse" id="s{state.id}">
+													<f:for each="{state.legislator}" as="legislator">
+														<li class="nav-item">
+															<f:link.action action="list" arguments="{legislator: legislator.id}">
+																{legislator.name}
+															</f:link.action>
+														</li>
+													</f:for>
+												</ul>
+											</li>
+										</f:then>
+										<f:else>
+											<f:for each="{state.legislator}" as="legislator">
+												<li class="nav-item">
+													<f:link.action action="list" arguments="{legislator: legislator.id}">
+														{legislator.name}
+													</f:link.action>
+												</li>
+											</f:for>
+										</f:else>
+									</f:if>
+								</ul>
+							</f:if>
+						</f:else>
 					</f:if>
 				</li>
 			</ul>
