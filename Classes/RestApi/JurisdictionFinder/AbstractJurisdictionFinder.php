@@ -178,9 +178,9 @@ class AbstractJurisdictionFinder
 	}
 
 	/**
-	 * Overwrite the AGS key
+	 * Sets the area ID for tree menu creation
 	 *
-	 * @param string $agsKey
+	 * @param string $stopId
 	 */
 	public function setStopId($stopId)
 	{
