@@ -6,7 +6,8 @@
 	"keywords": [
 		"TYPO3",
 		"extension",
-		"regional events"
+		"legislator",
+	  	"legal norm"
 	],
 	"autoload": {
 		"psr-4": {
@@ -27,7 +28,6 @@
 		}
 	],
 	"require": {
-		"typo3/cms-core": "^7.6.13 || >=8.5.0 <9.5.99",
-		"sabre/vobject": "^4.1"
+		"typo3/cms-core": "^7.6.13 || >=8.5.0 <9.5.99"
 	}
 }
