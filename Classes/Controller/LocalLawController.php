@@ -505,7 +505,6 @@ class LocalLawController extends AbstractController
 			}
 			return '';
 		}
-		return '';
 	}
 
 	/**
