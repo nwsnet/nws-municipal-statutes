@@ -65,7 +65,7 @@ abstract class AbstractController extends ActionController
 	protected $pageRenderer;
 
 	/**
-	 * eventsApiCall set data
+	 * ApiCall set data
 	 *
 	 * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
 	 */
