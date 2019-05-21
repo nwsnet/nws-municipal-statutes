@@ -2,7 +2,7 @@
 	"name": "nwsnet/nws-municipal-statutes",
 	"type": "typo3-cms-extension",
 	"description": "Reads all available municipal statutes from the TSA FullRest interface.",
-	"homepage": "https://git.die-netzwerkstatt.de/t3x/tx-nws-municipal-statutes.git",
+	"homepage": "https://www.die-netzwerkstatt.de/",
 	"keywords": [
 		"TYPO3",
 		"extension",
@@ -24,7 +24,7 @@
 		{
 			"name": "Dirk Meinke",
 			"email": "typo3@die-netzwerkstatt.de",
-			"homepage": "http://www.die-netzwerkstatt.de/"
+			"homepage": "https://www.die-netzwerkstatt.de/"
 		}
 	],
   	"license": ["GPL-2.0-or-later"],
