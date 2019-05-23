@@ -1,0 +1,21 @@
+image: php:7.1-cli
+
+before_script:
+  - apt-get update
+  - apt-get install -y git libxml2-dev zlib1g-dev
+  - docker-php-ext-install soap zip > /dev/null
+  - curl -s https://raw.githubusercontent.com/composer/getcomposer.org/master/web/installer | php -- --quiet --install-dir="/usr/local/bin" --filename="composer"
+  #- composer install
+
+deploy-ter:
+  only:
+    - tags
+  script:
+    - |
+      if [ -n "$TYPO3_ORG_USERNAME" ] && [ -n "$TYPO3_ORG_PASSWORD" ]; then
+        echo "Releasing ${CI_COMMIT_TAG} to ter.typo3.org"
+        composer global require helhum/ter-client
+        # cleanup before upload
+        rm -rf build vendor .git* composer.lock gulpfile.js package.json Resources/Private/Sources .jshintrc
+        $HOME/.composer/vendor/bin/ter-client upload nws_municipal_statutes . -u "$TYPO3_ORG_USERNAME" -p "$TYPO3_ORG_PASSWORD"
+      fi;

@@ -47,4 +47,6 @@ $RECYCLE.BIN/
 /app/assets/js
 
 /build
+/vendor
 /node_modules/
+composer.lock
