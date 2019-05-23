@@ -1,13 +1,14 @@
 image: php:7.1-cli
 
 before_script:
-  - sudo apt-get update
-  - sudo apt-get install -y git libxml2-dev zlib1g-dev
-  - sudo docker-php-ext-install soap zip > /dev/null
-  - curl -s https://raw.githubusercontent.com/composer/getcomposer.org/master/web/installer | sudo php -- --quiet --install-dir="/usr/local/bin" --filename="composer"
-  #- composer install
+  - apt-get update
+  - apt-get install -y git libxml2-dev zlib1g-dev
+  - docker-php-ext-install soap zip > /dev/null
+  - curl -s https://raw.githubusercontent.com/composer/getcomposer.org/master/web/installer | php -- --quiet --install-dir="/usr/local/bin" --filename="composer"
 
 deploy-ter:
+  tags:
+    - docker
   only:
     - tags
   script:
