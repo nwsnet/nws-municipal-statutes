@@ -1,136 +1,131 @@
 plugin.tx_nwsmunicipalstatutes {
-	view {
-		templateRootPath = {$plugin.tx_nwsmunicipalstatutes.view.templateRootPath}
-		partialRootPath = {$plugin.tx_nwsmunicipalstatutes.view.partialRootPath}
-		layoutRootPath = {$plugin.tx_nwsmunicipalstatutes.view.layoutRootPath}
-	}
+    view {
+        templateRootPath = {$plugin.tx_nwsmunicipalstatutes.view.templateRootPath}
+        partialRootPath = {$plugin.tx_nwsmunicipalstatutes.view.partialRootPath}
+        layoutRootPath = {$plugin.tx_nwsmunicipalstatutes.view.layoutRootPath}
+    }
 
-	persistence {
-		storagePid = {$plugin.tx_nwsmunicipalstatutes.persistence.storagePid}
-	}
+    persistence {
+        storagePid = {$plugin.tx_nwsmunicipalstatutes.persistence.storagePid}
+    }
 
-	features {
-		# uncomment the following line to enable the new Property Mapper.
-		# rewrittenPropertyMapper = 1
-	}
+    features {
+        # uncomment the following line to enable the new Property Mapper.
+        # rewrittenPropertyMapper = 1
+    }
 
-	mvc {
-		# For details, please see https://forge.typo3.org/issues/31322
-		callDefaultActionIfActionCantBeResolved = 1
-	}
+    mvc {
+        # For details, please see https://forge.typo3.org/issues/31322
+        callDefaultActionIfActionCantBeResolved = 1
+    }
 
-	settings {
-		substitutePageTitle = {$plugin.tx_nwsmunicipalstatutes.enables.substitutePageTitle}
-		settingFixedHeader = {$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}
-		showSingleViewPid =
-		showListViewPid =
-		overrideKeysFromTyposcript = search,organizer,place,district,province,classification,category
-		#Search parameters for the teaser
-		#Full Text Search (string)
-		search =
-		#Organizer Search (integer)
-		organizer =
-		#Location Search (kgs = unsigned integer)
-		place =
-		#District Search (kgs = unsigned integer)
-		district =
-		#Province Search (kgs = unsigned integer)
-		province =
-		#Classification Search (integer => 1 to 5) => Multiple entries separated by commas
-		classification =
-		#Categories Search (unsigned integer) => Multiple entries separated by commas
-		category =
-	}
+    settings {
+        substitutePageTitle = {$plugin.tx_nwsmunicipalstatutes.enables.substitutePageTitle}
+        settingFixedHeader = {$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}
+        showSingleViewPid =
+        showListViewPid =
+        overrideKeysFromTyposcript = search,organizer,place,district,province,classification,category
+        #Search parameters for the teaser
+        #Full Text Search (string)
+        search =
+        #Organizer Search (integer)
+        organizer =
+        #Location Search (kgs = unsigned integer)
+        place =
+        #District Search (kgs = unsigned integer)
+        district =
+        #Province Search (kgs = unsigned integer)
+        province =
+        #Classification Search (integer => 1 to 5) => Multiple entries separated by commas
+        classification =
+        #Categories Search (unsigned integer) => Multiple entries separated by commas
+        category =
+    }
 }
 
 # [NWS] override pagetitle if legal norm on this page (determine by GET-parameter)
-
+# Providing the legal norm name for the page title generation
 [globalVar = GP:tx_nwsmunicipalstatutes_pi1|legalnorm >0]
-	lib.nwsMunicipalStatutesPageTitle = COA
-	lib.nwsMunicipalStatutesPageTitle {
-		data >
-		10 = USER
-		10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
-		10.vendorName = Nwsnet
-		10.extensionName = NwsMunicipalStatutes
-		10.pluginName = Pi1
-		10.switchableControllerActions {
-			LocalLaw {
-				1 = showTitle
-			}
-		}
-	}
+    lib.nwsMunicipalStatutesPageTitle = COA
+    lib.nwsMunicipalStatutesPageTitle {
+        data >
+        10 = USER
+        10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        10.vendorName = Nwsnet
+        10.extensionName = NwsMunicipalStatutes
+        10.pluginName = Pi1
+        10.switchableControllerActions {
+            LocalLaw {
+                1 = showTitle
+            }
+        }
+    }
 
-	lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
-	lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
-	page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
+    lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
+    lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
+    page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
+
+    lib.nwsMunicipalStatutesTitle = COA
+    lib.nwsMunicipalStatutesTitle {
+        10 = TEXT
+        10.noTrimWrap = | - ||
+        20 = USER
+        20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        20.vendorName = Nwsnet
+        20.extensionName = NwsMunicipalStatutes
+        20.pluginName = Pi1
+        20.switchableControllerActions {
+            LocalLaw {
+                1 = showTitle
+            }
+        }
+
+        wrap = |
+    }
 [global]
 
-[request.getQueryParams() ['tx_nwsmunicipalstatutes_pi1']['legalnorm'] > 0]
-	lib.nwsMunicipalStatutesPageTitle = COA
-	lib.nwsMunicipalStatutesPageTitle {
-		data >
-		10 = USER
-		10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
-		10.vendorName = Nwsnet
-		10.extensionName = NwsMunicipalStatutes
-		10.pluginName = Pi1
-		10.switchableControllerActions {
-			LocalLaw {
-				1 = showTitle
-			}
-		}
-	}
+[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0]
+    lib.nwsMunicipalStatutesPageTitle = COA
+    lib.nwsMunicipalStatutesPageTitle {
+        data >
+        10 = USER
+        10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        10.vendorName = Nwsnet
+        10.extensionName = NwsMunicipalStatutes
+        10.pluginName = Pi1
+        10.switchableControllerActions {
+            LocalLaw {
+                1 = showTitle
+            }
+        }
+    }
 
-	lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
-	lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
-	page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
-[global]
+    lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
+    lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
+    page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
 
-#Providing the legal norm name for the page title generation
-[globalVar = GP:tx_nwsmunicipalstatutes_pi1|legalnorm >0]
-	lib.nwsMunicipalStatutesTitle = COA
-	lib.nwsMunicipalStatutesTitle {
-		10 = TEXT
-		10.noTrimWrap = | - ||
-		20 = USER
-		20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
-		20.vendorName = Nwsnet
-		20.extensionName = NwsMunicipalStatutes
-		20.pluginName = Pi1
-		20.switchableControllerActions {
-			LocalLaw {
-				1 = showTitle
-			}
-		}
+    lib.nwsMunicipalStatutesTitle = COA
+    lib.nwsMunicipalStatutesTitle {
+        10 = TEXT
+        10.noTrimWrap = | - ||
+        20 = USER
+        20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        20.vendorName = Nwsnet
+        20.extensionName = NwsMunicipalStatutes
+        20.pluginName = Pi1
+        20.switchableControllerActions {
+            LocalLaw {
+                1 = showTitle
+            }
+        }
 
-		wrap = |
-	}
-[global]
-
-[request.getQueryParams() ['tx_nwsmunicipalstatutes_pi1']['legalnorm'] > 0]
-	lib.nwsMunicipalStatutesTitle = COA
-	lib.nwsMunicipalStatutesTitle {
-		10 = TEXT
-		10.noTrimWrap = | - ||
-		20 = USER
-		20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
-		20.vendorName = Nwsnet
-		20.extensionName = NwsMunicipalStatutes
-		20.pluginName = Pi1
-		20.switchableControllerActions {
-			LocalLaw {
-				1 = showTitle
-			}
-		}
-
-		wrap = |
-	}
+        wrap = |
+    }
 [global]
 
 #Turn off redirection for referencing other side trees for services
 [globalVar = GP:tx_nwsmunicipalstatutes_pi1|legalnorm >0] || [globalVar = GP:tx_nwsmunicipalstatutes_pi1|controller = LocalLaw] && [globalVar = GP:tx_nwsmunicipalstatutes_pi1|action = list]
-	config.typolinkEnableLinksAcrossDomains = 0
+    config.typolinkEnableLinksAcrossDomains = 0
 [global]
 
 plugin.tx_nwsmunicipalstatutes._CSS_DEFAULT_STYLE (
@@ -142,28 +137,28 @@ page.includeCSS.tx_nwsmunicipalstatutes = {$plugin.tx_nwsmunicipalstatutes.files
 
 nws_municipalstatutes_pdf = PAGE
 nws_municipalstatutes_pdf {
-	typeNum = 6363
-	includeCSS < page.includeCSS
-	includeCSSLibs < page.includeCSSLibs
-	cssInline < page.cssInline
-	config {
-		xhtml_cleaning = 0
-		additionalHeaders = Content-type:text/html
-	}
+    typeNum = 6363
+    includeCSS < page.includeCSS
+    includeCSSLibs < page.includeCSSLibs
+    cssInline < page.cssInline
+    config {
+        xhtml_cleaning = 0
+        additionalHeaders = Content-type:text/html
+    }
 
-	20 = USER_INT
-	20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
-	20.vendorName = Nwsnet
-	20.extensionName = NwsMunicipalStatutes
-	20.pluginName = Pi1
-	20.switchableControllerActions {
-		LocalLaw {
-			1 = pdf
-		}
-	}
+    20 = USER_INT
+    20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+    20.vendorName = Nwsnet
+    20.extensionName = NwsMunicipalStatutes
+    20.pluginName = Pi1
+    20.switchableControllerActions {
+        LocalLaw {
+            1 = pdf
+        }
+    }
 }
 
 [globalVar = GP:type = 6363]
-	config.debug = 0
-	tt_content.stdWrap >
+    config.debug = 0
+    tt_content.stdWrap >
 [end]
