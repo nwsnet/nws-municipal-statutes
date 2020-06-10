@@ -35,6 +35,12 @@ Load the extension with your Extension Management Module and install it.
 2) Include the static Typo Script as an extension
 3) Create a plugin on any page and choose your desired view. Optionally you can apply further filter settings.
 
+### 3) Setup site configuration for link generation
+Simply add the configuration to the _"config.yaml"_ for TYPO3 9.5
+>      imports:
+>            - resource: 'EXT:nws_municipal_statutes/Configuration/Site/ImportSiteConfiguration.yaml'
+
+
 ## 3. Administration
 
 ### 3.1. Versions and support

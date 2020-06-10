@@ -1,0 +1,48 @@
+routeEnhancers:
+  PageTypeSuffix:
+    type: PageType
+    default: ''
+    map:
+      'locallaw.pdf': 6363
+  NwsMunicipalStatutes:
+      type: Extbase
+      extension: NwsMunicipalStatutes
+      plugin: Pi1
+      routes:
+          - { routePath: '/{localized_legislator}/{legislator}', _controller: 'LocalLaw::list', _arguments: {'legislator_title': 'legislator'} }
+          - { routePath: '/{localized_legalnorm}/{legalnorm}', _controller: 'LocalLaw::show', _arguments: {'legalnorm_title': 'legalnorm'} }
+          - { routePath: '/pdf/{legalnorm}/{context}', _controller: 'LocalLaw::pdf', _arguments: {'legalnorm_title': 'legalnorm', 'context': 'context' } }
+      defaultController: 'LocalLaw::list'
+      defaults:
+        legislator: '0'
+        legalnorm: '0'
+        context: ''
+      aspects:
+          legislator_title:
+              type: NwsLegislatorTitleMapper
+              tableName: 'notable'
+              fieldName: 'nofield'
+              configuration:
+                  prependSlash: false
+                  fallbackCharacter: '-'
+              maxLength: 100
+          localized_legislator:
+              type: LocaleModifier
+              default: 'legislator'
+              localeMap:
+                  - locale: 'de_DE.*'
+                    value: 'gesetzgeber'
+          legalnorm_title:
+              type: NwsLegalNormTitleMapper
+              tableName: 'notable'
+              fieldName: 'nofield'
+              configuration:
+                  prependSlash: false
+                  fallbackCharacter: '-'
+              maxLength: 100
+          localized_legalnorm:
+              type: LocaleModifier
+              default: 'legalnorm'
+              localeMap:
+                  - locale: 'de_DE.*'
+                    value: 'rechtsnorm'
