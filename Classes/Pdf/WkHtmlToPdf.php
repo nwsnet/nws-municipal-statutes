@@ -27,171 +27,170 @@ namespace Nwsnet\NwsMunicipalStatutes\Pdf;
 
 class WkHtmlToPdf
 {
+    /**
+     * @var string
+     */
+    protected $htmlContent;
 
-	/**
-	 * @var string
-	 */
-	protected $htmlContent;
+    /**
+     * Path to wkhtmltopdf binary
+     *
+     * @var string
+     */
+    protected $binPath;
 
-	/**
-	 * Path to wkhtmltopdf binary
-	 *
-	 * @var string
-	 */
-	protected $binPath;
+    /**
+     * @var resource
+     */
+    private $pdfStream;
 
-	/**
-	 * @var resource
-	 */
-	private $pdfStream;
+    /**
+     * @var array
+     */
+    protected $arguments = array(
+        'margin-top' => 25,
+        'margin-left' => 25,
+        'margin-right' => 25,
+        'margin-bottom' => 25,
+        'print-media-type' => ''
+    );
 
-	/**
-	 * @var array
-	 */
-	protected $arguments = array(
-		'margin-top' => 25,
-		'margin-left' => 25,
-		'margin-right' => 25,
-		'margin-bottom' => 25,
-		'print-media-type' => ''
-	);
+    /**
+     * WkHtmlToPdf constructor.
+     * @param $htmlContent
+     * @param null $binPath
+     */
+    public function __construct($htmlContent, $binPath = null)
+    {
+        if ($binPath === null) {
+            $binPath = ExtConf::getWkHtmlToPdfPath();
+        }
+        $this->binPath = $binPath;
+        $this->htmlContent = $htmlContent;
+    }
 
-	/**
-	 * WkHtmlToPdf constructor.
-	 * @param $htmlContent
-	 * @param null $binPath
-	 */
-	public function __construct($htmlContent, $binPath = null)
-	{
-		if ($binPath === null) {
-			$binPath = ExtConf::getWkHtmlToPdfPath();
-		}
-		$this->binPath = $binPath;
-		$this->htmlContent = $htmlContent;
-	}
+    /**
+     * Close temporary stream correctly
+     */
+    public function __destruct()
+    {
+        if (is_resource($this->pdfStream)) {
+            fclose($this->pdfStream);
+        }
+    }
 
-	/**
-	 * Close temporary stream correctly
-	 */
-	public function __destruct()
-	{
-		if (is_resource($this->pdfStream)) {
-			fclose($this->pdfStream);
-		}
-	}
+    /**
+     * @param $argument
+     * @param string $value
+     */
+    public function setArgument($argument, $value = '')
+    {
+        $this->arguments[$argument] = $value;
+    }
 
-	/**
-	 * @param $argument
-	 * @param string $value
-	 */
-	public function setArgument($argument, $value = '')
-	{
-		$this->arguments[$argument] = $value;
-	}
+    /**
+     * @param $argument
+     */
+    public function unsetArgument($argument)
+    {
+        if (isset($this->arguments[$argument])) {
+            unset($this->arguments[$argument]);
+        }
+    }
 
-	/**
-	 * @param $argument
-	 */
-	public function unsetArgument($argument)
-	{
-		if (isset($this->arguments[$argument])) {
-			unset($this->arguments[$argument]);
-		}
-	}
+    /**
+     * @param string $path
+     *
+     * @return bool
+     */
+    public function writeTo($path)
+    {
+        if (null === $this->pdfStream) {
+            $this->pdfStream = $this->createPdfStream();
+        }
 
-	/**
-	 * @param string $path
-	 *
-	 * @return bool
-	 */
-	public function writeTo($path)
-	{
-		if (null === $this->pdfStream) {
-			$this->pdfStream = $this->createPdfStream();
-		}
+        // check if stream creation didn't fail
+        if ($this->pdfStream === false) {
+            return false;
+        }
 
-		// check if stream creation didn't fail
-		if ($this->pdfStream === false) {
-			return false;
-		}
+        $bytesWritten = file_put_contents($path, $this->pdfStream);
+        rewind($this->pdfStream);
 
-		$bytesWritten = file_put_contents($path, $this->pdfStream);
-		rewind($this->pdfStream);
+        return $bytesWritten !== false;
+    }
 
-		return $bytesWritten !== false;
-	}
+    /**
+     * Generate the pdf on the fly from the content and writes a to a temporary stream
+     * Returns either the stream containing the file or false on failure
+     * Make sure to close the stream at the end of the process
+     *
+     * @return resource|bool
+     */
+    private function createPdfStream()
+    {
+        $html = $this->htmlContent;
+        $command = sprintf('%s --quiet %s - -', $this->binPath, $this->getArgString());
 
-	/**
-	 * Generate the pdf on the fly from the content and writes a to a temporary stream
-	 * Returns either the stream containing the file or false on failure
-	 * Make sure to close the stream at the end of the process
-	 *
-	 * @return resource|bool
-	 */
-	private function createPdfStream()
-	{
-		$html = $this->htmlContent;
-		$command = sprintf('%s --quiet %s - -', $this->binPath, $this->getArgString());
+        // will create a stream that will be kept inside memory until it reaches about 1MB
+        $tempStream = fopen('php://temp', 'rw');
 
-		// will create a stream that will be kept inside memory until it reaches about 1MB
-		$tempStream = fopen('php://temp', 'rw');
+        $descriptorspec = array(
+            0 => array('pipe', 'r'),  // STDIN
+            1 => array('pipe', 'w'),  // STDOUT
+            //2 => array('pipe', 'w') // STDERR
+        );
 
-		$descriptorspec = array(
-			0 => array('pipe', 'r'),  // STDIN
-			1 => array('pipe', 'w'),  // STDOUT
-			//2 => array('pipe', 'w') // STDERR
-		);
+        $process = proc_open($command, $descriptorspec, $pipes);
 
-		$process = proc_open($command, $descriptorspec, $pipes);
+        if (is_resource($process)) {
+            list($stdin, $stdout) = $pipes;
 
-		if (is_resource($process)) {
-			list($stdin, $stdout) = $pipes;
+            // write html on the file to htmldoc
+            // fclose() will start the conversion process
+            fwrite($stdin, $html);
+            fclose($stdin);
 
-			// write html on the file to htmldoc
-			// fclose() will start the conversion process
-			fwrite($stdin, $html);
-			fclose($stdin);
+            stream_copy_to_stream($stdout, $tempStream);
 
-			stream_copy_to_stream($stdout, $tempStream);
+            // close the output stream
+            fclose($stdout);
+        } else {
+            fclose($tempStream);
+            return false;
+        }
 
-			// close the output stream
-			fclose($stdout);
-		} else {
-			fclose($tempStream);
-			return false;
-		}
+        $exitCode = proc_close($process);
 
-		$exitCode = proc_close($process);
+        if ($exitCode === 0) {
+            rewind($tempStream);
+            return $tempStream;
+        } else {
+            return false;
+        }
+    }
 
-		if ($exitCode === 0) {
-			rewind($tempStream);
-			return $tempStream;
-		} else {
-			return false;
-		}
-	}
+    /**
+     * @return string
+     */
+    private function getArgString()
+    {
+        $arg = '';
+        foreach ($this->arguments as $argument => $value) {
+            $prefix = strlen($argument) === 1 ? '-' : '--';
 
-	/**
-	 * @return string
-	 */
-	private function getArgString()
-	{
-		$arg = '';
-		foreach ($this->arguments as $argument => $value) {
-			$prefix = strlen($argument) === 1 ? '-' : '--';
+            if (is_string($value) && strlen($value)) {
+                $value = escapeshellarg($value);
+            } elseif (!is_int($value)) {
+                $value = '';
+            }
 
-			if (is_string($value) && strlen($value)) {
-				$value = escapeshellarg($value);
-			} elseif (!is_int($value)) {
-				$value = '';
-			}
+            if ($arg) {
+                $arg .= ' ';
+            }
 
-			if ($arg) {
-				$arg .= ' ';
-			}
-
-			$arg .= sprintf('%s%s %s', $prefix, $argument, $value);
-		}
-		return $arg;
-	}
+            $arg .= sprintf('%s%s %s', $prefix, $argument, $value);
+        }
+        return $arg;
+    }
 }

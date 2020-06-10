@@ -34,42 +34,41 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
  */
 class LegalNorm extends RestClient
 {
+    const URI_GET_FIND = '/legalNorm/find';
+    const URI_GET_FIND_BY_ID = '/legalNorm/{id}';
 
-	const URI_GET_FIND = '/legalNorm/find';
-	const URI_GET_FIND_BY_ID = '/legalNorm/{id}';
+    /**
+     * LegalNorm constructor.
+     *
+     * @param array $config
+     */
+    public function __construct($config = array())
+    {
+        parent::setConfiguration($config);
+    }
 
-	/**
-	 * LegalNorm constructor.
-	 *
-	 * @param array $config
-	 */
-	public function __construct($config = array())
-	{
-		parent::setConfiguration($config);
-	}
+    /**
+     * Use this function to find rules.
+     *
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function find($filter = array())
+    {
+        return $this->getData(self::URI_GET_FIND, $filter);
+    }
 
-	/**
-	 * Use this function to find rules.
-	 *
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function find($filter = array())
-	{
-		return $this->getData(self::URI_GET_FIND, $filter);
-	}
-
-	/**
-	 * Determines a rule based on the id
-	 *
-	 * @param integer $id
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findById($id, $filter = array())
-	{
-		return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
-	}
+    /**
+     * Determines a rule based on the id
+     *
+     * @param integer $id
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findById($id, $filter = array())
+    {
+        return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
+    }
 }

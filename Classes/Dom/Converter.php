@@ -26,6 +26,8 @@ namespace Nwsnet\NwsMunicipalStatutes\Dom;
 
 use SimpleHtmlDom\simple_html_dom_node;
 
+use function SimpleHtmlDom\str_get_html;
+
 /**
  * Converter for delivering content items by SimpleHtmlDom
  *
@@ -35,144 +37,142 @@ use SimpleHtmlDom\simple_html_dom_node;
  */
 class Converter
 {
-	/**
-	 * Parses a html content and returns a formatted content item as an array
-	 *
-	 * @param $html
-	 * @return array $ccontent
-	 */
-	public function getContentArray($html)
-	{
-		$content = array();
-		$dom = \SimpleHtmlDom\str_get_html($html);
-		// Get navigation elements
-		foreach ($dom->find('nav a') as $element) {
-			$section = str_replace('#', '', $element->href);
-			$name = $element->plaintext;
-			$content['nav'][] = array('name' => $name, 'section' => $section);
-		}
-		// Get content elements
-		foreach ($dom->find('section[class]') as $elements) {
-			$header = $this->findFirstChildNode('header', $elements);
-			$section = $this->findFirstChildNode('section', $elements);
-			if (!empty($header)) {
-				$data['section'] = $this->getChildNodesData('a', array(
-					'getAttribute' => 'href',
-					'remove' => '#'
-				),
-					$header);
-				$data['headline'] = $this->getChildNodesData('a', array(
-					'plaintext' => 'href'
-				),
-					$header);
-				$header = $data;
-			}
-			if (!empty($section)) {
-				$section = $this->setTag('h2', 'h4', $section);
-			}
-			$content['elements'][] = array('header' => $header, 'content' => $section->innertext);
+    /**
+     * Parses a html content and returns a formatted content item as an array
+     *
+     * @param $html
+     * @return array $ccontent
+     */
+    public function getContentArray($html)
+    {
+        $content = array();
+        $dom = str_get_html($html);
+        // Get navigation elements
+        foreach ($dom->find('nav a') as $element) {
+            $section = str_replace('#', '', $element->href);
+            $name = $element->plaintext;
+            $content['nav'][] = array('name' => $name, 'section' => $section);
+        }
+        // Get content elements
+        foreach ($dom->find('section[class]') as $elements) {
+            $header = $this->findFirstChildNode('header', $elements);
+            $section = $this->findFirstChildNode('section', $elements);
+            if (!empty($header)) {
+                $data['section'] = $this->getChildNodesData('a', array(
+                    'getAttribute' => 'href',
+                    'remove' => '#'
+                ),
+                    $header);
+                $data['headline'] = $this->getChildNodesData('a', array(
+                    'plaintext' => 'href'
+                ),
+                    $header);
+                $header = $data;
+            }
+            if (!empty($section)) {
+                $section = $this->setTag('h2', 'h4', $section);
+            }
+            $content['elements'][] = array('header' => $header, 'content' => $section->innertext);
+        }
 
-		}
+        return $content;
+    }
 
-		return $content;
-	}
+    /**
+     * Change the tag elment of all nodes
+     *
+     * @param string $tag
+     * @param string $tagReplace
+     * @param simple_html_dom_node $node
+     * @return simple_html_dom_node
+     */
+    protected function setTag($tag, $tagReplace, simple_html_dom_node $node)
+    {
+        /**
+         * @var string $key
+         * @var simple_html_dom_node $e
+         */
+        foreach ($node->children as $key => $e) {
+            if ($e->tag == $tag) {
+                $e->tag = $tagReplace;
+                if ($e->hasChildNodes()) {
+                    $node->children[$key] = $this->setTag($tag, $tagReplace, $e);
+                }
+            } else {
+                if ($e->hasChildNodes()) {
+                    $node->children[$key] = $this->setTag($tag, $tagReplace, $e);
+                }
+            }
+        }
+        return $node;
+    }
 
-	/**
-	 * Change the tag elment of all nodes
-	 *
-	 * @param string $tag
-	 * @param string $tagReplace
-	 * @param \SimpleHtmlDom\simple_html_dom_node $node
-	 * @return \SimpleHtmlDom\simple_html_dom_node
-	 */
-	protected function setTag($tag, $tagReplace, simple_html_dom_node $node)
-	{
-		/**
-		 * @var string $key
-		 * @var \SimpleHtmlDom\simple_html_dom_node $e
-		 */
-		foreach ($node->children as $key => $e) {
-			if ($e->tag == $tag) {
-				$e->tag = $tagReplace;
-				if ($e->hasChildNodes()) {
-					$node->children[$key] = $this->setTag($tag, $tagReplace, $e);
-				}
-			} else {
-				if ($e->hasChildNodes()) {
-					$node->children[$key] = $this->setTag($tag, $tagReplace, $e);
-				}
-			}
-		}
-		return $node;
-	}
+    /**
+     * Finds the first node of the dom element
+     *
+     * @param string $tag
+     * @param simple_html_dom_node $node
+     * @return bool|simple_html_dom_node
+     */
+    protected function findFirstChildNode($tag, simple_html_dom_node $node)
+    {
+        $child = false;
+        /**
+         * @var string $key
+         * @var simple_html_dom_node $e
+         */
+        foreach ($node->children as $key => $e) {
+            if ($e->tag == $tag) {
+                return $e;
+            } else {
+                if ($e->hasChildNodes()) {
+                    $this->findFirstChildNode($tag, $e);
+                }
+            }
+        }
+        return $child;
+    }
 
-	/**
-	 * Finds the first node of the dom element
-	 *
-	 * @param string $tag
-	 * @param \SimpleHtmlDom\simple_html_dom_node $node
-	 * @return bool|\SimpleHtmlDom\simple_html_dom_node
-	 */
-	protected function findFirstChildNode($tag, simple_html_dom_node $node)
-	{
-		$child = false;
-		/**
-		 * @var string $key
-		 * @var \SimpleHtmlDom\simple_html_dom_node $e
-		 */
-		foreach ($node->children as $key => $e) {
-			if ($e->tag == $tag) {
-				return $e;
-			} else {
-				if ($e->hasChildNodes()) {
-					$this->findFirstChildNode($tag, $e);
-				}
-			}
-		}
-		return $child;
-	}
-
-	/**
-	 * Gets attributes and manipulates the content
-	 *
-	 * @param string $tag to the searching tag
-	 * @param array $filter filter for fetching attributes and possible conversions
-	 * Example: array(
-	 *        'getAttribute' => 'href',
-	 *        'remove' => '#'
-	 * )
-	 * @param \SimpleHtmlDom\simple_html_dom_node $node
-	 * @return bool|mixed|string
-	 */
-	protected function getChildNodesData($tag, array $filter, simple_html_dom_node $node)
-	{
-		$data = '';
-		/**
-		 * @var string $key
-		 * @var \SimpleHtmlDom\simple_html_dom_node $e
-		 */
-		foreach ($node->children as $key => $e) {
-			if ($e->tag == $tag) {
-				foreach ($filter as $typ => $value) {
-					switch ($typ) {
-						case 'getAttribute':
-							$data = $e->getAttribute($value);
-							break;
-						case 'remove':
-							$data = str_replace($value, '', $data);
-							break;
-						case 'plaintext':
-							$data = $e->plaintext;
-					}
-				}
-				return $data;
-			} else {
-				if ($e->hasChildNodes()) {
-					$data = $this->getChildNodesData($tag, $filter, $e);
-				}
-			}
-		}
-		return $data;
-
-	}
+    /**
+     * Gets attributes and manipulates the content
+     *
+     * @param string $tag to the searching tag
+     * @param array $filter filter for fetching attributes and possible conversions
+     * Example: array(
+     *        'getAttribute' => 'href',
+     *        'remove' => '#'
+     * )
+     * @param simple_html_dom_node $node
+     * @return bool|mixed|string
+     */
+    protected function getChildNodesData($tag, array $filter, simple_html_dom_node $node)
+    {
+        $data = '';
+        /**
+         * @var string $key
+         * @var simple_html_dom_node $e
+         */
+        foreach ($node->children as $key => $e) {
+            if ($e->tag == $tag) {
+                foreach ($filter as $typ => $value) {
+                    switch ($typ) {
+                        case 'getAttribute':
+                            $data = $e->getAttribute($value);
+                            break;
+                        case 'remove':
+                            $data = str_replace($value, '', $data);
+                            break;
+                        case 'plaintext':
+                            $data = $e->plaintext;
+                    }
+                }
+                return $data;
+            } else {
+                if ($e->hasChildNodes()) {
+                    $data = $this->getChildNodesData($tag, $filter, $e);
+                }
+            }
+        }
+        return $data;
+    }
 }

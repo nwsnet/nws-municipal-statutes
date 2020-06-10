@@ -25,6 +25,10 @@ namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
 use TYPO3\CMS\Core\Routing\Aspect\PersistedMappableAspectInterface;
 use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
+use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
 
 /**
  * Title of the legislator for the link to the list view
@@ -33,70 +37,79 @@ use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
  * @subpackage nws_municipal_statutes
  *
  */
-class NwsLegislatorTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface, StaticMappableAspectInterface
+class NwsLegislatorTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface,
+                                                                      StaticMappableAspectInterface
 {
-	/**
-	 * Get the title and generate the link name
-	 *
-	 * @param string $value
-	 * @return string|null
-	 */
-	public function generate(string $value): ?string
-	{
-		$legislator = (int)$value;
+    /**
+     * Get the title and generate the link name
+     *
+     * @param string $value
+     * @return string|null
+     * @throws InfiniteLoopException
+     * @throws InvalidActionNameException
+     * @throws InvalidControllerNameException
+     * @throws InvalidExtensionNameException
+     */
+    public function generate(string $value): ?string
+    {
+        $legislator = (int)$value;
 
-		$cacheKey = 'nws-legislator-slug-' . $legislator;
-		if ($this->cache->has($cacheKey)) {
-			return (string)$this->cache->get($cacheKey);
-		}
+        $cacheKey = 'nws-legislator-slug-' . $legislator;
+        if ($this->cache->has($cacheKey)) {
+            return (string)$this->cache->get($cacheKey);
+        }
 
-		$arguments = array(
-			'controller' => 'LocalLaw',
-			'action' => 'showTitleLegislator',
-			'legislator' => $legislator
-		);
-		$title = $this->getTitle($arguments);
-		if ($title === null) {
-			return (int)$legislator;
-		}
+        $arguments = array(
+            'controller' => 'LocalLaw',
+            'action' => 'showTitleLegislator',
+            'legislator' => $legislator
+        );
+        $title = $this->getTitle($arguments);
+        if ($title === null) {
+            return (int)$legislator;
+        }
 
-		$slug = $this->slugHelper->sanitize($title);
-		$slug = mb_substr($slug, 0, $this->maxLength) . '-' . $legislator;
-		$slug = $this->slugHelper->sanitize($slug);
-		$this->cache->set($cacheKey, $slug, array('callLocalLawTitleApi'), self::SLUG_CACHE_LIFETIME);
-		return $slug;
-	}
+        $slug = $this->slugHelper->sanitize($title);
+        $slug = mb_substr($slug, 0, $this->maxLength) . '-' . $legislator;
+        $slug = $this->slugHelper->sanitize($slug);
+        $this->cache->set($cacheKey, $slug, array('callLocalLawTitleApi'), self::SLUG_CACHE_LIFETIME);
+        return $slug;
+    }
 
-	/**
-	 * Determines the ID and checks if the legislator still exists
-	 *
-	 * @param string $value
-	 * @return string|null
-	 */
-	public function resolve(string $value): ?string
-	{
-		$match = [];
-		if (!preg_match('/^([\p{L}0-9\/-]+-)?(\d+)$/', $value, $match)) {
-			return null;
-		}
-		$legislator = (int)$match[2];
-		$cacheKey = 'nws-legislator-slug-' . $legislator;
-		if ($this->cache->has($cacheKey)) {
-			return (int)$legislator;
-		}
+    /**
+     * Determines the ID and checks if the legislator still exists
+     *
+     * @param string $value
+     * @return string|null
+     * @throws InfiniteLoopException
+     * @throws InvalidActionNameException
+     * @throws InvalidControllerNameException
+     * @throws InvalidExtensionNameException
+     */
+    public function resolve(string $value): ?string
+    {
+        $match = [];
+        if (!preg_match('/^([\p{L}0-9\/-]+-)?(\d+)$/', $value, $match)) {
+            return null;
+        }
+        $legislator = (int)$match[2];
+        $cacheKey = 'nws-legislator-slug-' . $legislator;
+        if ($this->cache->has($cacheKey)) {
+            return (int)$legislator;
+        }
 
-		// Test if the id actually exists.
-		// Should be done to properly display 404 pages, and to avoid cache flooding.
-		$arguments = array(
-			'controller' => 'LocalLaw',
-			'action' => 'showTitleLegislator',
-			'legislator' => $legislator
-		);
-		$title = $this->getTitle($arguments);
-		if ($title === null) {
-			return null; // -> 404
-		}
+        // Test if the id actually exists.
+        // Should be done to properly display 404 pages, and to avoid cache flooding.
+        $arguments = array(
+            'controller' => 'LocalLaw',
+            'action' => 'showTitleLegislator',
+            'legislator' => $legislator
+        );
+        $title = $this->getTitle($arguments);
+        if ($title === null) {
+            return null; // -> 404
+        }
 
-		return $legislator;
-	}
+        return $legislator;
+    }
 }

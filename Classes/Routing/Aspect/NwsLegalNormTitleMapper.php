@@ -25,6 +25,10 @@ namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
 use TYPO3\CMS\Core\Routing\Aspect\PersistedMappableAspectInterface;
 use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
+use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
 
 /**
  * Title of the legal norm for the link to the single view
@@ -33,70 +37,79 @@ use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
  * @subpackage nws_municipal_statutes
  *
  */
-class NwsLegalNormTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface, StaticMappableAspectInterface
+class NwsLegalNormTitleMapper extends AbstractTitleMapper implements PersistedMappableAspectInterface,
+                                                                     StaticMappableAspectInterface
 {
-	/**
-	 * Get the title and generate the link name
-	 *
-	 * @param string $value
-	 * @return string|null
-	 */
-	public function generate(string $value): ?string
-	{
-		$legalnorm = (int)$value;
+    /**
+     * Get the title and generate the link name
+     *
+     * @param string $value
+     * @return string|null
+     * @throws InfiniteLoopException
+     * @throws InvalidActionNameException
+     * @throws InvalidControllerNameException
+     * @throws InvalidExtensionNameException
+     */
+    public function generate(string $value): ?string
+    {
+        $legalnorm = (int)$value;
 
-		$cacheKey = 'nws-legalnorm-slug-' . $legalnorm;
-		if ($this->cache->has($cacheKey)) {
-			return (string)$this->cache->get($cacheKey);
-		}
+        $cacheKey = 'nws-legalnorm-slug-' . $legalnorm;
+        if ($this->cache->has($cacheKey)) {
+            return (string)$this->cache->get($cacheKey);
+        }
 
-		$arguments = array(
-			'controller' => 'LocalLaw',
-			'action' => 'showTitle',
-			'legalnorm' => $legalnorm
-		);
-		$title = $this->getTitle($arguments);
-		if ($title === null) {
-			return (int)$legalnorm;
-		}
+        $arguments = array(
+            'controller' => 'LocalLaw',
+            'action' => 'showTitle',
+            'legalnorm' => $legalnorm
+        );
+        $title = $this->getTitle($arguments);
+        if ($title === null) {
+            return (int)$legalnorm;
+        }
 
-		$slug = $this->slugHelper->sanitize($title);
-		$slug = mb_substr($slug, 0, $this->maxLength) . '-' . $legalnorm;
-		$slug = $this->slugHelper->sanitize($slug);
-		$this->cache->set($cacheKey, $slug, array('callLocalLawTitleApi'), self::SLUG_CACHE_LIFETIME);
-		return $slug;
-	}
+        $slug = $this->slugHelper->sanitize($title);
+        $slug = mb_substr($slug, 0, $this->maxLength) . '-' . $legalnorm;
+        $slug = $this->slugHelper->sanitize($slug);
+        $this->cache->set($cacheKey, $slug, array('callLocalLawTitleApi'), self::SLUG_CACHE_LIFETIME);
+        return $slug;
+    }
 
-	/**
-	 * Determines the ID and checks if the legal norm still exists
-	 *
-	 * @param string $value
-	 * @return string|null
-	 */
-	public function resolve(string $value): ?string
-	{
-		$match = [];
-		if (!preg_match('/^([\p{L}0-9\/-]+-)?(\d+)$/', $value, $match)) {
-			return null;
-		}
-		$legalnorm = (int)$match[2];
-		$cacheKey = 'nws-legalnorm-slug-' . $legalnorm;
-		if ($this->cache->has($cacheKey)) {
-			return (int)$legalnorm;
-		}
+    /**
+     * Determines the ID and checks if the legal norm still exists
+     *
+     * @param string $value
+     * @return string|null
+     * @throws InfiniteLoopException
+     * @throws InvalidActionNameException
+     * @throws InvalidControllerNameException
+     * @throws InvalidExtensionNameException
+     */
+    public function resolve(string $value): ?string
+    {
+        $match = [];
+        if (!preg_match('/^([\p{L}0-9\/-]+-)?(\d+)$/', $value, $match)) {
+            return null;
+        }
+        $legalnorm = (int)$match[2];
+        $cacheKey = 'nws-legalnorm-slug-' . $legalnorm;
+        if ($this->cache->has($cacheKey)) {
+            return (int)$legalnorm;
+        }
 
-		// Test if the id actually exists.
-		// Should be done to properly display 404 pages, and to avoid cache flooding.
-		$arguments = array(
-			'controller' => 'LocalLaw',
-			'action' => 'showTitle',
-			'legalnorm' => $legalnorm
-		);
-		$title = $this->getTitle($arguments);
-		if ($title === null) {
-			return null; // -> 404
-		}
+        // Test if the id actually exists.
+        // Should be done to properly display 404 pages, and to avoid cache flooding.
+        $arguments = array(
+            'controller' => 'LocalLaw',
+            'action' => 'showTitle',
+            'legalnorm' => $legalnorm
+        );
+        $title = $this->getTitle($arguments);
+        if ($title === null) {
+            return null; // -> 404
+        }
 
-		return $legalnorm;
-	}
+        return $legalnorm;
+    }
 }

@@ -25,6 +25,7 @@
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
+use stdClass;
 
 /**
  * ItemsProcFunc Controller for reading and providing alternative selection fields for the media elemete (Flexform)
@@ -35,94 +36,94 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
  */
 class ItemsProcFuncController extends AbstractController
 {
-	/**
-	 * localLawApiCall get data
-	 *
-	 * @var \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw
-	 */
-	protected $apiLocalLaw;
+    /**
+     * localLawApiCall get data
+     *
+     * @var LocalLaw
+     */
+    protected $apiLocalLaw;
 
-	/**
-	 * @param \Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw $apiLocalLaw
-	 */
-	public function injectApiLocalLaw(LocalLaw $apiLocalLaw)
-	{
-		$this->apiLocalLaw = $apiLocalLaw;
-	}
+    /**
+     * @param LocalLaw $apiLocalLaw
+     */
+    public function injectApiLocalLaw(LocalLaw $apiLocalLaw)
+    {
+        $this->apiLocalLaw = $apiLocalLaw;
+    }
 
-	/**
-	 * deactivates flashmessages -> they are being generated for validation errrors for example
-	 *
-	 * @see ActionController::getErrorFlashMessage()
-	 */
-	protected function getErrorFlashMessage()
-	{
-		return false;
-	}
+    /**
+     * deactivates flashmessages -> they are being generated for validation errrors for example
+     *
+     * @see ActionController::getErrorFlashMessage()
+     */
+    protected function getErrorFlashMessage()
+    {
+        return false;
+    }
 
-	/**
-	 * Read the legislators and put them to the selection
-	 *
-	 * @return string
-	 */
-	public function showLegislatorAction()
-	{
-		$filter = array(
-			'sortAttribute' => array('name')
-		);
-		if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
-			$error = $this->apiLocalLaw->legislator()->getExceptionError();
-			$exception = new \stdClass;
-			$exception->legislator[0]['name'] = $error['message'];
-			$exception->legislator[0]['id'] = 0;
-			return $this->apiLocalLaw->jsonEncode($exception);
-		}
-		$items = array();
-		$legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
-		if ($legislator['count'] > 0) {
-			foreach ($legislator['results'] as $item) {
-				$items['legislator'][] = array(
-					'id' => $item['object']['id'],
-					'name' => $item['object']['name']
-				);
-			}
-		}
-		return $this->apiLocalLaw->jsonEncode($items);
-	}
+    /**
+     * Read the legislators and put them to the selection
+     *
+     * @return string
+     */
+    public function showLegislatorAction()
+    {
+        $filter = array(
+            'sortAttribute' => array('name')
+        );
+        if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
+            $error = $this->apiLocalLaw->legislator()->getExceptionError();
+            $exception = new stdClass;
+            $exception->legislator[0]['name'] = $error['message'];
+            $exception->legislator[0]['id'] = 0;
+            return $this->apiLocalLaw->jsonEncode($exception);
+        }
+        $items = array();
+        $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
+        if ($legislator['count'] > 0) {
+            foreach ($legislator['results'] as $item) {
+                $items['legislator'][] = array(
+                    'id' => $item['object']['id'],
+                    'name' => $item['object']['name']
+                );
+            }
+        }
+        return $this->apiLocalLaw->jsonEncode($items);
+    }
 
-	/**
-	 * Reads the structure of a legislator and adds it to the selection
-	 *
-	 * @return string
-	 */
-	public function showStructureAction()
-	{
-		$filter = array(
-			'legislatorId' => $this->settings['legislatorId'],
-			'sortAttribute' => array(
-				'name'
-			)
-		);
+    /**
+     * Reads the structure of a legislator and adds it to the selection
+     *
+     * @return string
+     */
+    public function showStructureAction()
+    {
+        $filter = array(
+            'legislatorId' => $this->settings['legislatorId'],
+            'sortAttribute' => array(
+                'name'
+            )
+        );
 
-		if ($this->apiLocalLaw->structure()->find($filter)->hasExceptionError()) {
-			$error = $this->apiLocalLaw->structure()->getExceptionError();
-			$exception = new \stdClass;
-			$exception->structure[0]['name'] = $error['message'];
-			$exception->structure[0]['id'] = 0;
-			return $this->apiLocalLaw->jsonEncode($exception);
-		}
-		$items = array();
-		$structure = $this->apiLocalLaw->structure()->getJsonDecode();
-		if ($structure['count'] > 0) {
-			foreach ($structure['results'] as $value) {
-				foreach ($value['object']['structure']['subStructurNodes'] as $item) {
-					$items['structure'][] = array(
-						'id' => $item['id'],
-						'name' => $item['structureText']
-					);
-				}
-			}
-		}
-		return $this->apiLocalLaw->jsonEncode($items);
-	}
+        if ($this->apiLocalLaw->structure()->find($filter)->hasExceptionError()) {
+            $error = $this->apiLocalLaw->structure()->getExceptionError();
+            $exception = new stdClass;
+            $exception->structure[0]['name'] = $error['message'];
+            $exception->structure[0]['id'] = 0;
+            return $this->apiLocalLaw->jsonEncode($exception);
+        }
+        $items = array();
+        $structure = $this->apiLocalLaw->structure()->getJsonDecode();
+        if ($structure['count'] > 0) {
+            foreach ($structure['results'] as $value) {
+                foreach ($value['object']['structure']['subStructurNodes'] as $item) {
+                    $items['structure'][] = array(
+                        'id' => $item['id'],
+                        'name' => $item['structureText']
+                    );
+                }
+            }
+        }
+        return $this->apiLocalLaw->jsonEncode($items);
+    }
 }

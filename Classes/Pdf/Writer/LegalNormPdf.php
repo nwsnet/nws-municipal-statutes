@@ -24,6 +24,7 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Pdf\Writer;
 
+use Nwsnet\NwsMunicipalStatutes\Pdf\WkHtmlToPdf;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 
 /**
@@ -36,44 +37,42 @@ use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
  */
 class LegalNormPdf
 {
+    /**
+     * @var ObjectManagerInterface
+     */
+    private $objectManager;
 
-	/**
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
-	 */
-	private $objectManager;
+    /**
+     * LegalNormPdf constructor.
+     * @param ObjectManagerInterface $objectManager
+     */
+    public function __construct(ObjectManagerInterface $objectManager)
+    {
+        $this->objectManager = $objectManager;
+    }
 
+    /**
+     * Creates the PDF document from the HTML content and saves it in the specified path
+     *
+     * @param $path
+     * @param $html
+     *
+     * @return bool
+     */
+    public function writeTo($path, $html)
+    {
+        /** @var WkHtmlToPdf $pdf */
+        $pdf = $this->objectManager->get('Nwsnet\\NwsMunicipalStatutes\\Pdf\\WkHtmlToPdf', $html);
+        $pdf->setArgument('footer-right', 'Seite [page] von [topage]');
+        $pdf->setArgument('footer-spacing', 5);
+        $pdf->setArgument('enable-internal-links', '');
+        $pdf->setArgument('disable-external-links', '');
 
-	/**
-	 * LegalNormPdf constructor.
-	 * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
-	 */
-	public function __construct(ObjectManagerInterface $objectManager)
-	{
-		$this->objectManager = $objectManager;
-	}
+        $success = $pdf->writeTo($path);
 
-	/**
-	 * Creates the PDF document from the HTML content and saves it in the specified path
-	 *
-	 * @param $path
-	 * @param $html
-	 *
-	 * @return bool
-	 */
-	public function writeTo($path, $html)
-	{
-		/** @var \Nwsnet\NwsMunicipalStatutes\Pdf\WkHtmlToPdf $pdf */
-		$pdf = $this->objectManager->get('Nwsnet\\NwsMunicipalStatutes\\Pdf\\WkHtmlToPdf', $html);
-		$pdf->setArgument('footer-right', 'Seite [page] von [topage]');
-		$pdf->setArgument('footer-spacing', 5);
-		$pdf->setArgument('enable-internal-links', '');
-		$pdf->setArgument('disable-external-links', '');
+        // force garbage collection
+        unset($pdf);
 
-		$success = $pdf->writeTo($path);
-
-		// force garbage collection
-		unset($pdf);
-
-		return $success;
-	}
+        return $success;
+    }
 }

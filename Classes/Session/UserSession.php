@@ -34,96 +34,96 @@ use TYPO3\CMS\Core\SingletonInterface;
  */
 class UserSession implements SingletonInterface
 {
-	/**
-	 * sessionStorage
-	 *
-	 * @var SessionStorage
-	 */
-	private $sessionStorage;
+    /**
+     * sessionStorage
+     *
+     * @var SessionStorage
+     */
+    private $sessionStorage;
 
-	/**
-	 * construct for the storage of user data
-	 *
-	 * @param SessionStorage $sessionStorage
-	 *
-	 */
-	public function __construct(SessionStorage $sessionStorage)
-	{
-		$this->sessionStorage = $sessionStorage;
-	}
+    /**
+     * construct for the storage of user data
+     *
+     * @param SessionStorage $sessionStorage
+     *
+     */
+    public function __construct(SessionStorage $sessionStorage)
+    {
+        $this->sessionStorage = $sessionStorage;
+    }
 
-	/**
-	 * Returns the object stored in the session of the user with the choice of search criteria
-	 *
-	 * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
-	 */
-	public function getSearch()
-	{
-		if ($this->sessionStorage->has('search')) {
-			return $this->sessionStorage->getObject('search');
-		} else {
-			return null;
-		}
-	}
+    /**
+     * Returns the object stored in the session of the user with the choice of search criteria
+     *
+     * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
+     */
+    public function getSearch()
+    {
+        if ($this->sessionStorage->has('search')) {
+            return $this->sessionStorage->getObject('search');
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * Saves the object in the session of the user with the choice of search criteria
-	 *
-	 * @param object $value search selection
-	 *
-	 * @return void
-	 */
-	public function saveSearch(array $value)
-	{
-		$this->sessionStorage->storeObject($value, 'search');
-	}
+    /**
+     * Saves the object in the session of the user with the choice of search criteria
+     *
+     * @param array|object $value search selection
+     *
+     * @return void
+     */
+    public function saveSearch(array $value)
+    {
+        $this->sessionStorage->storeObject($value, 'search');
+    }
 
-	/**
-	 * Deletes the object in the session of the user with the choice of search criteria
-	 *
-	 * @return void
-	 */
-	public function cleanSearch()
-	{
-		if ($this->sessionStorage->has('search')) {
-			$this->sessionStorage->clean('search');
-		}
-	}
+    /**
+     * Deletes the object in the session of the user with the choice of search criteria
+     *
+     * @return void
+     */
+    public function cleanSearch()
+    {
+        if ($this->sessionStorage->has('search')) {
+            $this->sessionStorage->clean('search');
+        }
+    }
 
-	/**
-	 * Returns the object stored in the session of the user of which page you came to the current page
-	 *
-	 * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
-	 */
-	public function getReferrer()
-	{
-		if ($this->sessionStorage->has('referrer')) {
-			return $this->sessionStorage->getObject('referrer');
-		}
-		return null;
-	}
+    /**
+     * Returns the object stored in the session of the user of which page you came to the current page
+     *
+     * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
+     */
+    public function getReferrer()
+    {
+        if ($this->sessionStorage->has('referrer')) {
+            return $this->sessionStorage->getObject('referrer');
+        }
+        return null;
+    }
 
-	/**
-	 * Saves the object in the session of the user of which page you came to the current page
-	 *
-	 * @param object $value data pages
-	 *
-	 * @return void
-	 */
-	public function saveReferrer(array $value)
-	{
-		$this->sessionStorage->storeObject($value, 'referrer');
-	}
+    /**
+     * Saves the object in the session of the user of which page you came to the current page
+     *
+     * @param array|object $value data pages
+     *
+     * @return void
+     */
+    public function saveReferrer(array $value)
+    {
+        $this->sessionStorage->storeObject($value, 'referrer');
+    }
 
-	/**
-	 * Deletes the object in the session of the user of which page you came to the current page
-	 *
-	 * @return void
-	 */
-	public function cleanReferrer()
-	{
-		if ($this->sessionStorage->has('referrer')) {
-			$this->sessionStorage->clean('referrer');
-		}
-	}
+    /**
+     * Deletes the object in the session of the user of which page you came to the current page
+     *
+     * @return void
+     */
+    public function cleanReferrer()
+    {
+        if ($this->sessionStorage->has('referrer')) {
+            $this->sessionStorage->clean('referrer');
+        }
+    }
 }

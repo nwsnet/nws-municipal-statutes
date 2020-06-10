@@ -24,6 +24,8 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw;
 
+use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 
@@ -35,149 +37,147 @@ use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
  */
 class AbstractLocalLaw
 {
-	/**
-	 * $_EXTKEY
-	 *
-	 * @var string
-	 */
-	protected $extKey = 'nws_municipal_statutes';
+    /**
+     * $_EXTKEY
+     *
+     * @var string
+     */
+    protected $extKey = 'nws_municipal_statutes';
 
-	/**
-	 * ConfigurationManagerInterface
-	 *
-	 * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
-	 */
-	protected $configurationManager;
+    /**
+     * ConfigurationManagerInterface
+     *
+     * @var ConfigurationManagerInterface
+     */
+    protected $configurationManager;
 
-	/**
-	 * Typoscript Settings
-	 *
-	 * @var array
-	 */
-	protected $settings;
+    /**
+     * Typoscript Settings
+     *
+     * @var array
+     */
+    protected $settings;
 
-	/**
-	 * Ext Template Settings
-	 *
-	 * @var array
-	 */
-	protected $extConf;
+    /**
+     * Ext Template Settings
+     *
+     * @var array
+     */
+    protected $extConf;
 
-	/**
-	 * Individual configuration for the FullRest Api calls
-	 *
-	 * @var array $config
-	 */
-	protected $config;
+    /**
+     * Individual configuration for the FullRest Api calls
+     *
+     * @var array $config
+     */
+    protected $config;
 
-	/**
-	 * cacheUtility
-	 *
-	 * @var \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend
-	 */
-	protected $cacheInstance;
+    /**
+     * cacheUtility
+     *
+     * @var VariableFrontend
+     */
+    protected $cacheInstance;
 
-	/**
-	 * Injects the Configuration Manager and is initializing the framework settings
-	 *
-	 * @param \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface An instance of the Configuration Manager
-	 *
-	 * @return void
-	 */
-	public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
-	{
-		$this->configurationManager = $configurationManager;
-		$config = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-		if (isset($config['settings'])) {
-			$this->settings = $config['settings'];
-		} else {
-			$this->settings = $this->configurationManager->getConfiguration(
-				ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
-				GeneralUtility::underscoredToUpperCamelCase($this->extKey),
-				'Pi1'
-			);
-		}
+    /**
+     * Injects the Configuration Manager and is initializing the framework settings
+     *
+     * @param ConfigurationManagerInterface $configurationManager
+     * @return void
+     */
+    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    {
+        $this->configurationManager = $configurationManager;
+        $config = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
+        if (isset($config['settings'])) {
+            $this->settings = $config['settings'];
+        } else {
+            $this->settings = $this->configurationManager->getConfiguration(
+                ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
+                GeneralUtility::underscoredToUpperCamelCase($this->extKey),
+                'Pi1'
+            );
+        }
 
-		$this->loadExtConf();
-		// Set Api Url
-		if (isset($this->extConf['localLawApiUrl'])) {
-			$this->config['http'] = $this->checkApiUrl($this->extConf['localLawApiUrl']);
-		}
-		// Set Api Key
-		if (isset($this->settings['apiKey']) && !empty($this->settings['apiKey'])) {
-			$this->config['apiKey'] = $this->settings['apiKey'];
-		} elseif (isset($this->extConf['apiKey'])) {
-			$this->config['apiKey'] = $this->extConf['apiKey'];
-		}
-		$this->initializeCache();
-	}
+        $this->loadExtConf();
+        // Set Api Url
+        if (isset($this->extConf['localLawApiUrl'])) {
+            $this->config['http'] = $this->checkApiUrl($this->extConf['localLawApiUrl']);
+        }
+        // Set Api Key
+        if (isset($this->settings['apiKey']) && !empty($this->settings['apiKey'])) {
+            $this->config['apiKey'] = $this->settings['apiKey'];
+        } elseif (isset($this->extConf['apiKey'])) {
+            $this->config['apiKey'] = $this->extConf['apiKey'];
+        }
+        $this->initializeCache();
+    }
 
-	/**
-	 * Initialization of the cache framework
-	 *
-	 * @see \TYPO3\CMS\Core\Cache\CacheManager
-	 */
-	protected function initializeCache()
-	{
-		/** @var \TYPO3\CMS\Core\Cache\CacheManager cacheInstance */
-		$this->cacheInstance = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache($this->extKey);
-	}
+    /**
+     * Initialization of the cache framework
+     *
+     * @see \TYPO3\CMS\Core\Cache\CacheManager
+     */
+    protected function initializeCache()
+    {
+        /** @var CacheManager cacheInstance */
+        $this->cacheInstance = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache($this->extKey);
+    }
 
-	/**
-	 * Check if the last character is not a "/"
-	 *
-	 * @param $url
-	 * @return string
-	 */
-	protected function checkApiUrl($url)
-	{
-		$lastCharacter = substr($url, -1);
-		if ($lastCharacter == '/') {
-			$url = substr($url, 0, strrpos($url, '/'));
-		}
-		return $url;
-	}
+    /**
+     * Check if the last character is not a "/"
+     *
+     * @param $url
+     * @return string
+     */
+    protected function checkApiUrl($url)
+    {
+        $lastCharacter = substr($url, -1);
+        if ($lastCharacter == '/') {
+            $url = substr($url, 0, strrpos($url, '/'));
+        }
+        return $url;
+    }
 
-	/**
-	 * Loads the extConf
-	 *
-	 * @return void
-	 */
-	protected function loadExtConf()
-	{
-		//load the ext conf (ext_conf_template.txt)
-		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
-	}
+    /**
+     * Loads the extConf
+     *
+     * @return void
+     */
+    protected function loadExtConf()
+    {
+        //load the ext conf (ext_conf_template.txt)
+        $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+    }
 
-	/**
-	 * Encode to the json representation
-	 *
-	 * @param object
-	 *
-	 * @return string
-	 */
-	public function jsonEncode($data)
-	{
-		return json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-	}
+    /**
+     * Encode to the json representation
+     *
+     * @param object
+     *
+     * @return string
+     */
+    public function jsonEncode($data)
+    {
+        return json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    }
 
-	/**
-	 * Recursive search of an array to a value
-	 *
-	 * @param string $needle (serach string)
-	 * @param array $haystack (to be searched)
-	 *
-	 * @return false|$current_key
-	 */
-	public function recursiveArraySearch($needle, $haystack)
-	{
-		foreach ($haystack as $key => $value) {
-			$current_key = $key;
-			if ($needle === $value OR (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
-				return $current_key;
-			}
-		}
-		return false;
-	}
-
+    /**
+     * Recursive search of an array to a value
+     *
+     * @param string $needle (serach string)
+     * @param array $haystack (to be searched)
+     *
+     * @return false|int
+     */
+    public function recursiveArraySearch($needle, $haystack)
+    {
+        foreach ($haystack as $key => $value) {
+            $current_key = $key;
+            if ($needle === $value OR (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
+                return $current_key;
+            }
+        }
+        return false;
+    }
 }

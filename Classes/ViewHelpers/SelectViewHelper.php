@@ -24,6 +24,8 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers;
 
+use Traversable;
+
 /**
  * A view helper for creating an option group select list.
  *
@@ -48,113 +50,109 @@ namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers;
  * </select>
  * </output>
  */
-
 class SelectViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\SelectViewHelper
 {
 
-	/**
-	 * @var array
-	 */
-	protected $selectOptions = array();
+    /**
+     * @var array
+     */
+    protected $selectOptions = array();
 
-	/**
-	 * Render the tag.
-	 *
-	 * @return string rendered tag.
-	 * @api
-	 */
-	public function render()
-	{
+    /**
+     * Render the tag.
+     *
+     * @return string rendered tag.
+     * @api
+     */
+    public function render()
+    {
+        // convert options array into fluid options array to get selectFieldViewHelper work under 6.2.11
+        if (is_array($this->arguments['options']) || $this->arguments['options'] instanceof Traversable) {
+            $this->selectOptions = $this->arguments['options'];
+            if (method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
+                $options = array();
+                $this->arguments['options'] = $options;
+            }
+        }
+        return parent::render();
+    }
 
-		// convert options array into fluid options array to get selectFieldViewHelper work under 6.2.11
-		if (is_array($this->arguments['options']) || $this->arguments['options'] instanceof \Traversable) {
-			$this->selectOptions = $this->arguments['options'];
-			if (method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
-				$options = array();
-				$this->arguments['options'] = $options;
-			}
-		}
-		$content = parent::render();
+    /**
+     * Initialize arguments.
+     *
+     * @return void
+     * @api
+     */
+    public function initializeArguments()
+    {
+        parent::initializeArguments();
+        if (!method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
+            $this->registerArgument('prependOptionLabel', 'string',
+                'If specified, will provide an option at first position with the specified label.');
+            $this->registerArgument('prependOptionValue', 'string',
+                'If specified, will provide an option at first position with the specified value.');
+        }
+    }
 
-		return $content;
-	}
+    /**
+     * Render the option tags.
+     *
+     * @param array $options the options or with option groups for the form.
+     *
+     * @return string rendered tags.
+     */
+    protected function renderOptionTags($options)
+    {
+        $output = '';
+        if (method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
+            if ($this->hasArgument('prependOptionLabel')) {
+                $value = $this->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
+                $label = $this->arguments['prependOptionLabel'];
+                $output .= $this->renderOptionTag($value, $label, false) . chr(10);
+            }
+        } else {
+            if ($this->arguments->hasArgument('prependOptionLabel')) {
+                $value = $this->arguments->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
+                $label = $this->arguments['prependOptionLabel'];
+                $output .= $this->renderOptionTag($value, $label, false) . chr(10);
+            }
+        }
+        foreach ($this->selectOptions as $value => $label) {
+            if (is_array($label)) {
+                $optgroup = $optionsList = '';
+                foreach ($label as $keyOptGroup) {
+                    if (is_string($keyOptGroup)) {
+                        $optgroup = $keyOptGroup;
+                    } else {
+                        foreach ($keyOptGroup as $keyValue => $keyLabel) {
+                            $isSelected = $this->isSelected($keyValue);
+                            $optionsList .= $this->renderOptionTag($keyValue, $keyLabel, $isSelected) . chr(10);
+                        }
+                    }
+                }
+                if (!empty($optionsList) && !empty($optgroup)) {
+                    $output .= $this->renderOptionGroupTag($optgroup, $optionsList);
+                } elseif (!empty($optionsList)) {
+                    $output .= $optionsList;
+                }
+            } else {
+                $isSelected = $this->isSelected($value);
+                $output .= $this->renderOptionTag($value, $label, $isSelected) . chr(10);
+            }
+        }
+        return $output;
+    }
 
-	/**
-	 * Initialize arguments.
-	 *
-	 * @return void
-	 * @api
-	 */
-	public function initializeArguments()
-	{
-		parent::initializeArguments();
-		if (!method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
-			$this->registerArgument('prependOptionLabel', 'string',
-				'If specified, will provide an option at first position with the specified label.');
-			$this->registerArgument('prependOptionValue', 'string',
-				'If specified, will provide an option at first position with the specified value.');
-		}
-	}
-
-	/**
-	 * Render the option tags.
-	 *
-	 * @param array $options the options or with option groups for the form.
-	 *
-	 * @return string rendered tags.
-	 */
-	protected function renderOptionTags($options)
-	{
-		$output = '';
-		if (method_exists($this, "hasArgument")) { //for smaller TYPO3 6.1
-			if ($this->hasArgument('prependOptionLabel')) {
-				$value = $this->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
-				$label = $this->arguments['prependOptionLabel'];
-				$output .= $this->renderOptionTag($value, $label, false) . chr(10);
-			}
-		} else {
-			if ($this->arguments->hasArgument('prependOptionLabel')) {
-				$value = $this->arguments->hasArgument('prependOptionValue') ? $this->arguments['prependOptionValue'] : '';
-				$label = $this->arguments['prependOptionLabel'];
-				$output .= $this->renderOptionTag($value, $label, false) . chr(10);
-			}
-		}
-		foreach ($this->selectOptions as $value => $label) {
-			if (is_array($label)) {
-				$optgroup = $optionsList = '';
-				foreach ($label as $keyOptGroup) {
-					if (is_string($keyOptGroup)) {
-						$optgroup = $keyOptGroup;
-					} else {
-						foreach ($keyOptGroup as $keyValue => $keyLabel) {
-							$isSelected = $this->isSelected($keyValue);
-							$optionsList .= $this->renderOptionTag($keyValue, $keyLabel, $isSelected) . chr(10);
-						}
-					}
-				}
-				if (!empty($optionsList) && !empty($optgroup)) {
-					$output .= $this->renderOptionGroupTag($optgroup, $optionsList);
-				} elseif (!empty($optionsList)) {
-					$output .= $optionsList;
-				}
-			} else {
-				$isSelected = $this->isSelected($value);
-				$output .= $this->renderOptionTag($value, $label, $isSelected) . chr(10);
-			}
-		}
-		return $output;
-	}
-
-	/**
-	 * Render the option group tag.
-	 *
-	 * @param string $label the label for the option group.
-	 * @param string $optionsList the rendering options list
-	 *
-	 * @return string rendered tag.
-	 */
-	protected function renderOptionGroupTag($label, $optionsList)
-	{
-		return '<optgroup label="' . htmlspecialchars($label) . '">' . $optionsList . '</optgroup>';
-	}
+    /**
+     * Render the option group tag.
+     *
+     * @param string $label the label for the option group.
+     * @param string $optionsList the rendering options list
+     *
+     * @return string rendered tag.
+     */
+    protected function renderOptionGroupTag($label, $optionsList)
+    {
+        return '<optgroup label="' . htmlspecialchars($label) . '">' . $optionsList . '</optgroup>';
+    }
 }

@@ -34,56 +34,55 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
  */
 class Category extends RestClient
 {
+    const URI_GET_FIND = '/category/find';
+    const URI_GET_FIND_BY_KEY = '/category/findByKey/{key}';
+    const URI_GET_FIND_BY_ID = '/category/{id}';
 
-	const URI_GET_FIND = '/category/find';
-	const URI_GET_FIND_BY_KEY = '/category/findByKey/{key}';
-	const URI_GET_FIND_BY_ID = '/category/{id}';
+    /**
+     * Category constructor.
+     *
+     * @param array $config
+     */
+    public function __construct($config = array())
+    {
+        parent::setConfiguration($config);
+    }
 
-	/**
-	 * Category constructor.
-	 *
-	 * @param array $config
-	 */
-	public function __construct($config = array())
-	{
-		parent::setConfiguration($config);
-	}
+    /**
+     * Use this function to find categories.
+     *
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function find($filter = array())
+    {
+        return $this->getData(self::URI_GET_FIND, $filter);
+    }
 
-	/**
-	 * Use this function to find categories.
-	 *
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function find($filter = array())
-	{
-		return $this->getData(self::URI_GET_FIND, $filter);
-	}
+    /**
+     * Determines a category by the key
+     *
+     * @param string $key
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findByKey($key, $filter = array())
+    {
+        return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
+    }
 
-	/**
-	 * Determines a category by the key
-	 *
-	 * @param string $key
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findByKey($key, $filter = array())
-	{
-		return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
-	}
-
-	/**
-	 * Find a category based on your id
-	 *
-	 * @param integer $id
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findById($id, $filter = array())
-	{
-		return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
-	}
+    /**
+     * Find a category based on your id
+     *
+     * @param integer $id
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findById($id, $filter = array())
+    {
+        return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
+    }
 }

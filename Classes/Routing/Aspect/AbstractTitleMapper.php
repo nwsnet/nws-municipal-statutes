@@ -25,9 +25,17 @@
 namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
 use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Mvc\Dispatcher;
+use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
+use TYPO3\CMS\Extbase\Mvc\Request;
+use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
 
 /**
  * Initializes the ability to read titles from an API interface and make them available for the link
@@ -38,143 +46,147 @@ use TYPO3\CMS\Extbase\Core\Bootstrap;
  */
 class AbstractTitleMapper
 {
-	/**
-	 * maximum length of the title link
-	 */
-	const MAX_ALIAS_LENGTH = 100;
+    /**
+     * maximum length of the title link
+     */
+    const MAX_ALIAS_LENGTH = 100;
 
-	/**
-	 * Slugs are cached temporarily, to avoid repeated requests to the API,
-	 * on slug generation. The resolving is currently uncached though.
-	 */
-	const SLUG_CACHE_LIFETIME = 3600;
+    /**
+     * Slugs are cached temporarily, to avoid repeated requests to the API,
+     * on slug generation. The resolving is currently uncached though.
+     */
+    const SLUG_CACHE_LIFETIME = 3600;
 
-	/**
-	 * Is set via $settings
-	 *
-	 * @var
-	 */
-	protected $maxLength;
+    /**
+     * Is set via $settings
+     *
+     * @var
+     */
+    protected $maxLength;
 
-	/**
-	 * vendorName
-	 *
-	 * @var string
-	 */
-	protected $vendorName = 'Nwsnet';
+    /**
+     * vendorName
+     *
+     * @var string
+     */
+    protected $vendorName = 'Nwsnet';
 
-	/**
-	 * extensionName
-	 *
-	 * @var string
-	 */
-	protected $extensionName = 'NwsMunicipalStatutes';
+    /**
+     * extensionName
+     *
+     * @var string
+     */
+    protected $extensionName = 'NwsMunicipalStatutes';
 
-	/**
-	 * pluginName
-	 *
-	 * @var string
-	 */
-	protected $pluginName = 'Pi1';
+    /**
+     * pluginName
+     *
+     * @var string
+     */
+    protected $pluginName = 'Pi1';
 
-	/**
-	 * Used only for sanitizing. "generate" won't work!
-	 *
-	 * @var SlugHelper
-	 */
-	protected $slugHelper;
+    /**
+     * Used only for sanitizing. "generate" won't work!
+     *
+     * @var SlugHelper
+     */
+    protected $slugHelper;
 
-	/**
-	 * @var \TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
-	 */
-	protected $cache;
+    /**
+     * @var FrontendInterface
+     */
+    protected $cache;
 
-	/**
-	 * configurationBootstrap
-	 *
-	 * @var array
-	 */
-	private $configurationBootstrap;
+    /**
+     * configurationBootstrap
+     *
+     * @var array
+     */
+    private $configurationBootstrap;
 
-	/**
-	 * bootstrap
-	 *
-	 * @var object
-	 */
-	private $bootstrap;
+    /**
+     * bootstrap
+     *
+     * @var object
+     */
+    private $bootstrap;
 
 
-	/**
-	 * AbstractTitleMapper constructor.
-	 * @param array $settings
-	 */
-	public function __construct(array $settings)
-	{
-		$this->maxLength = !isset($settings['maxLength']) ? $settings['maxLength'] : self::MAX_ALIAS_LENGTH;
-		$cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+    /**
+     * AbstractTitleMapper constructor.
+     * @param array $settings
+     */
+    public function __construct(array $settings)
+    {
+        $this->maxLength = !isset($settings['maxLength']) ? $settings['maxLength'] : self::MAX_ALIAS_LENGTH;
+        $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
 
-		// we'll just reuse the default page cache to store our slug cache
-		$this->cache = $cacheManager->getCache('cache_pages');
+        // we'll just reuse the default page cache to store our slug cache
+        $this->cache = $cacheManager->getCache('cache_pages');
 
-		/** @var \TYPO3\CMS\Core\DataHandling\SlugHelper slugHelper */
-		$this->slugHelper = GeneralUtility::makeInstance(
-			SlugHelper::class,
-			$settings['tableName'],
-			$settings['fieldName'],
-			$settings['configuration']
-		);
+        /** @var SlugHelper slugHelper */
+        $this->slugHelper = GeneralUtility::makeInstance(
+            SlugHelper::class,
+            $settings['tableName'],
+            $settings['fieldName'],
+            $settings['configuration']
+        );
 
-		//set the configuration
-		$this->configurationBootstrap = array(
-			'vendorName' => $this->vendorName,
-			'extensionName' => $this->extensionName,
-			'pluginName' => $this->pluginName,
+        //set the configuration
+        $this->configurationBootstrap = array(
+            'vendorName' => $this->vendorName,
+            'extensionName' => $this->extensionName,
+            'pluginName' => $this->pluginName,
 
-		);
-		$this->bootstrap = new Bootstrap();
-	}
+        );
+        $this->bootstrap = new Bootstrap();
+    }
 
-	/**
-	 * Get the title over the interface
-	 *
-	 * @param array $arguments
-	 * @return string|null
-	 */
-	protected function getTitle(array $arguments)
-	{
-		$controller = isset($arguments['controller']) ? $arguments['controller'] : 'Events';
-		$action = isset($arguments['action']) ? $arguments['action'] : 'showTitle';
+    /**
+     * Get the title over the interface
+     *
+     * @param array $arguments
+     * @return string|null
+     * @throws InfiniteLoopException
+     * @throws InvalidActionNameException
+     * @throws InvalidControllerNameException
+     * @throws InvalidExtensionNameException
+     */
+    protected function getTitle(array $arguments)
+    {
+        $controller = isset($arguments['controller']) ? $arguments['controller'] : 'Events';
+        $action = isset($arguments['action']) ? $arguments['action'] : 'showTitle';
 
-		/**
-		 * Initialize Extbase bootstap
-		 */
-		$this->configurationBootstrap['controller'] = $controller;
-		$this->configurationBootstrap['action'] = $action;
-		$this->bootstrap->initialize($this->configurationBootstrap);
-		$this->bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
-			$GLOBALS['TSFE']);
-		/**
-		 * Build the request
-		 */
-		$objectManager = GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
-		/** @var \TYPO3\CMS\Extbase\Mvc\Request $request */
-		$request = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Request');
-		$request->setControllerVendorName($this->vendorName);
-		$request->setcontrollerExtensionName($this->extensionName);
-		$request->setPluginName($this->pluginName);
-		$request->setControllerName($controller);
-		$request->setControllerActionName($action);
-		$request->setArguments($arguments);
-		/** @var \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response */
-		$response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
-		/** @var \TYPO3\CMS\Extbase\Mvc\Dispatcher $dispatcher */
-		$dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
-		$dispatcher->dispatch($request, $response);
-		$title = $response->getContent();
+        /**
+         * Initialize Extbase bootstap
+         */
+        $this->configurationBootstrap['controller'] = $controller;
+        $this->configurationBootstrap['action'] = $action;
+        $this->bootstrap->initialize($this->configurationBootstrap);
+        $this->bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+            $GLOBALS['TSFE']);
+        /**
+         * Build the request
+         */
+        $objectManager = GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
+        /** @var Request $request */
+        $request = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Request');
+        $request->setControllerVendorName($this->vendorName);
+        $request->setcontrollerExtensionName($this->extensionName);
+        $request->setPluginName($this->pluginName);
+        $request->setControllerName($controller);
+        $request->setControllerActionName($action);
+        $request->setArguments($arguments);
+        /** @var ResponseInterface $response */
+        $response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
+        /** @var Dispatcher $dispatcher */
+        $dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
+        $dispatcher->dispatch($request, $response);
+        $title = $response->getContent();
 
-		if (isset($title) && !empty($title)) {
-			return empty($title) ? null : $title;
-		}
-		return null;
-	}
+        if (isset($title) && !empty($title)) {
+            return empty($title) ? null : $title;
+        }
+        return null;
+    }
 }

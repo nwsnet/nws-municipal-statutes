@@ -34,97 +34,95 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
  */
 class Legislator extends RestClient
 {
+    const URI_GET_FIND = '/legislator/find';
+    const URI_GET_FIND_BY_KEY = '/legislator​/findByKey​/{key}';
+    const URI_GET_FIND_BY_ID = '/legislator/{id}';
 
-	const URI_GET_FIND = '/legislator/find';
-	const URI_GET_FIND_BY_KEY = '/legislator​/findByKey​/{key}';
-	const URI_GET_FIND_BY_ID = '/legislator/{id}';
+    /**
+     * Legislator constructor.
+     *
+     * @param array $config
+     */
+    public function __construct($config = array())
+    {
+        parent::setConfiguration($config);
+    }
 
-	/**
-	 * Legislator constructor.
-	 *
-	 * @param array $config
-	 */
-	public function __construct($config = array())
-	{
-		parent::setConfiguration($config);
-	}
+    /**
+     * Use this function to find all normators.
+     *
+     * @param array $filter
+     * @param array $data
+     *
+     * @return mixed
+     */
+    public function findAll($filter = array(), $data = array())
+    {
+        $dataMerge = array();
+        if (count($data) == 0) {
+            $filter['limit'] = isset($filter['limit']) ? $filter['limit'] : 100;
+        } else {
+            $dataMerge = $data;
+        }
+        if ($this->getData(self::URI_GET_FIND, $filter)->hasExceptionError() === false) {
+            $data = json_decode($this->getResult(), true);
+            $count = isset($data['count']) ? $data['count'] : 0;
+            $data = array_merge_recursive($dataMerge, $data);
+            if ($count >= $filter['limit']) {
+                $filter['offset'] = $filter['offset'] + $filter['limit'] + 1;
+                $this->findAll($filter, $data);
+                return $this;
+            }
+            if (isset($data['count']) && is_array($data['count'])) {
+                $count = 0;
+                foreach ($data['count'] as $value) {
+                    $count += $value;
+                }
+                $data['count'] = $count;
+            }
+        }
+        if (count($data) > 0) {
+            $this->setResult($this->jsonEncode($data));
+        }
 
-	/**
-	 * Use this function to find all normators.
-	 *
-	 * @param array $filter
-	 * @param array $data
-	 *
-	 * @return mixed
-	 */
-	public function findAll($filter = array(), $data = array())
-	{
-		$dataMerge = array();
-		if (count($data) == 0) {
-			$filter['limit'] = isset($filter['limit']) ? $filter['limit'] : 100;
-		} else {
-			$dataMerge = $data;
-		}
-		if ($this->getData(self::URI_GET_FIND, $filter)->hasExceptionError() === false) {
-			$data = json_decode($this->getResult(), true);
-			$count = isset($data['count']) ? $data['count'] : 0;
-			$data = array_merge_recursive($dataMerge, $data);
-			if ($count >= $filter['limit']) {
-				$filter['offset'] = $filter['offset'] + $filter['limit'] + 1;
-				$this->findAll($filter, $data);
-				return $this;
-			}
-			if (isset($data['count']) && is_array($data['count'])) {
-				$count = 0;
-				foreach ($data['count'] as $value) {
-					$count += $value;
-				}
-				$data['count'] = $count;
-			}
-		}
-		if (count($data) > 0) {
-			$this->setResult($this->jsonEncode($data));
-		}
+        return $this;
+    }
 
-		return $this;
+    /**
+     * Use this function to find normators.
+     *
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function find($filter = array())
+    {
+        return $this->getData(self::URI_GET_FIND, $filter);
+    }
 
-	}
+    /**
+     * Determines a normator by the key.
+     *
+     * @param string $key
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findByKey($key, $filter = array())
+    {
+        return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
+    }
 
-	/**
-	 * Use this function to find normators.
-	 *
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function find($filter = array())
-	{
-		return $this->getData(self::URI_GET_FIND, $filter);
-	}
-
-	/**
-	 * Determines a normator by the key.
-	 *
-	 * @param string $key
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findByKey($key, $filter = array())
-	{
-		return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
-	}
-
-	/**
-	 * Determines a normator by ID.
-	 *
-	 * @param integer $id
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findById($id, $filter = array())
-	{
-		return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
-	}
+    /**
+     * Determines a normator by ID.
+     *
+     * @param integer $id
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findById($id, $filter = array())
+    {
+        return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
+    }
 }

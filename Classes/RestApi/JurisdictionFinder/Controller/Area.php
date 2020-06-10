@@ -34,40 +34,40 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
  */
 class Area extends RestClient
 {
-	const URI_GET_FIND = '/area/find';
-	const URI_GET_FIND_BY_ID = '/area/{id}';
+    const URI_GET_FIND = '/area/find';
+    const URI_GET_FIND_BY_ID = '/area/{id}';
 
-	/**
-	 * Area constructor.
-	 * @param array $config
-	 */
-	public function __construct($config = array())
-	{
-		parent::setConfiguration($config);
-	}
+    /**
+     * Area constructor.
+     * @param array $config
+     */
+    public function __construct($config = array())
+    {
+        parent::setConfiguration($config);
+    }
 
-	/**
-	 * Use this function to find areas.
-	 *
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function find($filter = array())
-	{
-		return $this->getData(self::URI_GET_FIND, $filter);
-	}
+    /**
+     * Use this function to find areas.
+     *
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function find($filter = array())
+    {
+        return $this->getData(self::URI_GET_FIND, $filter);
+    }
 
-	/**
-	 * Finds an area based on its id.
-	 *
-	 * @param integer $id
-	 * @param array $filter
-	 *
-	 * @return mixed
-	 */
-	public function findById($id, $filter = array())
-	{
-		return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
-	}
+    /**
+     * Finds an area based on its id.
+     *
+     * @param integer $id
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findById($id, $filter = array())
+    {
+        return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
+    }
 }

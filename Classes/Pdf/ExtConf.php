@@ -27,54 +27,53 @@ namespace Nwsnet\NwsMunicipalStatutes\Pdf;
 
 class ExtConf
 {
+    /**
+     * @var array
+     */
+    protected static $config;
 
-	/**
-	 * @var array
-	 */
-	protected static $config;
+    /**
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
+     */
+    public static function get($key, $default = null)
+    {
+        if (null === self::$config) {
+            self::$config = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nws_municipal_statutes']) ?: array();
+        }
 
-	/**
-	 * @param string $key
-	 * @param string|null $default
-	 * @return string|null
-	 */
-	public static function get($key, $default = null)
-	{
-		if (null === self::$config) {
-			self::$config = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nws_municipal_statutes']) ?: array();
-		}
+        if (isset(self::$config[$key])) {
+            return self::$config[$key];
+        } else {
+            return $default;
+        }
+    }
 
-		if (isset(self::$config[$key])) {
-			return self::$config[$key];
-		} else {
-			return $default;
-		}
-	}
+    /**
+     * @param string $key
+     * @param string $delimiter
+     * @param int $part
+     * @param string|null $default
+     * @return array|string|null
+     */
+    private static function splitAndGet($key, $delimiter, $part, $default = null)
+    {
+        $value = self::get($key, '');
+        $parts = explode($delimiter, $value);
+        if (isset($parts[$part])) {
+            return $parts[$part];
+        } else {
+            return $default;
+        }
+    }
 
-	/**
-	 * @param string $key
-	 * @param string $delimiter
-	 * @param int $part
-	 * @param string|null $default
-	 * @return array|string|null
-	 */
-	private static function splitAndGet($key, $delimiter, $part, $default = null)
-	{
-		$value = self::get($key, '');
-		$parts = explode($delimiter, $value);
-		if (isset($parts[$part])) {
-			return $parts[$part];
-		} else {
-			return $default;
-		}
-	}
-
-	/**
-	 * @param string $default
-	 * @return string
-	 */
-	public static function getWkHtmlToPdfPath($default = 'wkhtmltopdf')
-	{
-		return self::get('wkhtmltopdfPath', $default);
-	}
+    /**
+     * @param string $default
+     * @return string
+     */
+    public static function getWkHtmlToPdfPath($default = 'wkhtmltopdf')
+    {
+        return self::get('wkhtmltopdfPath', $default);
+    }
 }
