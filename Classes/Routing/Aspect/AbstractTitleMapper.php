@@ -183,6 +183,8 @@ class AbstractTitleMapper
         $dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
         $dispatcher->dispatch($request, $response);
         $title = $response->getContent();
+        //fallback for removing "/"
+        $title = str_replace('/', '', $title);
 
         if (isset($title) && !empty($title)) {
             return empty($title) ? null : $title;
