@@ -144,6 +144,7 @@ nws_municipalstatutes_pdf {
     config {
         xhtml_cleaning = 0
         additionalHeaders = Content-type:text/html
+        additionalHeaders.10.header = Content-type:text/html
     }
 
     20 = USER_INT
