@@ -25,6 +25,7 @@
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
 use Nwsnet\NwsMunicipalStatutes\Dom\Converter;
+use Nwsnet\NwsMunicipalStatutes\PageTitle\MunicipalPageTitleProvider;
 use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
@@ -221,6 +222,14 @@ class LocalLawController extends AbstractController
             $this->userSession->saveReferrer($page);
         }
 
+        //Set the page title
+        if (isset($legalNorm['name'])) {
+            if (version_compare(TYPO3_branch, '9.5', '>=')) {
+                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+                $titleProvider->setTitle($legalNorm['name']);
+            }
+        }
+
         $this->view->assign('treeMenu', $treeMenu);
         $this->view->assign('legalNorm', $legalNorm);
     }
@@ -341,6 +350,14 @@ class LocalLawController extends AbstractController
             $this->userSession->saveReferrer($page);
         }
 
+        //Set the page title
+        if (isset($legalNorm['name'])) {
+            if (version_compare(TYPO3_branch, '9.5', '>=')) {
+                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+                $titleProvider->setTitle($legalNorm['name']);
+            }
+        }
+
         $this->view->assign('legalNorm', $legalNorm);
     }
 
@@ -387,6 +404,10 @@ class LocalLawController extends AbstractController
         if (isset($legalNorm['longTitle'])) {
             $GLOBALS['TSFE']->page['title'] = $legalNorm['longTitle'];
             $GLOBALS['TSFE']->indexedDocTitle = $legalNorm['longTitle'];
+            if (version_compare(TYPO3_branch, '9.5', '>=')) {
+                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+                $titleProvider->setTitle($legalNorm['longTitle']);
+            }
         }
 
         //Get referrer data from the transmission
@@ -470,7 +491,7 @@ class LocalLawController extends AbstractController
 
             //set absolute path for CSS and JS files for PDF creation
             $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
-            
+
             $this->view->assign('settings', $settings);
             $this->view->assign('legalNorm', $legalNorm);
         } else {

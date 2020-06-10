@@ -54,3 +54,13 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfiguration
 //For providing the title links in Sites Configuration
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['NwsLegislatorTitleMapper'] = \Nwsnet\NwsMunicipalStatutes\Routing\Aspect\NwsLegislatorTitleMapper::class;
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['NwsLegalNormTitleMapper'] = \Nwsnet\NwsMunicipalStatutes\Routing\Aspect\NwsLegalNormTitleMapper::class;
+//Generation of the page title for TYPO3 9.5
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup(trim('
+    config.pageTitleProviders {
+        municipal {
+            provider = Nwsnet\NwsMunicipalStatutes\PageTitle\MunicipalPageTitleProvider
+            before = record
+            after = altPageTitle
+        }
+    }
+'));
