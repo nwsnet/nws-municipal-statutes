@@ -29,7 +29,11 @@ use DmitryDulepov\Realurl\Encoder\UrlEncoder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -97,12 +101,7 @@ class ReadRealurlTitle
     protected $tsfe;
 
     /**
-     * @var DatabaseConnection
-     */
-    protected $databaseConnection;
-
-    /**
-     * @var \DmitryDulepov\Realurl\Configuration\ConfigurationReader
+     * @var ConfigurationReader
      */
     protected $configuration;
 
@@ -117,8 +116,24 @@ class ReadRealurlTitle
     protected $originalUrlParameters = array();
 
     /**
+     * @var ConfigurationManager
+     */
+    protected $configurationManager;
+
+    /**
+     * @var array
+     */
+    protected $setting;
+
+    /**
+     * @var ContentObjectRenderer
+     */
+    protected $contentObject;
+
+    /**
      * Initialize Extbase
      *
+     * @throws InvalidConfigurationTypeException
      * @see \TYPO3\CMS\Extbase\Core\Bootstrap::run()
      */
     public function __construct()
@@ -132,7 +147,12 @@ class ReadRealurlTitle
         );
         $this->bootstrap = new Bootstrap();
         $this->tsfe = $GLOBALS['TSFE'];
-        $this->databaseConnection = $GLOBALS['TYPO3_DB'];
+        // Read existing extbase configuration
+        $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        /** @var ConfigurationManager $configurationManager */
+        $this->configurationManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
+        $this->setting = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
+        $this->contentObject = $this->configurationManager->getContentObject();
     }
 
     /**
@@ -235,8 +255,17 @@ class ReadRealurlTitle
         $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legislator'] = intval($param);
         $this->configurationBootstrap['controller'] = $controller;
         $this->configurationBootstrap['action'] = $action;
+        //TYPO3 8.7 must be switched off the cHash validate
+        $request['features']['requireCHashArgumentForActionArguments'] = 0;
+        $this->configurationBootstrap = array_merge($this->configurationBootstrap, $request);
         //start of Extbase bootstrap program
         $title = $this->bootstrap->run('', $this->configurationBootstrap);
+        // Initialization of the original extbase configuration
+        if (!empty($this->contentObject)) {
+            $this->configurationManager->setConfiguration($this->setting);
+            $this->configurationManager->setContentObject($this->contentObject);
+        }
+
         if (isset($title) && !empty($title)) {
             return $title;
         }
@@ -259,7 +288,16 @@ class ReadRealurlTitle
         $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legalnorm'] = ($param == '*') ? $param : intval($param);
         $this->configurationBootstrap['controller'] = $controller;
         $this->configurationBootstrap['action'] = $action;
+        //TYPO3 8.7 must be switched off the cHash validate
+        $request['features']['requireCHashArgumentForActionArguments'] = 0;
+        $this->configurationBootstrap = array_merge($this->configurationBootstrap, $request);
         $title = $this->bootstrap->run('', $this->configurationBootstrap);
+        // Initialization of the original extbase configuration
+        if (!empty($this->contentObject)) {
+            $this->configurationManager->setConfiguration($this->setting);
+            $this->configurationManager->setContentObject($this->contentObject);
+        }
+
         if (isset($title) && !empty($title)) {
             return $title;
         }
@@ -307,26 +345,6 @@ class ReadRealurlTitle
     }
 
     /**
-     * Database search for the ID´s
-     *
-     *
-     * @param string $setClass Class of look-up table.
-     *
-     * @return array|NULL $titleData Result array of lookup.
-     */
-    protected function getAliasWithId($setClass)
-    {
-        $this->apiCall = GeneralUtility::makeInstance('Nwsnet\\NwsJurisdictionfinderSh\\Api\\' . $setClass);
-        //check whether there is an error with the API
-        if ($this->apiCall->hasExceptionError()) {
-            return null;
-        }
-        $params = '';
-        $request['svid'] = $request['empid'] = '*';
-        return $this->apiCall->getShowTitleData($request, $params);
-    }
-
-    /**
      * Database search for the ID with the Alias
      *
      *
@@ -338,31 +356,11 @@ class ReadRealurlTitle
      */
     protected function getIdByAlias($setup, $value, $setMethod)
     {
-        $aliasBaseValues = '';
-        $configuration = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Configuration\\ConfigurationReader',
-            ConfigurationReader::MODE_ENCODE, array());
-        $utility = GeneralUtility::makeInstance('DmitryDulepov\\Realurl\\Utility', $configuration);
-
-        if ($setMethod) {
-            $setClass = 'Read' . preg_replace('/get(.*)Title$/', '$1', $setMethod);
-            if (class_exists('Nwsnet\NwsJurisdictionfinderSh\Api\\' . $setClass)) {
-                $aliasBaseValues = $this->getAliasWithId($setClass);
-            }
+        $match = [];
+        if (!preg_match('/^([\p{L}0-9\/-]+-)?(\d+)$/', $value, $match)) {
+            return null;
         }
-
-        if (is_array($aliasBaseValues) && isset($aliasBaseValues['dataTitle'])) {
-            foreach ($aliasBaseValues['dataTitle'] as $uid => $alias) {
-                $maxAliasLengthLength = isset($setup['maxLength']) ? (int)$setup['maxLength'] : self::MAX_ALIAS_LENGTH;
-                $alias = $this->tsfe->csConvObj->substr('utf-8', $alias, 0, $maxAliasLengthLength);
-                $alias = $utility->convertToSafeString($alias);
-                if ($alias == $value) {
-                    return $uid;
-                }
-            }
-        }
-
-        // In case no value was found in translation we return the incoming value. It may be argued that this is not a good idea but generally this can be avoided by using the "useUniqueCache" principle which will ensure unique translation both ways.
-        return $value;
+        return (int)$match[2];
     }
 
     /**
@@ -375,50 +373,6 @@ class ReadRealurlTitle
      */
     protected function createUniqueAlias($newAliasValue, $idValue)
     {
-        $uniqueAlias = '';
-        $counter = 0;
-        $maxTry = 100;
-        $testNewAliasValue = $newAliasValue;
-        while ($counter < $maxTry) {
-            // If the test-alias did NOT exist, it must be unique and we break out
-            $foundId = $this->getFromPathCacheByAliasValue($testNewAliasValue);
-            if (!$foundId || $foundId == $idValue) {
-                $uniqueAlias = $testNewAliasValue;
-                break;
-            }
-            $counter++;
-            $testNewAliasValue = $newAliasValue . '-' . $counter;
-        }
-
-        return $uniqueAlias;
-    }
-
-    /**
-     * Check if a unique name already exists
-     *
-     * @param string $aliasValue
-     *
-     * @return int ID integer. If none is found: false
-     */
-    protected function getFromPathCacheByAliasValue($aliasValue)
-    {
-        $rootPageId = (int)$this->configuration->get('pagePath/rootpage_id');
-        $acceptHTMLsuffix = $this->configuration->get('fileName/acceptHTMLsuffix');
-        $pageId = (int)$this->originalUrlParameters['id'];
-        $speakingUrl = empty($acceptHTMLsuffix) ? '%/' . $aliasValue . '/' : '%/' . $aliasValue . '.html';
-        $variables = array();
-
-        $row = $this->databaseConnection->exec_SELECTgetSingleRow('*', 'tx_realurl_urldata',
-            'rootpage_id=' . (int)$rootPageId . ' AND ' .
-            'speaking_url like ' . $this->databaseConnection->fullQuoteStr($speakingUrl,
-                'tx_realurl_urldata') . ' AND ' .
-            'page_id=' . $pageId,
-            '', 'expire'
-        );
-        if (is_array($row)) {
-            $variables = (array)@json_decode($row['request_variables'], true);
-        }
-
-        return (isset($variables[$this->getVarKey]) ? $variables[$this->getVarKey] : false);
+        return empty($newAliasValue) ? $idValue : $newAliasValue . '-' . $idValue;
     }
 }
