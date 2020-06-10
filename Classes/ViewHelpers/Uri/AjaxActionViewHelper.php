@@ -59,6 +59,9 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
      */
     protected $configurationManager;
 
+    /**
+     * @param ConfigurationManagerInterface $configurationManager
+     */
     public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
     {
         $this->configurationManager = $configurationManager;
@@ -114,6 +117,8 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
     }
 
     /**
+     * Render the tag
+     *
      * @param string $action Target action
      * @param array $arguments Arguments
      * @param string $controller Target controller. If NULL current controllerName is used
@@ -203,16 +208,17 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
                 $contextRecord = 'currentPage';
             } else {
                 $contextRecord = $this->configurationManager->getContentObject()->currentRecord;
-                if (empty($contextRecord)) {
+                if (empty($contextRecord) && $controllerContext->getRequest()->hasArgument('context')) {
                     $contextRecord = $controllerContext->getRequest()->getArgument('context');
+                } elseif (empty($contextRecord)) {
+                    $contextRecord = 'current';
                 }
             }
         }
         $arguments['context'] = str_replace(":", "|", $contextRecord);
 
-        /** @var UriBuilder $uriBuilder */
-        $uriBuilder = $controllerContext->getUriBuilder();
-        $uri = $uriBuilder
+        /** @var UriBuilder $uri */
+        $uri = $controllerContext->getUriBuilder()
             ->reset()
             ->setTargetPageUid($pageUid)
             ->setTargetPageType($pageType)
