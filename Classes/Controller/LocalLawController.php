@@ -425,6 +425,7 @@ class LocalLawController extends AbstractController
 
         if ($this->request->hasArgument('create')) {
             $settings = array();
+
             //Read ContextRecord for Flexform
             if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos($params['tx_nwsmunicipalstatutes_pi1']['context'],
                     '|') !== false) {
@@ -467,6 +468,9 @@ class LocalLawController extends AbstractController
             $converter = GeneralUtility::makeInstance(Converter::class);
             $legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
 
+            //set absolute path for CSS and JS files for PDF creation
+            $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
+            
             $this->view->assign('settings', $settings);
             $this->view->assign('legalNorm', $legalNorm);
         } else {
