@@ -28,6 +28,9 @@ use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Mvc\Dispatcher;
 use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
@@ -36,6 +39,7 @@ use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
 use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
  * Initializes the ability to read titles from an API interface and make them available for the link
@@ -111,10 +115,25 @@ class AbstractTitleMapper
      */
     private $bootstrap;
 
+    /**
+     * @var ConfigurationManager
+     */
+    private $configurationManager;
+
+    /**
+     * @var array
+     */
+    private $setting;
+
+    /**
+     * @var ContentObjectRenderer
+     */
+    private $contentObject;
 
     /**
      * AbstractTitleMapper constructor.
      * @param array $settings
+     * @throws InvalidConfigurationTypeException
      */
     public function __construct(array $settings)
     {
@@ -131,6 +150,13 @@ class AbstractTitleMapper
             $settings['fieldName'],
             $settings['configuration']
         );
+
+        // Read existing extbase configuration
+        $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        /** @var ConfigurationManager $configurationManager */
+        $this->configurationManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
+        $this->setting = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
+        $this->contentObject = $this->configurationManager->getContentObject();
 
         //set the configuration
         $this->configurationBootstrap = array(
@@ -185,6 +211,12 @@ class AbstractTitleMapper
         $title = $response->getContent();
         //fallback for removing "/"
         $title = str_replace('/', '', $title);
+
+        // Initialization of the original extbase configuration
+        if (!empty($this->contentObject)) {
+            $this->configurationManager->setConfiguration($this->setting);
+            $this->configurationManager->setContentObject($this->contentObject);
+        }
 
         if (isset($title) && !empty($title)) {
             return empty($title) ? null : $title;
