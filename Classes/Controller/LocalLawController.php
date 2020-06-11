@@ -29,6 +29,7 @@ use Nwsnet\NwsMunicipalStatutes\PageTitle\MunicipalPageTitleProvider;
 use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
+use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
@@ -500,8 +501,10 @@ class LocalLawController extends AbstractController
             $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
             $cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
             $params['cHash'] = $cHash;
-            $uri = $this->request->getBaseUri() . 'index.php?' . $this->httpBuildQuery($params);
-            $html = @file_get_contents($uri, false);
+            $uri = $this->request->getBaseUri() . 'index.php';
+            /** @var RestClient $contentProvider */
+            $contentProvider = GeneralUtility::makeInstance(RestClient::class);
+            $html = $contentProvider->getData($uri, $params, true)->getResult();
             if (!empty($html)) {
                 $filter = array(
                     'selectAttributes' => array(

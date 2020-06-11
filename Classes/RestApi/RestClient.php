@@ -103,11 +103,12 @@ class RestClient
      *
      * @param string $path
      * @param array $filter
+     * @param bool $noHeader
      * @return mixed
      */
-    public function getData($path, array $filter)
+    public function getData($path, array $filter, $noHeader = false)
     {
-        $this->setConnection($path, $filter);
+        $this->setConnection($path, $filter, $noHeader);
         return $this->executeCurl();
     }
 
@@ -115,17 +116,20 @@ class RestClient
      * Establishes the connection to the interface
      *
      * @param string $path
-     * @param $filter
+     * @param array $filter
+     * @param bool $noHeader
      */
-    protected function setConnection($path, array $filter)
+    protected function setConnection($path, array $filter, $noHeader = false)
     {
+        $header = array();
         $executeHttp = $this->http . $path . '?' . $this->httpBuildQuery($filter);
+        if (empty($noHeader)) {
+            $header = array(
+                "Content-type: application/json",
+                "api_key: " . $this->apiKey
+            );
+        }
 
-        $this->curl = curl_init($executeHttp);
-        $header = array(
-            "Content-type: application/json",
-            "api_key: " . $this->apiKey
-        );
         if (!empty($this->additionalHeaders)) {
             $additionalHeaders = array();
             foreach ($this->additionalHeaders as $key => $value) {
@@ -133,12 +137,16 @@ class RestClient
             }
             $header = array_merge($header, $additionalHeaders);
         }
-        curl_setopt(
-            $this->curl,
-            CURLOPT_HTTPHEADER,
-            $header
-        );
+
+        // Set the proxy if entered in the TYPO3 configuration
+        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? null);
+
+        $this->curl = curl_init($executeHttp);
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($this->curl, CURLOPT_REFERER, 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($this->curl, CURLOPT_HTTPGET, true);
         if (!empty($proxy)) {
             curl_setopt($this->curl, CURLOPT_PROXY, $proxy);
@@ -152,9 +160,6 @@ class RestClient
      */
     protected function executeCurl()
     {
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, 0);
-
         $curl_response = curl_exec($this->curl);
         $header = curl_getinfo($this->curl);
         if ($header['http_code'] !== 200) {
@@ -198,7 +203,7 @@ class RestClient
      * @param bool $qs
      * @return string
      */
-    protected function httpBuildQuery($array, $qs = false)
+    private function httpBuildQuery($array, $qs = false)
     {
         $parts = array();
         if ($qs) {
@@ -206,8 +211,8 @@ class RestClient
         }
         foreach ($array as $key => $value) {
             if (is_array($value)) {
-                foreach ($value as $value2) {
-                    $parts[] = http_build_query(array($key => $value2));
+                foreach ($value as $key2 => $value2) {
+                    $parts[] = http_build_query(array($key . '[' . $key2 . ']' => $value2));
                 }
             } else {
                 $parts[] = http_build_query(array($key => $value));
