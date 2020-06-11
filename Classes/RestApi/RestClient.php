@@ -140,6 +140,9 @@ class RestClient
         );
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_HTTPGET, true);
+        if (!empty($proxy)) {
+            curl_setopt($this->curl, CURLOPT_PROXY, $proxy);
+        }
     }
 
     /**
