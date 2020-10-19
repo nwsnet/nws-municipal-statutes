@@ -67,6 +67,16 @@ class LegalNormPdf
         $pdf->setArgument('footer-spacing', 5);
         $pdf->setArgument('enable-internal-links', '');
         $pdf->setArgument('disable-external-links', '');
+        if ($this->isBasicAuth()) {
+            $auth = $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'];
+            $pdf->setArgument('username', $auth['username']);
+            $pdf->setArgument('password', $auth['password']);
+        }
+        // Set the proxy if entered in the TYPO3 configuration
+        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? null);
+        if (!empty($proxy)) {
+            $pdf->setArgument('p', $proxy);
+        }
 
         $success = $pdf->writeTo($path);
 
@@ -74,5 +84,22 @@ class LegalNormPdf
         unset($pdf);
 
         return $success;
+    }
+
+    /**
+     * Check a basic authentication is required
+     *
+     * @return bool
+     */
+    private function isBasicAuth()
+    {
+        $check = false;
+
+        //check whether parameters for authentication are available
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'])) {
+            $check = true;
+        }
+
+        return $check;
     }
 }

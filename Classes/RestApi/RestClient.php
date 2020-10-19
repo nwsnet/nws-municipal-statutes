@@ -24,6 +24,8 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\RestApi;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Class RestClient
  * For using a FullRest API
@@ -151,6 +153,10 @@ class RestClient
         if (!empty($proxy)) {
             curl_setopt($this->curl, CURLOPT_PROXY, $proxy);
         }
+        if ($this->isInternalCallAndBasicAuth($executeHttp)) {
+            $auth = $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'];
+            curl_setopt($this->curl, CURLOPT_USERPWD, $auth['username'] . ':' . $auth['password']);
+        }
     }
 
     /**
@@ -194,6 +200,24 @@ class RestClient
         curl_close($this->curl);
         $this->setResult($curl_response);
         return $this;
+    }
+
+    /**
+     * Check it is an internal call and whether a basic authentication is required
+     *
+     * @param $url
+     * @return bool
+     */
+    private function isInternalCallAndBasicAuth($url)
+    {
+        $check = false;
+        if (GeneralUtility::isOnCurrentHost($url)) {
+            //check whether parameters for authentication are available
+            if (isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'])) {
+                $check = true;
+            }
+        }
+        return $check;
     }
 
     /**
