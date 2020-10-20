@@ -13,10 +13,6 @@ routeEnhancers:
           - { routePath: '/{localized_legalnorm}/{legalnorm}', _controller: 'LocalLaw::show', _arguments: {'legalnorm_title': 'legalnorm'} }
           - { routePath: '/pdf/{legalnorm}/{context}', _controller: 'LocalLaw::pdf', _arguments: {'legalnorm_title': 'legalnorm', 'context': 'context' } }
       defaultController: 'LocalLaw::list'
-      defaults:
-        legislator: '0'
-        legalnorm: '0'
-        context: ''
       aspects:
           legislator_title:
               type: NwsLegislatorTitleMapper
