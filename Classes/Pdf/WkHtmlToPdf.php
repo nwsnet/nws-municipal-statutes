@@ -48,10 +48,10 @@ class WkHtmlToPdf
      * @var array
      */
     protected $arguments = array(
-        'margin-top' => 25,
-        'margin-left' => 25,
-        'margin-right' => 25,
-        'margin-bottom' => 25,
+        'margin-top' => 15,
+        'margin-left' => 15,
+        'margin-right' => 15,
+        'margin-bottom' => 15,
         'print-media-type' => ''
     );
 
