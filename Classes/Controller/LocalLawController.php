@@ -36,6 +36,7 @@ use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 use TYPO3\CMS\Extbase\Service\FlexFormService;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 
 /**
@@ -534,6 +535,13 @@ class LocalLawController extends AbstractController
 
                 $pdf = @file_get_contents($pdfFilePath);
                 unlink($pdfFilePath);
+
+                /** @var TypoScriptFrontendController $typoScriptFrontendController */
+                $typoScriptFrontendController = $GLOBALS['TSFE'];
+                $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+                $typoScriptFrontendController->setContentType('application/pdf');
+
+                $this->response->setHeader('Content-Transfer-Encoding', 'binary');
                 $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
                 $this->response->setHeader('Content-Length', strlen($pdf));
                 $this->response->setHeader('Connection', 'close');
