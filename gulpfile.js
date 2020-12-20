@@ -29,7 +29,7 @@ var banner = [
 ].join('');
 
 /**
- * Copy assets to dedicated directories inside nws_buergerportal
+ * Copy assets to dedicated directories inside nws_municipal_status
  */
 gulp.task('install-assets', function () {
 	// Glyphicons
