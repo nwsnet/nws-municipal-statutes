@@ -36,7 +36,7 @@ Load the extension with your Extension Management Module and install it.
 3) Create a plugin on any page and choose your desired view. Optionally you can apply further filter settings.
 
 ### 3) Setup site configuration for link generation
-Simply add the configuration to the _"config.yaml"_ for TYPO3 9.5
+Simply add the configuration to the _"config.yaml"_ for TYPO3 9.5 and higher
 >      imports:
 >            - resource: 'EXT:nws_municipal_statutes/Configuration/Site/ImportSiteConfiguration.yaml'
 
@@ -45,7 +45,7 @@ Simply add the configuration to the _"config.yaml"_ for TYPO3 9.5
 
 ### 3.1. Versions and support
 
-The extension can be used for Typo3 versions 7.6 to 9.5.x and PHP Versions 5.6 – 7.2.x.
+The extension can be used for Typo3 versions 9.5 to 10.4.x and PHP Versions 7.2 – 7.4.x.
 
 ### 3.2. Release Management
 
