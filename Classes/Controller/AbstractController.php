@@ -27,9 +27,12 @@ namespace Nwsnet\NwsMunicipalStatutes\Controller;
 use Exception;
 use Nwsnet\NwsMunicipalStatutes\Session\UserSession;
 use PDO;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
@@ -40,6 +43,8 @@ use TYPO3\CMS\Extbase\Mvc\Exception\InvalidRequestMethodException;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 use TYPO3\CMS\Extbase\Mvc\Web\Response;
 use TYPO3\CMS\Extbase\Service\TypoScriptService;
+use TYPO3\CMS\Frontend\Controller\ErrorController;
+use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
 
 /**
  * Abstract controllers that provide the error messages
@@ -48,8 +53,10 @@ use TYPO3\CMS\Extbase\Service\TypoScriptService;
  * @subpackage nws_municipal_statutes
  *
  */
-abstract class AbstractController extends ActionController
+abstract class AbstractController extends ActionController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     const MAX_ALIAS_LENGTH = 100;
     /**
      * UserSession
@@ -113,19 +120,28 @@ abstract class AbstractController extends ActionController
     {
         try {
             parent::callActionMethod();
-        } catch (Exception $exception) {
-            //write log in the TYPO3
-            GeneralUtility::devLog($exception->getMessage(), $this->request->getControllerExtensionKey(), 2);
-            //When an action in the controller is called, which produces only a direct output without Tempplate then no page called found
-            if ($exception instanceof InvalidRequestMethodException) {
-                $GLOBALS['TSFE']->pageNotFoundAndExit($exception->getMessage());
-            } elseif ($exception instanceof UnsupportedRequestTypeException) {
-                //We append the error message to the response. This causes the error message to be displayed inside the normal page layout. WARNING: the plugins output may gets cached.
-                if ($this->response instanceof Response) {
-                    $this->response->setStatus(500);
-                }
-                $this->handleError($exception);
+        } catch (UnsupportedRequestTypeException $e) {
+            $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 2]);
+            //We append the error message to the response. This causes the error message to be displayed inside the normal page layout. WARNING: the plugins output may gets cached.
+            if ($this->response instanceof Response) {
+                $this->response->setStatus(500);
             }
+            try {
+                $this->handleError($e);
+            } catch (InvalidActionNameException | InvalidControllerNameException $e) {
+                throw $e;
+            }
+        } catch (InvalidRequestMethodException $e) {
+            $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 2]);
+            $response = GeneralUtility::makeInstance(ErrorController::class)->pageNotFoundAction(
+                $GLOBALS['TYPO3_REQUEST'],
+                $e->getMessage(),
+                ['code' => PageAccessFailureReasons::PAGE_NOT_FOUND]
+            );
+            throw new ImmediateResponseException($response);
+        } catch (Exception $e) {
+            $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 3]);
+            throw $e;
         }
     }
 
