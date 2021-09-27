@@ -147,7 +147,11 @@ class AbstractLocalLaw
     protected function loadExtConf()
     {
         //load the ext conf (ext_conf_template.txt)
-        $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey])) {
+            $this->extConf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey];
+        } elseif (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey])) {
+            $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+        }
     }
 
     /**

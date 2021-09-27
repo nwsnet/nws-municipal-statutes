@@ -28,9 +28,16 @@ namespace Nwsnet\NwsMunicipalStatutes\Pdf;
 class ExtConf
 {
     /**
+     * $_EXTKEY
+     *
+     * @var string
+     */
+    protected $extKey = 'nws_municipal_statutes';
+
+    /**
      * @var array
      */
-    protected static $config;
+    protected static $extConf;
 
     /**
      * @param string $key
@@ -39,12 +46,12 @@ class ExtConf
      */
     public static function get($key, $default = null)
     {
-        if (null === self::$config) {
-            self::$config = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nws_municipal_statutes']) ?: array();
+        if (null === self::$extConf) {
+            self::$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nws_municipal_statutes']) ?: array();
         }
 
-        if (isset(self::$config[$key])) {
-            return self::$config[$key];
+        if (isset(self::$extConf[$key])) {
+            return self::$extConf[$key];
         } else {
             return $default;
         }
@@ -75,5 +82,20 @@ class ExtConf
     public static function getWkHtmlToPdfPath($default = 'wkhtmltopdf')
     {
         return self::get('wkhtmltopdfPath', $default);
+    }
+
+    /**
+     * Loads the extConf
+     *
+     * @return void
+     */
+    private function loadExtConf()
+    {
+        //load the ext conf (ext_conf_template.txt)
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey])) {
+            $this->extConf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey];
+        } elseif (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey])) {
+            $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+        }
     }
 }
