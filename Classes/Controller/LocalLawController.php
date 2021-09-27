@@ -31,6 +31,7 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
@@ -456,6 +457,14 @@ class LocalLawController extends AbstractController
                     if (isset($flexform['settings'])) {
                         $settings = array_merge($this->settings, $flexform['settings']);
                     }
+                }
+                $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+                /** @var FileRepository $fileObjects */
+                $fileObjects = $fileRepository->findByRelation('tt_content', 'image', $uid);
+                if (isset($fileObjects[0])) {
+                    $settings['headlineImage'] = $fileObjects[0];
+                } else {
+                    $settings['headlineImage'] = null;
                 }
             }
             if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {

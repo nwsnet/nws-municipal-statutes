@@ -2,12 +2,18 @@
 <f:layout name="Default"/>
 <f:section name="main">
 	<f:flashMessages/>
-	<f:if condition="{settings.headlineImage}">
+	<f:if condition="{settings.headlineImage} || {settings.headlineText}">
 		<div class="row">
 			<div class="col-md-12 tx-nwsmunicipalstatutes-pdf-headline">
 				<div>
-					<f:image src="{settings.headlineImage}" maxHeight="100"/>
-					<f:if condition="{settings.headlineText}"><h1>{settings.headlineText}</h1></f:if>
+					<div>
+						<f:if condition="{settings.headlineImage}">
+							<f:image image="{settings.headlineImage}" maxHeight="150"/>
+						</f:if>
+						<f:if condition="{settings.headlineText}">
+							<h1>{settings.headlineText}</h1>
+						</f:if>
+					</div>
 				</div>
 				<hr>
 			</div>
