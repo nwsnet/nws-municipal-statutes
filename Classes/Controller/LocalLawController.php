@@ -31,12 +31,12 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
-use TYPO3\CMS\Extbase\Service\FlexFormService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 
@@ -460,7 +460,7 @@ class LocalLawController extends AbstractController
                 $data = $this->getContentDataArray($table, $uid);
                 if (isset($data['pi_flexform'])) {
                     /** @var FlexFormService $flexFormService */
-                    $flexFormService = GeneralUtility::makeInstance('TYPO3\\CMS\Extbase\\Service\\FlexFormService');
+                    $flexFormService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Service\\FlexFormService');
                     $flexform = $flexFormService->convertFlexFormContentToArray($data['pi_flexform']);
                     if (isset($flexform['settings'])) {
                         $settings = array_merge($this->settings, $flexform['settings']);
