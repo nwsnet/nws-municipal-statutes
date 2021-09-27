@@ -33,7 +33,6 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
@@ -227,10 +226,8 @@ class LocalLawController extends AbstractController
 
         //Set the page title
         if (isset($legalNorm['name'])) {
-            if (version_compare(TYPO3_branch, '9.5', '>=')) {
-                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
-                $titleProvider->setTitle($legalNorm['name']);
-            }
+            $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+            $titleProvider->setTitle($legalNorm['name']);
         }
 
         $this->view->assign('treeMenu', $treeMenu);
@@ -355,10 +352,8 @@ class LocalLawController extends AbstractController
 
         //Set the page title
         if (isset($legalNorm['name'])) {
-            if (version_compare(TYPO3_branch, '9.5', '>=')) {
-                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
-                $titleProvider->setTitle($legalNorm['name']);
-            }
+            $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+            $titleProvider->setTitle($legalNorm['name']);
         }
 
         $this->view->assign('legalNorm', $legalNorm);
@@ -407,10 +402,8 @@ class LocalLawController extends AbstractController
         if (isset($legalNorm['longTitle'])) {
             $GLOBALS['TSFE']->page['title'] = $legalNorm['longTitle'];
             $GLOBALS['TSFE']->indexedDocTitle = $legalNorm['longTitle'];
-            if (version_compare(TYPO3_branch, '9.5', '>=')) {
-                $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
-                $titleProvider->setTitle($legalNorm['longTitle']);
-            }
+            $titleProvider = GeneralUtility::makeInstance(MunicipalPageTitleProvider::class);
+            $titleProvider->setTitle($legalNorm['longTitle']);
         }
 
         //Get referrer data from the transmission
@@ -431,9 +424,7 @@ class LocalLawController extends AbstractController
     {
         $params = GeneralUtility::_GET();
 
-        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
-        //if TYPO3 is greater than version 8, use request handlers
-        if ($versionAsInt > 8999999 && !isset($params['id'])) {
+        if (!isset($params['id'])) {
             $params['id'] = $GLOBALS['TYPO3_REQUEST']->getAttribute('routing')->getPageId();
             $params['type'] = $GLOBALS['TYPO3_REQUEST']->getAttribute('routing')->getPageType();
         }
