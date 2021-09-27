@@ -33,10 +33,18 @@ var banner = [
  */
 gulp.task('install-assets', function () {
 	// Glyphicons
-	var fonts_fontawesome = gulp.src(
+	var glyphicons = gulp.src(
 		'node_modules/@neos21/bootstrap3-glyphicons/assets/fonts/*',
 		{base: 'node_modules/@neos21/bootstrap3-glyphicons/assets/fonts'})
 		.pipe(gulp.dest('Resources/Public/Fonts/vendor/bootstrap3-glyphicons'));
+
+	//loading-overlay
+	var jqueryLoadingOverlay = gulp.src(
+		['node_modules/gasparesganga-jquery-loading-overlay/src/*.js'],
+		{base: 'node_modules/gasparesganga-jquery-loading-overlay/src/'})
+		.pipe(gulp.dest('Resources/Private/Source/Javascript/vendor/loading-overlay'));
+
+	return merge(glyphicons,jqueryLoadingOverlay);
 
 });
 /**
@@ -78,6 +86,8 @@ gulp.task('js', function () {
 			// force jquery on top
 			'Resources/Private/Source/Javascript/jquery-*.js',
 			'Resources/Private/Source/Javascript/*.js',
+			'Resources/Private/Source/Javascript/vendor/*/*/*.js',
+			'Resources/Private/Source/Javascript/vendor/*/*.js',
 			// scripts.js is handled separately
 			'!Resources/Private/Source/Javascript/scripts.js'
 		]),
