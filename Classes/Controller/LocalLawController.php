@@ -30,6 +30,7 @@ use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
@@ -528,7 +529,7 @@ class LocalLawController extends AbstractController
                 $pdfFile = $this->objectManager->get(
                     'Nwsnet\\NwsMunicipalStatutes\\Pdf\\Writer\\LegalNormPdf'
                 );
-                $pdfFilePath = PATH_site . 'typo3temp/' . md5(mt_rand()) . '.pdf';
+                $pdfFilePath = Environment::getPublicPath() . '/typo3temp/' . md5(mt_rand()) . '.pdf';
                 if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
                     return '';
                 }
