@@ -4,15 +4,8 @@ if (!defined('TYPO3_MODE')) {
     die ('Access denied.');
 }
 
-// unserializing the configuration so we can use it here:
-$_EXTCONF = unserialize($_EXTCONF);
-/**
- * Number of the user group: */
-
-$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['apiKey'] = $_EXTCONF['apiKey'] ? $_EXTCONF['apiKey'] : '';
-
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-    'Nwsnet.' . $_EXTKEY,
+    'Nwsnet.' . 'nws_municipal_statutes',
     'Pi1',
     array(
         'LocalLaw' => 'list,singlelist,show,showTitle,showTitleLegislator',
@@ -44,12 +37,12 @@ if (TYPO3_MODE === 'BE') {
 $GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['nwsMunicipalStatutesDispatcher'] = \Nwsnet\NwsMunicipalStatutes\Eid\Dispatcher::class . '::processRequest';
 
 // Caching framework
-if (!is_array($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY])) {
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY] = array();
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY]['frontend'] = 'TYPO3\\CMS\\Core\\Cache\\Frontend\\VariableFrontend';
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY]['groups'] = array('pages');
+if (!is_array($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']['nws_municipal_statutes'])) {
+    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']['nws_municipal_statutes'] = array();
+    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']['nws_municipal_statutes']['frontend'] = 'TYPO3\\CMS\\Core\\Cache\\Frontend\\VariableFrontend';
+    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']['nws_municipal_statutes']['groups'] = array('pages');
     // Cache for 24 hour
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][$_EXTKEY]['options'] = array('defaultLifetime' => 86400);
+    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']['nws_municipal_statutes']['options'] = array('defaultLifetime' => 86400);
 }
 //For providing the title links in Sites Configuration
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['NwsLegislatorTitleMapper'] = \Nwsnet\NwsMunicipalStatutes\Routing\Aspect\NwsLegislatorTitleMapper::class;
