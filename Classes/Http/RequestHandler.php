@@ -33,12 +33,12 @@ use Psr\Http\Server\RequestHandlerInterface as PsrRequestHandlerInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\NullResponse;
-use TYPO3\CMS\Core\Http\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -62,7 +62,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  *
  * Then the right HTTP response headers are compiled together and sent as well.
  */
-class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterface
+class RequestHandler implements PsrRequestHandlerInterface
 {
     /**
      * vendorName
@@ -194,8 +194,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
         $request = $this->addModifiedGlobalsToIncomingRequest($request);
         $this->resetGlobalsToCurrentRequest($request);
 
-        $params = GeneralUtility::_GP($this->arrayPattern);
-        $cHash = GeneralUtility::_GP('cHash');
+        $params = GeneralUtility::_GPmerged($this->arrayPattern);
+        $cHash = GeneralUtility::_GET('cHash');
         if (!empty($cHash)) {
             $typoScriptFrontendController->cHash = $cHash;
         }
@@ -215,8 +215,8 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
         $configuration['action'] = isset($params['action']) ? $params['action'] : $this->defaultAction;
 
         /** @var TypoScriptService $typoScriptService */
-        $typoScriptService = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-        $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray($typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsmunicipalstatutes.']);
+        $typoScriptService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\TypoScript\\TypoScriptService');
+        $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray($typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsbookingfacilities.']);
 
         $configuration['settings'] = $pluginConfiguration['settings'];
         $configuration['persistence'] = array('storagePid' => $pluginConfiguration['persistence']['storagePid']);
@@ -229,7 +229,9 @@ class RequestHandler implements RequestHandlerInterface, PsrRequestHandlerInterf
         /**
          * Initialize Extbase bootstrap
          */
-        $bootstrap = new Bootstrap();
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var Bootstrap $bootstrap */
+        $bootstrap = $objectManager->get(Bootstrap::class);
         $bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
             $typoScriptFrontendController);
 
