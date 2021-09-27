@@ -22,7 +22,7 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers\Uri;
+namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers\Link;
 
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
@@ -34,17 +34,17 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 
 /**
- * A view helper for creating Ajax URIs to extbase actions with contextRecord.
+ * A view helper for creating Ajax Links to extbase actions with contextRecord.
  *
  * = Examples =
  *
  * <code title="URI to the show-action of the current controller">
- *   <nws:uri.ajaxAction action="show" additionalParams="{eID:'nwsMunicipalStatutesDispatcher'}">
+ *   <nws:link.ajaxAction action="show" additionalParams="{eID:'nwsMunicipalStatutesDispatcher'}">
  *        Link
- *   </nws:uri.ajaxAction>
+ *   </nws:link.ajaxAction>
  * </code>
  * <output>
- *    index.php?id=123&eID=nwsMunicipalStatutesDispatcher&tx_myextension_plugin[context]=tt_content:123&tx_myextension_plugin[action]=show&tx_myextension_plugin[controller]=Standard&cHash=xyz
+ *    <a href="index.php?id=123&eID=nwsMunicipalStatutesDispatcher&tx_myextension_plugin[context]=tt_content|123&tx_myextension_plugin[action]=show&tx_myextension_plugin[controller]=Standard&cHash=xyz">Link</a>
  *     (depending on the current page and your TS configuration)
  * </output>
  */
@@ -83,39 +83,39 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
         $this->registerTagAttribute('rev', 'string',
             'Specifies the relationship between the linked document and the current document');
         $this->registerTagAttribute('target', 'string', 'Specifies where to open the linked document');
-            $this->registerArgument('action', 'string', 'Target action');
-            $this->registerArgument('controller', 'string',
-                'Target controller. If NULL current controllerName is used');
-            $this->registerArgument('extensionName', 'string',
-                'Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used');
-            $this->registerArgument('pluginName', 'string', 'Target plugin. If empty, the current plugin name is used');
-            $this->registerArgument('pageUid', 'int', 'Target page. See TypoLink destination');
-            $this->registerArgument('pageType', 'int', 'Type of the target page. See typolink.parameter');
-            $this->registerArgument('noCache', 'bool',
-                'Set this to disable caching for the target page. You should not need this.');
-            $this->registerArgument('noCacheHash', 'bool',
-                'Set this to suppress the cHash query parameter created by TypoLink. You should not need this.');
-            $this->registerArgument('section', 'string', 'The anchor to be added to the URI');
-            $this->registerArgument('format', 'string', 'The requested format, e.g. ".html');
-            $this->registerArgument('linkAccessRestrictedPages', 'bool',
-                'If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.');
-            $this->registerArgument('additionalParams', 'array',
-                'Additional query parameters that won\'t be prefixed like $arguments (overrule $arguments)');
-            $this->registerArgument('absolute', 'bool', 'If set, the URI of the rendered link is absolute');
-            $this->registerArgument('addQueryString', 'bool',
-                'If set, the current query parameters will be kept in the URI');
-            $this->registerArgument('argumentsToBeExcludedFromQueryString', 'array',
-                'Arguments to be removed from the URI. Only active if $addQueryString = TRUE');
-            $this->registerArgument('addQueryStringMethod', 'string',
-                'Set which parameters will be kept. Only active if $addQueryString = TRUE');
-            $this->registerArgument('arguments', 'array', 'Arguments for the controller action, associative array');
-            $this->registerArgument('contextRecord', 'string',
-                'The record that the rendering should depend upon. e.g. current (default: record is fetched from current Extbase plugin), tt_content:12 (tt_content record with uid 12), pages:15 (pages record with uid 15), \'currentPage\' record of current page',
-                false, 'current');
-        }
+        $this->registerArgument('action', 'string', 'Target action');
+        $this->registerArgument('controller', 'string',
+            'Target controller. If NULL current controllerName is used');
+        $this->registerArgument('extensionName', 'string',
+            'Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used');
+        $this->registerArgument('pluginName', 'string', 'Target plugin. If empty, the current plugin name is used');
+        $this->registerArgument('pageUid', 'int', 'Target page. See TypoLink destination');
+        $this->registerArgument('pageType', 'int', 'Type of the target page. See typolink.parameter');
+        $this->registerArgument('noCache', 'bool',
+            'Set this to disable caching for the target page. You should not need this.');
+        $this->registerArgument('noCacheHash', 'bool',
+            'Set this to suppress the cHash query parameter created by TypoLink. You should not need this.');
+        $this->registerArgument('section', 'string', 'The anchor to be added to the URI');
+        $this->registerArgument('format', 'string', 'The requested format, e.g. ".html');
+        $this->registerArgument('linkAccessRestrictedPages', 'bool',
+            'If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.');
+        $this->registerArgument('additionalParams', 'array',
+            'Additional query parameters that won\'t be prefixed like $arguments (overrule $arguments)');
+        $this->registerArgument('absolute', 'bool', 'If set, the URI of the rendered link is absolute');
+        $this->registerArgument('addQueryString', 'bool',
+            'If set, the current query parameters will be kept in the URI');
+        $this->registerArgument('argumentsToBeExcludedFromQueryString', 'array',
+            'Arguments to be removed from the URI. Only active if $addQueryString = TRUE');
+        $this->registerArgument('addQueryStringMethod', 'string',
+            'Set which parameters will be kept. Only active if $addQueryString = TRUE');
+        $this->registerArgument('arguments', 'array', 'Arguments for the controller action, associative array');
+        $this->registerArgument('contextRecord', 'string',
+            'The record that the rendering should depend upon. e.g. current (default: record is fetched from current Extbase plugin), tt_content:12 (tt_content record with uid 12), pages:15 (pages record with uid 15), \'currentPage\' record of current page',
+            false, 'current');
+    }
 
     /**
-     * Render the uri
+     * Render the tag
      *
      * @return string Rendered link
      * @throws NoSuchArgumentException
@@ -143,7 +143,6 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
 
         /** @var ControllerContext $controllerContext */
         $controllerContext = $this->renderingContext->getControllerContext();
-
         if ($pluginName === null) {
             $pluginName = $controllerContext->getRequest()->getPluginName();
         }
@@ -195,6 +194,12 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
             }
         }
         $uri = $uriBuilder->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
-        return $uri;
+        if ($uri === '') {
+            return $this->renderChildren();
+        }
+        $this->tag->addAttribute('href', $uri);
+        $this->tag->setContent($this->renderChildren());
+        $this->tag->forceClosingTag(true);
+        return $this->tag->render();
     }
 }

@@ -71,11 +71,11 @@
 		<div class="col-md-4">
 			<p class="text-right">
 				<f:if condition="{settings.enablePdf}">
-					<nws:uri.ajaxAction controller="LocalLaw" absolute="1" action="pdf" pageType="6363" arguments="{legalnorm: legalNorm.id}"
+					<nws:link.ajaxAction controller="LocalLaw" absolute="1" action="pdf" pageType="6363" arguments="{legalnorm: legalNorm.id}"
 										class="btn btn-default btn-secondary">
 						<span class="glyphicon glyphicon-save"></span>
 						<f:translate key="template.locallaw.show.pdf-download"/>
-					</nws:uri.ajaxAction>
+					</nws:link.ajaxAction>
 				</f:if>
 			</p>
 		</div>
