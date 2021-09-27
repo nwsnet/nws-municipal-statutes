@@ -30,7 +30,9 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * Class ItemsProcFunc, provide alternative selection fields for media elements
@@ -85,6 +87,18 @@ class ItemsProcFunc
     );
 
     /**
+     * TYPO3 10.x controller class
+     * @var string
+     */
+    private $controllerClass = "Nwsnet\NwsMunicipalStatutes\Controller\ItemsProcFuncController";
+
+    /**
+     * TYPO3 10.x controller alias
+     * @var string
+     */
+    private $controllerAlias = "ItemsProcFunc";
+
+    /**
      * Initialize Extbase
      *
      * @see Bootstrap::run()
@@ -98,13 +112,27 @@ class ItemsProcFunc
             'pluginName' => $this->pluginName,
 
         );
-        //set the default allowed controller action combinations
-        foreach ($this->controllerActions as $controllerName => $actions) {
-            $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$controllerName] = array(
-                'actions' => GeneralUtility::trimExplode(',', $actions)
-            );
+        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        if ($versionAsInt < 9999999) {
+            //set the default allowed controller action combinations
+            foreach ($this->controllerActions as $controllerName => $actions) {
+                $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$controllerName] = array(
+                    'actions' => GeneralUtility::trimExplode(',', $actions)
+                );
+            }
+            $this->bootstrap = new Bootstrap();
+        } else {
+            //set the default allowed controller action combinations
+            foreach ($this->controllerActions as $controllerName => $actions) {
+                $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$this->controllerClass] = array(
+                    'className' => $this->controllerClass,
+                    'alias' => $this->controllerAlias,
+                    'actions' => GeneralUtility::trimExplode(',', $actions),
+                );
+            }
+            $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            $this->bootstrap = $this->objectManager->get(Bootstrap::class);
         }
-        $this->bootstrap = new Bootstrap();
     }
 
     /**
@@ -302,19 +330,15 @@ class ItemsProcFunc
     protected function getPiFlexformFromTable($table, $uid)
     {
         $pi_flexform = '';
-        if (isset($GLOBALS['TYPO3_DB'])) {
-            $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pi_flexform', $table, 'uid=' . $uid);
-            $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-        } else {
-            /** @var QueryBuilder $queryBuilder */
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-            $res = $queryBuilder->select('pi_flexform')
-                ->from('tt_content')
-                ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)))
-                ->groupBy('uid')
-                ->execute();
-            $row = $res->fetch();
-        }
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
+        $res = $queryBuilder->select('pi_flexform')
+            ->from('tt_content')
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)))
+            ->groupBy('uid')
+            ->execute();
+        $row = $res->fetch();
+
         if (isset($row['pi_flexform']) && !empty($row['pi_flexform'])) {
             $pi_flexform = $row['pi_flexform'];
         }
