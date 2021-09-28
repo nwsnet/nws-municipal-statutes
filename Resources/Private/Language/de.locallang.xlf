@@ -210,6 +210,11 @@
 					Sie sich an Ihren Systemadministrator.
 				</target>
 			</trans-unit>
+
+			<trans-unit id="global.empty">
+				<source>No data available</source>
+				<target>Keine Daten vorhanden</target>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

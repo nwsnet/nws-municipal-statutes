@@ -158,6 +158,10 @@
 					administrator.
 				</source>
 			</trans-unit>
+
+			<trans-unit id="global.empty">
+				<source>No data available</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

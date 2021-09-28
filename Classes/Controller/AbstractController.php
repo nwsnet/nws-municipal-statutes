@@ -58,6 +58,14 @@ abstract class AbstractController extends ActionController implements LoggerAwar
     use LoggerAwareTrait;
 
     const MAX_ALIAS_LENGTH = 100;
+
+    /**
+     * Extension Name
+     *
+     * @var string
+     */
+    protected $extensionName = 'NwsMunicipalStatutes';
+
     /**
      * UserSession
      *
