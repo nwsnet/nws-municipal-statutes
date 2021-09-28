@@ -28,6 +28,7 @@ use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
@@ -131,6 +132,14 @@ class AbstractTitleMapper
     private $contentObject;
 
     /**
+     * Request object
+     * @var array
+     */
+    private $controllerAlias = array(
+        'LocalLaw' => 'Nwsnet\NwsMunicipalStatutes\Controller\LocalLawController',
+    );
+
+    /**
      * AbstractTitleMapper constructor.
      * @param array $settings
      * @throws InvalidConfigurationTypeException
@@ -165,7 +174,8 @@ class AbstractTitleMapper
             'pluginName' => $this->pluginName,
 
         );
-        $this->bootstrap = new Bootstrap();
+        /** @var Bootstrap $bootstrap */
+        $this->bootstrap = $objectManager->get(Bootstrap::class);
     }
 
     /**
@@ -173,13 +183,25 @@ class AbstractTitleMapper
      *
      * @param array $arguments
      * @return string|null
-     * @throws InfiniteLoopException
      * @throws InvalidActionNameException
      * @throws InvalidControllerNameException
      * @throws InvalidExtensionNameException
+     * @throws InfiniteLoopException
      */
     protected function getTitle(array $arguments)
     {
+        //Workaround for url reverse conversion
+        if (!isset($GLOBALS['TSFE'])) {
+            if (isset($arguments['evid'])) {
+                return (string)$arguments['evid'];
+            } elseif (isset($arguments['sid'])) {
+                return (string)$arguments['sid'];
+            } elseif (isset($arguments['fid'])) {
+                return (string)$arguments['fid'];
+            } else {
+                return "0";
+            }
+        }
         $controller = isset($arguments['controller']) ? $arguments['controller'] : 'Events';
         $action = isset($arguments['action']) ? $arguments['action'] : 'showTitle';
 
@@ -197,10 +219,15 @@ class AbstractTitleMapper
         $objectManager = GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
         /** @var Request $request */
         $request = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Request');
-        $request->setControllerVendorName($this->vendorName);
+        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        if ($versionAsInt < 9999999) {
+            $request->setControllerVendorName($this->vendorName);
+        } else {
+            $request->setControllerAliasToClassNameMapping($this->controllerAlias);
+        }
+        $request->setControllerName($controller);
         $request->setcontrollerExtensionName($this->extensionName);
         $request->setPluginName($this->pluginName);
-        $request->setControllerName($controller);
         $request->setControllerActionName($action);
         $request->setArguments($arguments);
         /** @var ResponseInterface $response */
