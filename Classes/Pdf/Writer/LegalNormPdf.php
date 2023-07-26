@@ -73,7 +73,7 @@ class LegalNormPdf
             $pdf->setArgument('password', $auth['password']);
         }
         // Set the proxy if entered in the TYPO3 configuration
-        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? null);
+        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? '');
         if (!empty($proxy)) {
             $pdf->setArgument('p', $proxy);
         }

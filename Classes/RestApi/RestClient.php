@@ -141,7 +141,7 @@ class RestClient
         }
 
         // Set the proxy if entered in the TYPO3 configuration
-        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? null);
+        $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? '');
 
         $this->curl = curl_init($executeHttp);
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $header);

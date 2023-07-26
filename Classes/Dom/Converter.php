@@ -72,7 +72,7 @@ class Converter
             if (!empty($section)) {
                 $section = $this->setTag('h2', 'h4', $section);
             }
-            $content['elements'][] = array('header' => $header, 'content' => $section->innertext);
+            $content['elements'][] = array('header' => $header, 'content' => $section->innertext??'');
         }
 
         return $content;
