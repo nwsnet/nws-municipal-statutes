@@ -25,13 +25,16 @@
 namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
 use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
+use TYPO3\CMS\Extbase\Configuration\FrontendConfigurationManager;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Mvc\Dispatcher;
 use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
@@ -40,13 +43,15 @@ use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
 use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
+use TYPO3\CMS\Extbase\Object\Exception;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
  * Initializes the ability to read titles from an API interface and make them available for the link
  *
  * @package    TYPO3
- * @subpackage nws_municipal_statutes
+ * @subpackage nws_council_system
  *
  */
 class AbstractTitleMapper
@@ -124,6 +129,11 @@ class AbstractTitleMapper
     /**
      * @var array
      */
+    protected $settings;
+
+    /**
+     * @var array
+     */
     private $setting;
 
     /**
@@ -147,6 +157,7 @@ class AbstractTitleMapper
     public function __construct(array $settings)
     {
         $this->maxLength = !isset($settings['maxLength']) ? $settings['maxLength'] : self::MAX_ALIAS_LENGTH;
+        /** @var CacheManager $cacheManager */
         $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
 
         // we'll just reuse the default page cache to store our slug cache
@@ -161,11 +172,15 @@ class AbstractTitleMapper
         );
 
         // Read existing extbase configuration
-        $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         /** @var ConfigurationManager $configurationManager */
-        $this->configurationManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
-        $this->setting = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-        $this->contentObject = $this->configurationManager->getContentObject();
+        if (isset($GLOBALS['TSFE'])) {
+            /** @var ConfigurationManager $configurationManager */
+            $this->configurationManager = $objectManager->get(ConfigurationManager::class);
+            $this->setting = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
+            $this->contentObject = $this->configurationManager->getContentObject();
+        }
 
         //set the configuration
         $this->configurationBootstrap = array(
@@ -174,8 +189,6 @@ class AbstractTitleMapper
             'pluginName' => $this->pluginName,
 
         );
-        /** @var Bootstrap $bootstrap */
-        $this->bootstrap = $objectManager->get(Bootstrap::class);
     }
 
     /**
@@ -188,37 +201,49 @@ class AbstractTitleMapper
      * @throws InvalidExtensionNameException
      * @throws InfiniteLoopException
      */
-    protected function getTitle(array $arguments)
+    protected function getTitle(array $arguments, string $argumentName): ?string
     {
         //Workaround for url reverse conversion
         if (!isset($GLOBALS['TSFE'])) {
-            if (isset($arguments['evid'])) {
-                return (string)$arguments['evid'];
-            } elseif (isset($arguments['sid'])) {
-                return (string)$arguments['sid'];
-            } elseif (isset($arguments['fid'])) {
-                return (string)$arguments['fid'];
+            if (isset($arguments[$argumentName])) {
+                return (string)$arguments[$argumentName];
             } else {
                 return "0";
             }
         }
-        $controller = isset($arguments['controller']) ? $arguments['controller'] : 'Events';
-        $action = isset($arguments['action']) ? $arguments['action'] : 'showTitle';
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var Bootstrap $bootstrap */
+        $bootstrap = clone $objectManager->get(Bootstrap::class);
+        $controller = $arguments['controller'] ?? 'Companies';
+        $action = $arguments['action'] ?? 'title';
 
         /**
          * Initialize Extbase bootstap
          */
         $this->configurationBootstrap['controller'] = $controller;
         $this->configurationBootstrap['action'] = $action;
-        $this->bootstrap->initialize($this->configurationBootstrap);
-        $this->bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
-            $GLOBALS['TSFE']);
+        $bootstrap->initialize($this->configurationBootstrap);
+        if (method_exists($bootstrap, 'setContentObjectRenderer')) {
+            /** @var ContentObjectRenderer $contentObjectRenderer */
+            $contentObjectRenderer = GeneralUtility::makeInstance(
+                'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+                $GLOBALS['TSFE']
+            );
+            $bootstrap->setContentObjectRenderer($contentObjectRenderer);
+        } else {
+            $bootstrap->cObj = GeneralUtility::makeInstance(
+                'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+                $GLOBALS['TSFE']
+            );
+        }
+
         /**
          * Build the request
          */
-        $objectManager = GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
         /** @var Request $request */
-        $request = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Request');
+        $request = clone $objectManager->get(Request::class);
+
         $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
         if ($versionAsInt < 9999999) {
             $request->setControllerVendorName($this->vendorName);
@@ -230,12 +255,20 @@ class AbstractTitleMapper
         $request->setPluginName($this->pluginName);
         $request->setControllerActionName($action);
         $request->setArguments($arguments);
-        /** @var ResponseInterface $response */
-        $response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
+
         /** @var Dispatcher $dispatcher */
         $dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
-        $dispatcher->dispatch($request, $response);
-        $title = $response->getContent();
+        $reflection = new \ReflectionMethod($dispatcher, 'dispatch');
+        if ($reflection->getNumberOfParameters() === 1) {
+            $response = $dispatcher->dispatch($request);
+            $title = $response->getBody()->__toString();
+        } else {
+            /** @var ResponseInterface $response */
+            $response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
+            $dispatcher->dispatch($request, $response);
+            $title = $response->getContent();
+        }
+
         //fallback for removing "/"
         $title = str_replace('/', '', $title);
 
@@ -248,6 +281,32 @@ class AbstractTitleMapper
         if (isset($title) && !empty($title)) {
             return empty($title) ? null : $title;
         }
+
         return null;
     }
+
+    /**
+     * Finds the id at the end of the string with delimiter "-"
+     *
+     * @param string $value
+     * @return string|null
+     */
+    protected function getIdByString(string $value): ?string
+    {
+        $result = null;
+        if (strpos($value, '-') !== false) {
+            $ids = GeneralUtility::trimExplode('-', $value);
+            $id = array_slice($ids, -1);
+            $result = isset($id[0]) && !empty($id[0]) ? $id[0] : null;
+        } else {
+            if (is_numeric($value)) {
+                $result = $value;
+            } elseif (is_numeric(substr($value, 1))) {
+                $result = $value;
+            }
+        }
+
+        return $result;
+    }
 }
+
