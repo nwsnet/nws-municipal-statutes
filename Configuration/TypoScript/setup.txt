@@ -91,6 +91,7 @@ nws_municipalstatutes_pdf {
     cssInline < page.cssInline
     config {
         xhtml_cleaning = 0
+        disableAllHeaderCode = 1
         additionalHeaders = Content-type:text/html
         additionalHeaders.10.header = Content-type:text/html
     }
@@ -106,6 +107,9 @@ nws_municipalstatutes_pdf {
         }
     }
 }
+[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/create') > 0]
+    nws_municipalstatutes_pdf.config.disableAllHeaderCode = 0
+[global]
 
 [getTSFE().type == 6363]
     config.debug = 0
