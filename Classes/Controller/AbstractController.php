@@ -24,25 +24,30 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
+use Doctrine\DBAL\DBALException;
 use Exception;
 use Nwsnet\NwsMunicipalStatutes\Session\UserSession;
 use PDO;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Error\Http\PageNotFoundException;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidRequestMethodException;
-use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
-use TYPO3\CMS\Extbase\Mvc\Web\Response;
-use TYPO3\CMS\Extbase\Service\TypoScriptService;
+
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
+
 use TYPO3\CMS\Frontend\Controller\ErrorController;
 use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
 
@@ -65,6 +70,13 @@ abstract class AbstractController extends ActionController implements LoggerAwar
      * @var string
      */
     protected $extensionName = 'NwsMunicipalStatutes';
+
+    /**
+     * $_EXTKEY
+     *
+     * @var string $extKey
+     */
+    protected $extKey = 'nws_municipal_statutes';
 
     /**
      * UserSession
@@ -117,27 +129,23 @@ abstract class AbstractController extends ActionController implements LoggerAwar
     }
 
     /**
-     * Calls the specified action method and passes the arguments.
+     * Calls the specified method and passes the arguments
      *
-     * @return void
+     * @param RequestInterface|null $request
+     * @return ResponseInterface
+     * @throws ImmediateResponseException
      * @throws InvalidActionNameException
      * @throws InvalidControllerNameException
-     * @override \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+     * @throws PageNotFoundException
      */
-    protected function callActionMethod()
+    public function callActionMethod(RequestInterface $request = null): ResponseInterface
     {
         try {
-            parent::callActionMethod();
-        } catch (UnsupportedRequestTypeException $e) {
-            $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 2]);
-            //We append the error message to the response. This causes the error message to be displayed inside the normal page layout. WARNING: the plugins output may gets cached.
-            if ($this->response instanceof Response) {
-                $this->response->setStatus(500);
-            }
-            try {
-                $this->handleError($e);
-            } catch (InvalidActionNameException | InvalidControllerNameException $e) {
-                throw $e;
+            if (empty($request)) {
+                parent::callActionMethod();
+                $response = new Response();
+            } else {
+                $response = parent::callActionMethod($request);
             }
         } catch (InvalidRequestMethodException $e) {
             $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 2]);
@@ -147,20 +155,19 @@ abstract class AbstractController extends ActionController implements LoggerAwar
                 ['code' => PageAccessFailureReasons::PAGE_NOT_FOUND]
             );
             throw new ImmediateResponseException($response);
-        } catch (Exception $e) {
+        }  catch (Exception $e) {
             $this->logger->debug($e->getMessage(), [$this->request->getControllerExtensionKey() => 3]);
             throw $e;
         }
+
+        return $response;
     }
 
     /**
-     * provide the error message for output within the page
+     * Provide the error message for output within the page
      *
      * @param Exception $e
-     *
-     * @return void
-     * @throws InvalidActionNameException
-     * @throws InvalidControllerNameException
+     * @return ResponseInterface
      */
     protected function handleError(Exception $e)
     {
@@ -169,9 +176,14 @@ abstract class AbstractController extends ActionController implements LoggerAwar
         $controllerContext->getRequest()->setControllerActionName('error');
         $this->view->setControllerContext($controllerContext);
         $content = $this->view->assign('exception', $e)->render('error');
-        $this->response->appendContent($content);
-    }
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->htmlResponse($content);
+        } else {
+            $this->response->appendContent($content);
 
+            return $this->response;
+        }
+    }
     /**
      * Provide the libraries for OpenStreet map
      *
@@ -299,6 +311,7 @@ abstract class AbstractController extends ActionController implements LoggerAwar
      * @param integer $uid
      *
      * @return array $row
+     * @throws DBALException
      */
     protected function getContentDataArray($table, $uid)
     {

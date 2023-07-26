@@ -30,7 +30,9 @@ use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -417,8 +419,7 @@ class LocalLawController extends AbstractController
     /**
      * Creates a PDF with table of contents of the legal norm
      *
-     * @return string
-     * @throws UnsupportedRequestTypeException
+     * @return string|ResponseInterface
      * @throws NoSuchArgumentException
      */
     public function pdfAction()
@@ -469,7 +470,7 @@ class LocalLawController extends AbstractController
             }
             if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
                 $error = $this->apiLocalLaw->legislator()->getExceptionError();
-                throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+                throw new \UnexpectedValueException($error['message'], $error['code']);
             }
             $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
             $legislatorId = $legalNorm['legislator']['id'];
@@ -498,6 +499,8 @@ class LocalLawController extends AbstractController
             $this->view->assign('settings', $settings);
             $this->view->assign('legalNorm', $legalNorm);
         } else {
+            $typoScriptFrontendController = $GLOBALS['TSFE'];
+            $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 0;
             $params['tx_nwsmunicipalstatutes_pi1']['create'] = 'true';
             /* @var $cacheHash CacheHashCalculator */
             $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
@@ -518,7 +521,7 @@ class LocalLawController extends AbstractController
                 );
                 if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
                     $error = $this->apiLocalLaw->legislator()->getExceptionError();
-                    throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+                    throw new \UnexpectedValueException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
                 $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
@@ -536,17 +539,30 @@ class LocalLawController extends AbstractController
 
                 $pdf = @file_get_contents($pdfFilePath);
                 unlink($pdfFilePath);
+                if (method_exists($this, 'htmlResponse')) {
+                    /** @var TypoScriptFrontendController $typoScriptFrontendController */
 
-                /** @var TypoScriptFrontendController $typoScriptFrontendController */
-                $typoScriptFrontendController = $GLOBALS['TSFE'];
-                $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
-                $typoScriptFrontendController->setContentType('application/pdf');
+                    $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+                    $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 1;
+                    $typoScriptFrontendController->setContentType('application/pdf');
+                    return $this->responseFactory->createResponse()
+                        ->withHeader('Content-Type', 'application/pdf')
+                        ->withHeader('Content-Transfer-Encoding', 'binary')
+                        ->withHeader('Content-Disposition', 'attachment;filename="' . $fileName)
+                        ->withHeader('Content-Length', (string)  strlen($pdf))
+                        ->withHeader('Connection', 'close')
+                        ->withBody($this->streamFactory->createStream((string)($pdf)));
 
-                $this->response->setHeader('Content-Transfer-Encoding', 'binary');
-                $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
-                $this->response->setHeader('Content-Length', strlen($pdf));
-                $this->response->setHeader('Connection', 'close');
-                echo $pdf;
+                } else {
+                    /** @var TypoScriptFrontendController $typoScriptFrontendController */
+                    $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+                    $typoScriptFrontendController->setContentType('application/pdf');
+                    $this->response->setHeader('Content-Transfer-Encoding', 'binary');
+                    $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
+                    $this->response->setHeader('Content-Length', strlen($pdf));
+                    $this->response->setHeader('Connection', 'close');
+                    return $pdf;
+                }
             }
             return '';
         }
@@ -555,12 +571,12 @@ class LocalLawController extends AbstractController
     /**
      * Providing the legal norm name for the page and link title generation
      *
-     * @return string NULL|$legalNorm['longTitle']
+     * @return string|ResponseInterface
      */
-    public function showTitleAction()
+    public function showTitleAction(int $legalnorm)
     {
-        $request = $this->request->getArguments();
-        $legalNormId = $request['legalnorm'];
+        $legalNormId = $legalnorm;
+        $title= '';
         $filter = array(
             'selectAttributes' => array(
                 'id',
@@ -573,20 +589,25 @@ class LocalLawController extends AbstractController
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
 
         if (isset($legalNorm['longTitle']) && !empty($legalNorm['longTitle'])) {
-            return $legalNorm['longTitle'];
+            $title =  $legalNorm['longTitle'];
         }
-        return '';
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->responseFactory->createResponse()
+                ->withBody($this->streamFactory->createStream((string)($title)));
+        } else {
+            return $title;
+        }
     }
 
     /**
      * Providing the legislator name for the page and link title generation
      *
-     * @return string
+     * @return string|ResponseInterface
      */
-    public function showTitleLegislatorAction()
+    public function showTitleLegislatorAction(int $legislator)
     {
-        $request = $this->request->getArguments();
-        $legislatorId = $request['legislator'];
+        $legislatorId = $legislator;
+        $title= '';
         $filter = array(
             'selectAttributes' => array(
                 'id',
@@ -599,8 +620,13 @@ class LocalLawController extends AbstractController
         $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
 
         if (isset($legislator['name']) && !empty($legislator['name'])) {
-            return $legislator['name'];
+            $title = $legislator['name'];
         }
-        return '';
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->responseFactory->createResponse()
+                ->withBody($this->streamFactory->createStream((string)($title)));
+        } else {
+            return $title;
+        }
     }
 }
