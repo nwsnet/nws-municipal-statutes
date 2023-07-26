@@ -7,7 +7,7 @@ jurisdictionFinderApiUrl = https://restapi-v3-sh.zfinder.de
 # cat=content/enable; type=string; label=Official municipality key: Official municipality key for a federal state, for example (Schleswig-Holstein = 01)
 agsKey = 01
 # cat=basic/fields/010; type=string; label=wkhtmltopdf binary:Absolute path to wkhtmltopdf binary. (because of https version >= 0.12.5)
-wkhtmltopdfPath = /bin/wkhtmltopdf
+wkhtmltopdfPath = /usr/local/bin/wkhtmltopdf
 
 
 
