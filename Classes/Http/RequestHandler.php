@@ -39,6 +39,7 @@ use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -79,11 +80,11 @@ class RequestHandler implements PsrRequestHandlerInterface
     private $extensionName = 'NwsMunicipalStatutes';
 
     /**
-     * pluginName
+     * Default pluginName
      *
      * @var string
      */
-    private $pluginName = 'Pi1';
+    private $defaultPluginName = 'Pi1';
 
     /**
      * Default Controller
@@ -100,11 +101,21 @@ class RequestHandler implements PsrRequestHandlerInterface
     private $defaultAction = 'list';
 
     /**
-     * Patter for transmitted get parameter
+     * Default Patter for transmitted get parameter
      *
      * @var string
      */
-    private $arrayPattern = 'tx_nwsmunicipalstatutes_pi1';
+    private $defaultArrayPattern = 'tx_nwsmunicipalstatutes_pi1';
+
+    /**
+     * Pattern list for transmitted get parameter
+     *
+     * @var array
+     */
+    private $arrayPattern = [
+        'tx_nwsmunicipalstatutes_pi1',
+    ];
+
 
     /**
      * Handles a frontend request
@@ -128,7 +139,7 @@ class RequestHandler implements PsrRequestHandlerInterface
      */
     protected function addModifiedGlobalsToIncomingRequest(ServerRequestInterface $request): ServerRequestInterface
     {
-        $originalGetParameters = $request->getAttribute('_originalGetParameters', null);
+        $originalGetParameters = $request->getAttribute('_originalGetParameters');
         if ($originalGetParameters !== null && !empty($_GET) && $_GET !== $originalGetParameters) {
             // Find out what has been changed.
             $modifiedGetParameters = ArrayUtility::arrayDiffAssocRecursive($_GET ?? [], $originalGetParameters);
@@ -139,7 +150,7 @@ class RequestHandler implements PsrRequestHandlerInterface
             }
         }
         // do same for $_POST if the request is a POST request
-        $originalPostParameters = $request->getAttribute('_originalPostParameters', null);
+        $originalPostParameters = $request->getAttribute('_originalPostParameters');
         if ($request->getMethod() === 'POST' && $originalPostParameters !== null && !empty($_POST) && $_POST !== $originalPostParameters) {
             // Find out what has been changed
             $modifiedPostParameters = ArrayUtility::arrayDiffAssocRecursive($_POST ?? [], $originalPostParameters);
@@ -194,21 +205,22 @@ class RequestHandler implements PsrRequestHandlerInterface
         $request = $this->addModifiedGlobalsToIncomingRequest($request);
         $this->resetGlobalsToCurrentRequest($request);
 
-        $params = GeneralUtility::_GPmerged($this->arrayPattern);
+
+        $params = GeneralUtility::_GPmerged($this->getArrayPattern($request));
         $cHash = GeneralUtility::_GET('cHash');
         if (!empty($cHash)) {
             $typoScriptFrontendController->cHash = $cHash;
         }
         //Read ContextRecord for Flexform
-        if (isset($params['context']) && strpos($params['context'], ':') !== false) {
-            list($table, $uid) = explode(':', $params['context']);
+        if (isset($params['context']) && strpos($params['context'], '|') !== false) {
+            list($table, $uid) = explode('|', $params['context']);
         }
 
         //set the configuration
         $configuration = array(
             'vendorName' => $this->vendorName,
             'extensionName' => $this->extensionName,
-            'pluginName' => $this->pluginName,
+            'pluginName' => $this->getPluginName($request),
 
         );
         $configuration['controller'] = isset($params['controller']) ? $params['controller'] : $this->defaultController;
@@ -216,7 +228,13 @@ class RequestHandler implements PsrRequestHandlerInterface
 
         /** @var TypoScriptService $typoScriptService */
         $typoScriptService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\TypoScript\\TypoScriptService');
-        $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray($typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsbookingfacilities.']);
+
+        $pluginConfiguration['settings'] = [];
+        if (isset($typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsmunicipalstatutes.'])) {
+            $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray(
+                $typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsmunicipalstatutes.']
+            );
+        }
 
         $configuration['settings'] = $pluginConfiguration['settings'];
         $configuration['persistence'] = array('storagePid' => $pluginConfiguration['persistence']['storagePid']);
@@ -229,22 +247,43 @@ class RequestHandler implements PsrRequestHandlerInterface
         /**
          * Initialize Extbase bootstrap
          */
+
+        /** @var ObjectManager $objectManager */
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         /** @var Bootstrap $bootstrap */
         $bootstrap = $objectManager->get(Bootstrap::class);
-        $bootstrap->cObj = GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
-            $typoScriptFrontendController);
+        if (method_exists($bootstrap, 'setContentObjectRenderer')) {
+            /** @var ContentObjectRenderer $contentObjectRenderer */
+            $contentObjectRenderer = GeneralUtility::makeInstance(
+                'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+                $typoScriptFrontendController
+            );
+            //initalize the data us the content element
+            if (isset($table) && isset($uid)) {
+                $data = $this->getContentDataArray($table, intval($uid));
+                if (is_array($data) && !empty($data)) {
+                    $contentObjectRenderer->start($data, 'tt_content');
+                }
+            }
 
+            $bootstrap->setContentObjectRenderer($contentObjectRenderer);
+        } else {
+            $bootstrap->cObj = GeneralUtility::makeInstance(
+                'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
+                $typoScriptFrontendController
+            );
         //initalize the data us the content element
         if (isset($table) && isset($uid)) {
-            $data = $this->getContentDataArray($table, $uid);
-            if (is_array($data)) {
+                $data = $this->getContentDataArray($table, intval($uid));
+                if (is_array($data) && !empty($data)) {
                 $bootstrap->cObj->start($data, 'tt_content');
             }
         }
+        }
+
         //output
         $typoScriptFrontendController->content = $bootstrap->run('', $configuration);
-        $isOutputting = !empty($typoScriptFrontendController->content) ? true : false;
+        $isOutputting = !empty($typoScriptFrontendController->content);
         // Create a Response object when sending content
         $response = new Response();
 
@@ -252,6 +291,9 @@ class RequestHandler implements PsrRequestHandlerInterface
         $typoScriptFrontendController->fe_user->storeSessionData();
 
         $response->getBody()->write($typoScriptFrontendController->content);
+        if(method_exists($typoScriptFrontendController,'applyHttpHeadersToResponse')){
+            $response = $typoScriptFrontendController->applyHttpHeadersToResponse($response);
+        }
 
         return $isOutputting ? $response : new NullResponse();
     }
@@ -264,7 +306,7 @@ class RequestHandler implements PsrRequestHandlerInterface
      *
      * @return array $row
      */
-    protected function getContentDataArray($table, $uid)
+    protected function getContentDataArray(string $table, int $uid): array
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
@@ -273,7 +315,47 @@ class RequestHandler implements PsrRequestHandlerInterface
             ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)))
             ->groupBy('uid')
             ->execute();
-        return $res->fetch();
+        $result = $res->fetch();
+
+        return !empty($result) ? $result : [];
+    }
+
+    /**
+     * Determines the array pattern that was used for the get transmission
+     *
+     * @param ServerRequestInterface $request
+     * @return string
+     */
+    private function getArrayPattern(ServerRequestInterface $request): string
+    {
+        $result = $this->defaultArrayPattern;
+        $queryParams = $request->getQueryParams();
+        if (!empty($queryParams)) {
+            foreach ($this->arrayPattern as $patter) {
+                if (isset($queryParams[$patter]) && !empty($queryParams[$patter])) {
+                    $result = $patter;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Determines the plugin name from the request data
+     *
+     * @param ServerRequestInterface $request
+     * @return string
+     */
+    private function getPluginName(ServerRequestInterface $request): string
+    {
+        $result = $this->defaultPluginName;
+        $plugin = GeneralUtility::trimExplode('_', $this->getArrayPattern($request));
+        if (!empty($plugin) && is_array($plugin)) {
+            $result = ucfirst(end($plugin));
+        }
+
+        return $result;
     }
 
     /**
