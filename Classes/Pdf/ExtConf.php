@@ -32,7 +32,7 @@ class ExtConf
      *
      * @var string
      */
-    protected $extKey = 'nws_municipal_statutes';
+    protected static $extKey = 'nws_municipal_statutes';
 
     /**
      * @var array
@@ -47,7 +47,7 @@ class ExtConf
     public static function get($key, $default = null)
     {
         if (null === self::$extConf) {
-            self::$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nws_municipal_statutes']) ?: array();
+            self::loadExtConf();
         }
 
         if (isset(self::$extConf[$key])) {
@@ -89,13 +89,13 @@ class ExtConf
      *
      * @return void
      */
-    private function loadExtConf()
+    private static function loadExtConf()
     {
         //load the ext conf (ext_conf_template.txt)
-        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey])) {
-            $this->extConf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey];
-        } elseif (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey])) {
-            $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][self::$extKey])) {
+            self::$extConf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][self::$extKey];
+        } elseif (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][self::$extKey])) {
+            self::$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][self::$extKey]);
         }
     }
 }
