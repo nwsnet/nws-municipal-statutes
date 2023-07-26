@@ -20,7 +20,7 @@ $EM_CONF['nws_municipal_statutes'] = array(
 	'version' => '0.3.0',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '9.5.0-10.4.99',
+			'typo3' => '9.5.0-11.5.99',
 		),
 		'conflicts' => array(),
 		'suggests' => array(),
