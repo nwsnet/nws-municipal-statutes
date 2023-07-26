@@ -8,7 +8,7 @@
  * writing. "version" and "dependencies" must not be touched!
  ***************************************************************/
 
-$EM_CONF[$_EXTKEY] = array(
+$EM_CONF['nws_municipal_statutes'] = array(
 	'title' => 'Municipal statutes from the TSA interface',
 	'description' => 'Reads all available municipal statutes from the TSA FullRest interface.',
 	'category' => 'plugin',
