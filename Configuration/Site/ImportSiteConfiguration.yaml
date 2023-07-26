@@ -15,13 +15,15 @@ routeEnhancers:
       defaultController: 'LocalLaw::list'
       aspects:
           legislator_title:
-              type: NwsLegislatorTitleMapper
-              tableName: 'notable'
-              fieldName: 'nofield'
-              configuration:
-                  prependSlash: false
-                  fallbackCharacter: '-'
-              maxLength: 100
+            type: MunicipalStatusStaticActionMapper
+            controller: 'LocalLaw'
+            action: 'showTitleLegislator'
+            argument: 'legislator'
+            plugin: 'Pi1'
+            configuration:
+                prependSlash: false
+                fallbackCharacter: '-'
+            maxLength: 100
           localized_legislator:
               type: LocaleModifier
               default: 'legislator'
@@ -29,9 +31,11 @@ routeEnhancers:
                   - locale: 'de_DE.*'
                     value: 'gesetzgeber'
           legalnorm_title:
-              type: NwsLegalNormTitleMapper
-              tableName: 'notable'
-              fieldName: 'nofield'
+              type: MunicipalStatusStaticActionMapper
+              controller: 'LocalLaw'
+              action: 'showTitle'
+              argument: 'legalnorm'
+              plugin: 'Pi1'
               configuration:
                   prependSlash: false
                   fallbackCharacter: '-'
