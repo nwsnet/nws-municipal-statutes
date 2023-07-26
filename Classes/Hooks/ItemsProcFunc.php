@@ -32,6 +32,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Object\Exception;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
@@ -83,7 +84,7 @@ class ItemsProcFunc
      * @var array
      */
     private $controllerActions = array(  // Allowed controller action combinations
-        'ItemsProcFunc' => 'showLegislator,showStructure',
+        'ItemsProcFunc' => 'readLegislator,readStructure',
     );
 
     /**
@@ -101,9 +102,11 @@ class ItemsProcFunc
     /**
      * Initialize Extbase
      *
+     * @param array $params
+     * @throws Exception
      * @see Bootstrap::run()
      */
-    public function __construct()
+    public function __construct(array &$params = [])
     {
         //set the configuration
         $this->configuration = array(
@@ -130,100 +133,48 @@ class ItemsProcFunc
                     'actions' => GeneralUtility::trimExplode(',', $actions),
                 );
             }
-            $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-            $this->bootstrap = $this->objectManager->get(Bootstrap::class);
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            $this->bootstrap = $objectManager->get(Bootstrap::class);
         }
     }
 
     /**
-     * Provides a selection of legislators for the plugin
+     * Executing the call and determining the data
      *
      * @param array $params
      */
-    public function readLegislator(array &$params)
+    public function execute(array &$params)
     {
         $apiKey = '';
+        $request = [];
+        $itemName = 'json' . ucfirst($this->getActionName($params));
+        if (isset($params['config']['filter']) && !empty($params['config']['filter'])) {
+            $itemName .= ucfirst($params['config']['filter']);
+        }
         //read and provide flexform
         if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
             $data = GeneralUtility::xml2array($params['row']['pi_flexform']);
             $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
+            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
         } elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
             $pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
             $data = GeneralUtility::xml2array($pi_flexform);
             $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
+            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
         }
         //test for double call
         $post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
         //first call
-        if (!isset($post['jsonLegislator']) || empty($post['jsonLegislator']) || $params['config']['action'] != $post['action']) {
+        if (!isset($post[$itemName]) || empty($post[$itemName]) || $params['config']['action'] != $post['action']) {
             unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
             $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
             $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
             $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
-            //For TYPO3 9.5 put query parameters in the backend
-            if (isset($GLOBALS['TYPO3_REQUEST']) && $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
-                $queryParams = $GLOBALS['TYPO3_REQUEST']->getQueryParams();
-                $queryParams['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)] = $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)];
-                $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withQueryParams($queryParams);
-            }
-            $this->configuration['controller'] = $params['config']['controller'];
-            $this->configuration['action'] = $params['config']['action'];
-            $this->configuration = array_merge($this->configuration, $request);
-            //start of Extbase bootstrap program
-            $json = $this->bootstrap->run('', $this->configuration);
-
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonLegislator'] = addslashes($json);
-            $items = json_decode($json, true);
-            if (!empty($items) && is_array($items)) {
-                foreach ($items['legislator'] as $item) {
-                    $params['items'][] = array($item['name'], $item['id']);
-                }
-            }
-            //second call
-        } else {
-            if (isset($post['jsonLegislator']) && !empty($post['jsonLegislator'])) {
-                $json = stripslashes($post['jsonLegislator']);
-                $items = json_decode($json, true);
-                if (!empty($items) && is_array($items)) {
-                    foreach ($items['legislator'] as $item) {
-                        $params['items'][] = array($item['name'], $item['id']);
-                    }
-                }
-            }
-            if (isset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)])) {
-                unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-            }
-        }
-    }
-
-    /**
-     * Reads the structure of the legal norms in connection with the legislator.
-     *
-     * @param array $params
-     */
-    public function readStructure(array &$params)
-    {
-        $apiKey = $legislatorId = '';
-        //read and provide flexform
-        if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
-            $data = GeneralUtility::xml2array($params['row']['pi_flexform']);
-            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
-        } elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
-            $pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
-            $data = GeneralUtility::xml2array($pi_flexform);
-            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
-        }
-        //test for double call
-        $post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
-        //first call
-        if (!isset($post['jsonStructure']) || empty($post['jsonStructure']) || $params['config']['action'] != $post['action']) {
-            unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
             $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legislatorId'] = $request['settings']['legislatorId'] = $legislatorId;
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
+            if (isset($params['config']['filter']) && !empty($params['config']['filter'])) {
+                $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['filter'] = $params['config']['filter'];
+            }
             //For TYPO3 9.5 put query parameters in the backend
             if (isset($GLOBALS['TYPO3_REQUEST']) && $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
                 $queryParams = $GLOBALS['TYPO3_REQUEST']->getQueryParams();
@@ -236,20 +187,20 @@ class ItemsProcFunc
             //start of Extbase bootstrap program
             $json = $this->bootstrap->run('', $this->configuration);
 
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['jsonStructure'] = addslashes($json);
+            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)][$itemName] = addslashes($json);
             $items = json_decode($json, true);
             if (!empty($items) && is_array($items)) {
-                foreach ($items['structure'] as $item) {
+                foreach ($items['items'] as $item) {
                     $params['items'][] = array($item['name'], $item['id']);
                 }
             }
             //second call
         } else {
-            if (isset($post['jsonStructure']) && !empty($post['jsonStructure'])) {
-                $json = stripslashes($post['jsonStructure']);
+            if (isset($post[$itemName]) && !empty($post[$itemName])) {
+                $json = stripslashes($post[$itemName]);
                 $items = json_decode($json, true);
                 if (!empty($items) && is_array($items)) {
-                    foreach ($items['structure'] as $item) {
+                    foreach ($items['items'] as $item) {
                         $params['items'][] = array($item['name'], $item['id']);
                     }
                 }
@@ -273,7 +224,7 @@ class ItemsProcFunc
      *
      * @return string|NULL The content.
      */
-    public function pi_getFFvalue($T3FlexForm_array, $fieldName, $sheet = 'sDEF', $lang = 'lDEF', $value = 'vDEF')
+    private function pi_getFFvalue($T3FlexForm_array, $fieldName, $sheet = 'sDEF', $lang = 'lDEF', $value = 'vDEF')
     {
         $sheetArray = is_array($T3FlexForm_array) ? $T3FlexForm_array['data'][$sheet][$lang] : '';
         if (is_array($sheetArray)) {
@@ -297,7 +248,7 @@ class ItemsProcFunc
      * @access private
      * @see    pi_getFFvalue()
      */
-    public function pi_getFFvalueFromSheetArray($sheetArray, $fieldNameArr, $value)
+    private function pi_getFFvalueFromSheetArray($sheetArray, $fieldNameArr, $value)
     {
         $tempArr = $sheetArray;
         foreach ($fieldNameArr as $k => $v) {
@@ -327,7 +278,7 @@ class ItemsProcFunc
      *
      * @return string $pi_flexform
      */
-    protected function getPiFlexformFromTable($table, $uid)
+    private function getPiFlexformFromTable($table, $uid)
     {
         $pi_flexform = '';
         /** @var QueryBuilder $queryBuilder */
@@ -344,4 +295,18 @@ class ItemsProcFunc
         }
         return $pi_flexform;
     }
+
+    /**
+     * @param array $param
+     * @return string
+     */
+    private function getActionName(array $param): string
+    {
+        $actionName = '';
+        if (isset($param['config']['action']) && !empty($param['config']['action'])) {
+            $actionName = $param['config']['action'];
+        }
+        return $actionName;
+    }
+
 }

@@ -67,7 +67,7 @@ class ItemsProcFuncController extends AbstractController
      *
      * @return string
      */
-    public function showLegislatorAction()
+    public function readLegislatorAction()
     {
         $filter = array(
             'sortAttribute' => array('name')
@@ -83,7 +83,7 @@ class ItemsProcFuncController extends AbstractController
         $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
         if ($legislator['count'] > 0) {
             foreach ($legislator['results'] as $item) {
-                $items['legislator'][] = array(
+                $items['items'][] = array(
                     'id' => $item['object']['id'],
                     'name' => $item['object']['name']
                 );
@@ -97,7 +97,7 @@ class ItemsProcFuncController extends AbstractController
      *
      * @return string
      */
-    public function showStructureAction()
+    public function readStructureAction()
     {
         if (isset($this->settings['legislatorId']) && !empty($this->settings['legislatorId'])) {
             $filter = array(
@@ -119,7 +119,7 @@ class ItemsProcFuncController extends AbstractController
             if ($structure['count'] > 0) {
                 foreach ($structure['results'] as $value) {
                     foreach ($value['object']['structure']['subStructurNodes'] as $item) {
-                        $items['structure'][] = array(
+                        $items['items'][] = array(
                             'id' => $item['id'],
                             'name' => $item['structureText']
                         );
@@ -128,7 +128,7 @@ class ItemsProcFuncController extends AbstractController
             }
             return $this->apiLocalLaw->jsonEncode($items);
         } else {
-            $items['structure'][] = array(
+            $items['items'][] = array(
                 'id' => 0,
                 'name' => LocalizationUtility::translate('global.empty',
                     $this->extensionName)
