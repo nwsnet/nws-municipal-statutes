@@ -2,7 +2,7 @@ image: php:8.0-cli
 
 before_script:
   - apt-get update
-  - apt-get install -y git libxml2-dev zlib1g-dev
+  - apt-get install -y git libxml2-dev zlib1g-dev jq
   - docker-php-ext-install zip > /dev/null
   - curl -s https://raw.githubusercontent.com/composer/getcomposer.org/master/web/installer | php -- --quiet --install-dir="/usr/local/bin" --filename="composer"
 
