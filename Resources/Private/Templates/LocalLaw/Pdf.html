@@ -116,8 +116,7 @@
 			<f:for each="{legalNorm.jurisAttachments}" as="attachments" iteration="iterator">
 				<li class="tx-nwsmunicipalstatutes-attachment">
 					<f:link.external uri="{attachments.url}" onclick="window.open(this.href,'');return false;">
-						<f:image src="EXT:nws_municipal_statutes/Resources/Public/Icons/icon_{attachments.docType}.gif"
-								 alt="{attachments.docType}"/>
+						<i class="fas fa-file-pdf mr-2"></i>
 						<f:translate key="template.locallaw.show.attachment-link-title"/>
 						{iterator.cycle}
 					</f:link.external>
