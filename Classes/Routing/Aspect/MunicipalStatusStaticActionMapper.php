@@ -119,7 +119,7 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
         $slug = $this->slugHelper->sanitize($title);
         $slug = mb_substr($slug, 0, $this->maxLength).'-'.$value;
         $slug = $this->slugHelper->sanitize($slug);
-        $this->cache->set($cacheKey, $slug, array('calRegionalMapApi'), self::SLUG_CACHE_LIFETIME);
+        $this->cache->set($cacheKey, $slug, array('callLocalLawTitleApi'), self::SLUG_CACHE_LIFETIME);
 
         return $slug;
     }
