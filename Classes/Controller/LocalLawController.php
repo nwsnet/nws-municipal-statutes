@@ -501,7 +501,7 @@ class LocalLawController extends AbstractController
         } else {
             $typoScriptFrontendController = $GLOBALS['TSFE'];
             $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 0;
-            $params['tx_nwsmunicipalstatutes_pi1']['create'] = 'true';
+            $params['tx_nwsmunicipalstatutes_pi1']['create'] = 1;
             /* @var $cacheHash CacheHashCalculator */
             $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
             $cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
