@@ -69,6 +69,7 @@ class LocalLaw extends AbstractLocalLaw
         if (empty($this->category)) {
             $this->category = GeneralUtility::makeInstance(Category::class, $this->config);
         }
+
         return $this->category;
     }
 
@@ -82,6 +83,7 @@ class LocalLaw extends AbstractLocalLaw
         if (empty($this->legalNorm)) {
             $this->legalNorm = GeneralUtility::makeInstance(LegalNorm::class, $this->config);
         }
+
         return $this->legalNorm;
     }
 
@@ -95,6 +97,7 @@ class LocalLaw extends AbstractLocalLaw
         if (empty($this->legislator)) {
             $this->legislator = GeneralUtility::makeInstance(Legislator::class, $this->config);
         }
+
         return $this->legislator;
     }
 
@@ -108,6 +111,7 @@ class LocalLaw extends AbstractLocalLaw
         if (empty($this->structure)) {
             $this->structure = GeneralUtility::makeInstance(Structure::class, $this->config);
         }
+
         return $this->structure;
     }
 
@@ -120,7 +124,7 @@ class LocalLaw extends AbstractLocalLaw
     public function getLegalNormByLegislatorId(array $items)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($items) . '-' . __FUNCTION__
+            $this->jsonEncode($items).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $legislators = $this->cacheInstance->get($cacheIdentifier);
@@ -130,8 +134,8 @@ class LocalLaw extends AbstractLocalLaw
                 $filter = array(
                     'legislatorId' => $legislator,
                     'selectAttributes' => array(
-                        'id'
-                    )
+                        'id',
+                    ),
                 );
                 $data = $this->legalNorm()->find($filter)->getJsonDecode();
                 if ($data['count'] == 0) {
@@ -143,6 +147,7 @@ class LocalLaw extends AbstractLocalLaw
             $legislators['count'] = $count;
             $this->cacheInstance->set($cacheIdentifier, $legislators, array('callRestApi'));
         }
+
         return $legislators;
     }
 
@@ -155,13 +160,13 @@ class LocalLaw extends AbstractLocalLaw
     public function mergeLegislatorByAreas(array $areas)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($areas) . '-' . __FUNCTION__
+            $this->jsonEncode($areas).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $legislators = $this->cacheInstance->get($cacheIdentifier);
         } else {
             $filter = array(
-                'sortAttribute' => array('name')
+                'sortAttribute' => array('name'),
             );
             $legislatorsItems = $this->legislator()->findAll($filter)->getJsonDecode();
             $count = isset($legislatorsItems['count']) && $legislatorsItems['count'] > 0 ? $legislatorsItems['count'] : 0;
@@ -171,8 +176,8 @@ class LocalLaw extends AbstractLocalLaw
                         $filter = array(
                             'legislatorId' => $legislator['object']['id'],
                             'selectAttributes' => array(
-                                'id'
-                            )
+                                'id',
+                            ),
                         );
                         $data = $this->legalNorm()->find($filter)->getJsonDecode();
                         if ($data['count'] == 0) {
@@ -188,6 +193,7 @@ class LocalLaw extends AbstractLocalLaw
             $legislators['count'] = $count;
             $this->cacheInstance->set($cacheIdentifier, $legislators, array('callRestApi'));
         }
+
         return $legislators;
     }
 
@@ -200,7 +206,7 @@ class LocalLaw extends AbstractLocalLaw
     public function getAreasByLegislatorId(array $items)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($items) . '-' . __FUNCTION__
+            $this->jsonEncode($items).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $areas = $this->cacheInstance->get($cacheIdentifier);
@@ -214,6 +220,7 @@ class LocalLaw extends AbstractLocalLaw
             }
             $this->cacheInstance->set($cacheIdentifier, $areas, array('callRestApi'));
         }
+
         return $areas;
     }
 
@@ -231,6 +238,7 @@ class LocalLaw extends AbstractLocalLaw
                 return true;
             }
         }
+
         return false;
     }
 
@@ -243,7 +251,7 @@ class LocalLaw extends AbstractLocalLaw
     public function getLegalNormByLegislator(array $legislators)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($legislators) . '-' . __FUNCTION__
+            $this->jsonEncode($legislators).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $legislators = $this->cacheInstance->get($cacheIdentifier);
@@ -253,8 +261,8 @@ class LocalLaw extends AbstractLocalLaw
                 $filter = array(
                     'legislatorId' => $legislator['object']['id'],
                     'selectAttributes' => array(
-                        'id'
-                    )
+                        'id',
+                    ),
                 );
                 $data = $this->legalNorm()->find($filter)->getJsonDecode();
                 if ($data['count'] == 0) {
@@ -265,6 +273,7 @@ class LocalLaw extends AbstractLocalLaw
             $legislators['count'] = $count;
             $this->cacheInstance->set($cacheIdentifier, $legislators, array('callRestApi'));
         }
+
         return $legislators;
     }
 
@@ -278,14 +287,15 @@ class LocalLaw extends AbstractLocalLaw
     public function getStructureByAllLegalNorm($legislatorId, array $legalNorm)
     {
         $cacheIdentifier = md5(
-            $legislatorId . '-' . $this->jsonEncode($legalNorm) . '-' . __FUNCTION__
+            $legislatorId.'-'.$this->jsonEncode($legalNorm).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $structure = $this->cacheInstance->get($cacheIdentifier);
         } else {
+            $legalNorm = $this->filterLegalNormByNormScope($legalNorm);
             $structure = array();
             $filter = array(
-                'legislatorId' => $legislatorId
+                'legislatorId' => $legislatorId,
             );
             $result = $this->structure()->find($filter)->getJsonDecode();
             if ($result['count'] == 1) {
@@ -302,6 +312,7 @@ class LocalLaw extends AbstractLocalLaw
             $structure['count'] = $legalNorm['count'];
             $this->cacheInstance->set($cacheIdentifier, $structure, array('callRestApi'));
         }
+
         return $structure;
     }
 
@@ -315,14 +326,15 @@ class LocalLaw extends AbstractLocalLaw
     public function getLegalNormByStructure($legislatorId, array $legalNorm)
     {
         $cacheIdentifier = md5(
-            $legislatorId . '-' . $this->jsonEncode($legalNorm) . '-' . __FUNCTION__
+            $legislatorId.'-'.$this->jsonEncode($legalNorm).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $legalNorm = $this->cacheInstance->get($cacheIdentifier);
         } else {
+            $legalNorm = $this->filterLegalNormByNormScope($legalNorm);
             $structure = array();
             $filter = array(
-                'legislatorId' => $legislatorId
+                'legislatorId' => $legislatorId,
             );
             $result = $this->structure()->find($filter)->getJsonDecode();
             if ($result['count'] == 1) {
@@ -341,6 +353,33 @@ class LocalLaw extends AbstractLocalLaw
             //unset($legalNorm['results']);
             $this->cacheInstance->set($cacheIdentifier, $legalNorm, array('callRestApi'));
         }
+
+        return $legalNorm;
+    }
+
+    protected function filterLegalNormByNormScope(array $legalNorm)
+    {
+        $normScope = [];
+        foreach ($legalNorm['results'] as $id => $object) {
+            $normScopeId = $object['object']['jurisNormScopes'][0]['id'];
+            if (array_key_exists($normScopeId, $normScope)) {
+                $newDate = new \DateTime($object['object']['jurisPromulgationDate']);
+                $oldDate = $normScope[$normScopeId]['date'];
+                if ($newDate->getTimestamp() > $oldDate->getTimestamp()) {
+                    unset($legalNorm['results'][$normScope[$normScopeId]['id']]);
+                    $legalNorm['count'] -= 1;
+                } else {
+                    unset($legalNorm['results'][$id]);
+                    $legalNorm['count'] -= 1;
+                }
+            } else {
+                $normScope[$normScopeId] = [
+                    'id' => $id,
+                    'date' => new \DateTime($object['object']['jurisPromulgationDate']),
+                ];
+            }
+        }
+        $legalNorm['results'] = array_values($legalNorm['results']);
         return $legalNorm;
     }
 
@@ -361,6 +400,7 @@ class LocalLaw extends AbstractLocalLaw
                 }
             }
         }
+
         return $result;
     }
 
@@ -379,6 +419,7 @@ class LocalLaw extends AbstractLocalLaw
                 $result[$data['object']['id']] = $data['object'];
             }
         }
+
         return $result;
     }
 
@@ -392,14 +433,14 @@ class LocalLaw extends AbstractLocalLaw
     public function getLegalNormWithStructure($legislatorId, array $legalNorm)
     {
         $cacheIdentifier = md5(
-            $legislatorId . '-' . $this->jsonEncode($legalNorm) . '-' . __FUNCTION__
+            $legislatorId.'-'.$this->jsonEncode($legalNorm).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $legalNorm = $this->cacheInstance->get($cacheIdentifier);
         } else {
             $structure = array();
             $filter = array(
-                'legislatorId' => $legislatorId
+                'legislatorId' => $legislatorId,
             );
             $result = $this->structure()->find($filter)->getJsonDecode();
             if ($result['count'] == 1) {
@@ -416,6 +457,7 @@ class LocalLaw extends AbstractLocalLaw
 
             $this->cacheInstance->set($cacheIdentifier, $legalNorm, array('callRestApi'));
         }
+
         return $legalNorm;
     }
 }
