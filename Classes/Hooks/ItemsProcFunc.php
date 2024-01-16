@@ -264,7 +264,7 @@ class ItemsProcFunc
                     }
                 }
             } else {
-                $tempArr = $tempArr[$v];
+                $tempArr = $tempArr[$v] ?? [$value => ''];
             }
         }
         return $tempArr[$value];
