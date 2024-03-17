@@ -376,7 +376,7 @@ class LocalLawController extends AbstractController
         }
 
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
-            $error = $this->apiLocalLaw->legislator()->getExceptionError();
+            $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
             throw new UnsupportedRequestTypeException($error['message'], $error['code']);
         }
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
