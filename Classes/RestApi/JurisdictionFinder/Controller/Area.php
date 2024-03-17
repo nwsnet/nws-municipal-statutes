@@ -34,8 +34,8 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
  */
 class Area extends RestClient
 {
-    const URI_GET_FIND = '/area/find';
-    const URI_GET_FIND_BY_ID = '/area/{id}';
+    const URI_GET_FIND = '/PoliticalArea/search';
+    const URI_GET_FIND_BY_ID = '/PoliticalArea/{id}';
 
     /**
      * Area constructor.
