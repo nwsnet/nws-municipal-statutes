@@ -394,11 +394,15 @@ class LocalLawController extends AbstractController
                 }
             }
         }
-
+        if ($this->apiLocalLaw->legalNorm()->findByIdHtml($legalNormId)->hasExceptionError()) {
+            $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+            throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+        }
+        $htmlContent = $this->apiLocalLaw->legalNorm()->getResult();
         //HTML parser for the structure of the content
         /** @var Converter $converter */
         $converter = GeneralUtility::makeInstance(Converter::class);
-        $legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
+        $legalNorm['parseContent'] = $converter->getContentArray($htmlContent);
 
 
         //Set the page title for the page and the search
@@ -488,10 +492,15 @@ class LocalLawController extends AbstractController
                 }
             }
 
+            if ($this->apiLocalLaw->legalNorm()->findByIdHtml($legalNormId)->hasExceptionError()) {
+                $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+            }
+            $htmlContent = $this->apiLocalLaw->legalNorm()->getResult();
             //HTML parser for the structure of the content
             /** @var Converter $converter */
             $converter = GeneralUtility::makeInstance(Converter::class);
-            $legalNorm['parseContent'] = $converter->getContentArray($legalNorm['content']);
+            $legalNorm['parseContent'] = $converter->getContentArray($htmlContent);
 
             //set absolute path for CSS and JS files for PDF creation
             $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
