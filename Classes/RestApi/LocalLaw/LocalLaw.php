@@ -301,6 +301,10 @@ class LocalLaw extends AbstractLocalLaw
             if ($result['count'] == 1) {
                 $structure = $result['results'][0]['object'];
             }
+
+            if(isset($structure['legislator']['legislator']['id'])){
+                $structure['legislator']['id'] = $structure['legislator']['legislator']['id'];
+            }
             foreach ($structure['structure']['subStructurNodes'] as $key => $data) {
                 $dataCheck = $this->getAllLegalNormByStructureId($data['id'], $legalNorm);
                 if (count($dataCheck) > 0) {
@@ -342,6 +346,7 @@ class LocalLaw extends AbstractLocalLaw
                 $legalNorm['id'] = $result['results'][0]['object']['id'];
                 $legalNorm['name'] = $result['results'][0]['object']['name'];
                 $legalNorm['legislator'] = $result['results'][0]['object']['legislator'];
+                $legalNorm['legislator']['id'] = $result['results'][0]['object']['legislator']['legislator']['id'] ?? 0;
             }
             $count = 0;
             foreach ($legalNorm['results'] as $items) {
