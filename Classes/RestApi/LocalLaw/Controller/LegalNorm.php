@@ -36,6 +36,7 @@ class LegalNorm extends RestClient
 {
     const URI_GET_FIND = '/legalNorm/find';
     const URI_GET_FIND_BY_ID = '/legalNorm/{id}';
+    const URI_GET_FIND_BY_ID_HTML = '/legalNorm/{id}/html';
 
     /**
      * LegalNorm constructor.
@@ -70,5 +71,18 @@ class LegalNorm extends RestClient
     public function findById($id, $filter = array())
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
+    }
+
+    /**
+     * Determines a rule based on the id
+     *
+     * @param integer $id
+     * @param array $filter
+     *
+     * @return mixed
+     */
+    public function findByIdHtml($id, $filter = array())
+    {
+        return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID_HTML), $filter);
     }
 }
