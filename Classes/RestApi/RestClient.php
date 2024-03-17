@@ -111,6 +111,7 @@ class RestClient
     public function getData($path, array $filter, $noHeader = false)
     {
         $this->setConnection($path, $filter, $noHeader);
+
         return $this->executeCurl();
     }
 
@@ -124,18 +125,18 @@ class RestClient
     protected function setConnection($path, array $filter, $noHeader = false)
     {
         $header = array();
-        $executeHttp = $this->http . $path . '?' . $this->httpBuildQuery($filter);
+        $executeHttp = $this->http.$path.'?'.$this->httpBuildQuery($filter);
         if (empty($noHeader)) {
             $header = array(
                 "Content-type: application/json",
-                "api_key: " . $this->apiKey
+                "api_key: ".$this->apiKey,
             );
         }
 
         if (!empty($this->additionalHeaders)) {
             $additionalHeaders = array();
             foreach ($this->additionalHeaders as $key => $value) {
-                $additionalHeaders[] = $key . ': ' . $value;
+                $additionalHeaders[] = $key.': '.$value;
             }
             $header = array_merge($header, $additionalHeaders);
         }
@@ -145,7 +146,7 @@ class RestClient
 
         $this->curl = curl_init($executeHttp);
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($this->curl, CURLOPT_REFERER, 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+        curl_setopt($this->curl, CURLOPT_REFERER, 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 2);
@@ -155,7 +156,7 @@ class RestClient
         }
         if ($this->isInternalCallAndBasicAuth($executeHttp)) {
             $auth = $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'];
-            curl_setopt($this->curl, CURLOPT_USERPWD, $auth['username'] . ':' . $auth['password']);
+            curl_setopt($this->curl, CURLOPT_USERPWD, $auth['username'].':'.$auth['password']);
         }
     }
 
@@ -174,7 +175,7 @@ class RestClient
                     $message = empty($curl_response) ? 'Not found' : strip_tags($curl_response);
                     $error = array(
                         'message' => $message,
-                        'code' => $header['http_code']
+                        'code' => $header['http_code'],
                     );
                     $this->setExceptionError($error);
                     break;
@@ -182,7 +183,7 @@ class RestClient
                     $message = empty($curl_response) ? 'Unauthorized' : strip_tags($curl_response);
                     $error = array(
                         'message' => $message,
-                        'code' => $header['http_code']
+                        'code' => $header['http_code'],
                     );
                     $this->setExceptionError($error);
                     break;
@@ -190,7 +191,7 @@ class RestClient
                     $message = empty($curl_response) ? 'Unknown' : strip_tags($curl_response);
                     $error = array(
                         'message' => $message,
-                        'code' => $header['http_code']
+                        'code' => $header['http_code'],
                     );
                     $this->setExceptionError($error);
                     break;
@@ -199,6 +200,7 @@ class RestClient
 
         curl_close($this->curl);
         $this->setResult($curl_response);
+
         return $this;
     }
 
@@ -213,10 +215,13 @@ class RestClient
         $check = false;
         if (GeneralUtility::isOnCurrentHost($url)) {
             //check whether parameters for authentication are available
-            if (isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'])) {
+            if (isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth']) && is_array(
+                    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth']
+                )) {
                 $check = true;
             }
         }
+
         return $check;
     }
 
@@ -236,12 +241,17 @@ class RestClient
         foreach ($array as $key => $value) {
             if (is_array($value)) {
                 foreach ($value as $key2 => $value2) {
-                    $parts[] = http_build_query(array($key . '[' . $key2 . ']' => $value2));
+                    if (is_integer($key2)) {
+                        $parts[] = http_build_query(array($key => $value2));
+                    } else {
+                        $parts[] = http_build_query(array($key.'['.$key2.']' => $value2));
+                    }
                 }
             } else {
                 $parts[] = http_build_query(array($key => $value));
             }
         }
+
         return join('&', $parts);
     }
 
@@ -299,6 +309,7 @@ class RestClient
         if (empty($error)) {
             return false;
         }
+
         return true;
     }
 
@@ -313,6 +324,7 @@ class RestClient
         if (!empty($json)) {
             return json_decode($json, true);
         }
+
         return false;
     }
 
@@ -340,10 +352,11 @@ class RestClient
     {
         foreach ($haystack as $key => $value) {
             $current_key = $key;
-            if ($needle === $value OR (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
+            if ($needle === $value or (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
                 return $current_key;
             }
         }
+
         return false;
     }
 }
