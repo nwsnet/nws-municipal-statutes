@@ -25,6 +25,7 @@
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
 use Nwsnet\NwsMunicipalStatutes\Dom\Converter;
+use Nwsnet\NwsMunicipalStatutes\Exception\UnsupportedRequestTypeException;
 use Nwsnet\NwsMunicipalStatutes\PageTitle\MunicipalPageTitleProvider;
 use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
 use Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder\JurisdictionFinder;
@@ -38,7 +39,6 @@ use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
-use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 
