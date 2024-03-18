@@ -126,8 +126,7 @@ class AbstractJurisdictionFinder
         }
         // Set language header
         if (isset($GLOBALS['TSFE']->config['config']["locale_all"])) {
-            $localeAll = strpos($GLOBALS['TSFE']->config['config']["locale_all"],
-                '.') !== false ? substr($GLOBALS['TSFE']->config['config']["locale_all"], 0,
+            $localeAll = str_contains($GLOBALS['TSFE']->config['config']["locale_all"], '.') ? substr($GLOBALS['TSFE']->config['config']["locale_all"], 0,
                 strpos($GLOBALS['TSFE']->config['config']["locale_all"],
                     '.')) : $GLOBALS['TSFE']->config['config']["locale_all"];
         } else {
@@ -148,7 +147,6 @@ class AbstractJurisdictionFinder
      */
     protected function initializeCache()
     {
-        /** @var CacheManager cacheInstance */
         $this->cacheInstance = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache($this->extKey);
     }
 
