@@ -132,7 +132,7 @@ class LocalLaw extends AbstractLocalLaw
             $count = $items['count'];
             foreach ($items['results'] as $legislator) {
                 $filter = array(
-                    'legislatorId' => $legislator,
+                    'legislatorIds' => [$legislator],
                     'selectAttributes' => array(
                         'id',
                     ),
@@ -174,7 +174,7 @@ class LocalLaw extends AbstractLocalLaw
                 foreach ($legislatorsItems['results'] as $legislator) {
                     if ($this->checkAreaId($legislator['object']['areas'], $areas)) {
                         $filter = array(
-                            'legislatorId' => $legislator['object']['id'],
+                            'legislatorIds' => [$legislator['object']['id']],
                             'selectAttributes' => array(
                                 'id',
                             ),
@@ -259,7 +259,7 @@ class LocalLaw extends AbstractLocalLaw
             $count = $legislators['count'];
             foreach ($legislators['results'] as $key => $legislator) {
                 $filter = array(
-                    'legislatorId' => $legislator['object']['id'],
+                    'legislatorIds' => [$legislator['object']['id']],
                     'selectAttributes' => array(
                         'id',
                     ),
@@ -283,6 +283,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param integer $legislatorId
      * @param array $legalNorm
      * @return array
+     * @throws \Exception
      */
     public function getStructureByAllLegalNorm($legislatorId, array $legalNorm)
     {
@@ -326,6 +327,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param $legislatorId
      * @param array $legalNorm
      * @return array|mixed
+     * @throws \Exception
      */
     public function getLegalNormByStructure($legislatorId, array $legalNorm)
     {
@@ -362,6 +364,9 @@ class LocalLaw extends AbstractLocalLaw
         return $legalNorm;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function filterLegalNormByNormScope(array $legalNorm)
     {
         $normScope = [];
@@ -372,11 +377,10 @@ class LocalLaw extends AbstractLocalLaw
                 $oldDate = $normScope[$normScopeId]['date'];
                 if ($newDate->getTimestamp() > $oldDate->getTimestamp()) {
                     unset($legalNorm['results'][$normScope[$normScopeId]['id']]);
-                    $legalNorm['count'] -= 1;
                 } else {
                     unset($legalNorm['results'][$id]);
-                    $legalNorm['count'] -= 1;
                 }
+                $legalNorm['count'] -= 1;
             } else {
                 $normScope[$normScopeId] = [
                     'id' => $id,
