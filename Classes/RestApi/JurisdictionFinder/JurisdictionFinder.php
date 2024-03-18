@@ -121,23 +121,28 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $searchItem = $this->area()->findById($searchItem['parent']['refId'])->getJsonDecode();
                 $filter = array(
                     'startAreaId' => $searchItem['id'],
+                    'offset' => 1,
+                    'limit' => $limit,
                 );
-                $dataUp = $this->area()->find($filter)->getJsonDecode();
-                if ($dataUp['count'] > 0) {
-                    foreach ($dataUp['results'] as $items) {
-                        if ($items['object']['areaType']['name'] !== 'Gemeindeteil' && array_key_exists(
-                                $items['object']['id'],
-                                $areas
-                            ) === false) {
-                            $areas['results'][$items['object']['id']] = $items['object'];
-                            $this->findAreasBySearchItem($items['object'], 0, $areas);
-                        } elseif (array_key_exists($items['object']['id'], $areas) === false) {
-                            $areas['results'][$items['object']['id']] = $items['object'];
+                do {
+                    $dataUp = $this->area()->find($filter)->getJsonDecode();
+                    if (!empty($dataUp)) {
+                        $count = $dataUp['count'] ?? 0;
+                        if ($count > 0 && $count == $limit) {
+                            $filter['offset'] += $limit;
+                        } else {
+                            $count = 0;
                         }
+                        foreach ($dataUp['values'] as $items) {
+                            if (array_key_exists($items['id'], $areas['results']) === false) {
+                                $areas['results'][$items['id']] = $items;
+                            }
+                        }
+                    } else {
+                        $count = 0;
                     }
-                } else {
-                    $areas['results'][$searchItem['id']] = $searchItem;
-                }
+                } while (0 < $count);
+
                 $areas['stopId'] = $searchItem['id'];
             }
         }
@@ -192,7 +197,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
         foreach ($treeMenu as $key => $value) {
             if ($key == $parentId) {
                 $treeMenu[$key]['child'][$id] = $result;
-            } elseif (is_array($value['child'])) {
+            } elseif (isset($value['child']) && is_array($value['child'])) {
                 $treeMenu[$key]['child'] = $this->setAvailableParentResult($result, $value['child']);
             }
         }
