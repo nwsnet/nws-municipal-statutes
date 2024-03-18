@@ -51,6 +51,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
         if (empty($this->area)) {
             $this->area = GeneralUtility::makeInstance(Area::class, $this->config);
         }
+
         return $this->area;
     }
 
@@ -64,7 +65,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     public function getAreasRecursiveByAreas(array $searchAreas, $recursive)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($searchAreas) . '-' . __FUNCTION__
+            $this->jsonEncode($searchAreas).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $areas = $this->cacheInstance->get($cacheIdentifier);
@@ -77,6 +78,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
             }
             $this->cacheInstance->set($cacheIdentifier, $areas, array('callRestApi'));
         }
+
         return $areas;
     }
 
@@ -89,34 +91,44 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      */
     protected function findAreasBySearchItem(array $searchItem, $recursive, array &$areas)
     {
+        $limit = 200;
         $filter = array(
-            'parentId' => $searchItem['id']
+            'startAreaId' => $searchItem['id'],
+            'offset' => 1,
+            'limit' => $limit,
+
         );
-        $dataDown = $this->area()->find($filter)->getJsonDecode();
-        if ($dataDown['count'] > 0) {
-            foreach ($dataDown['results'] as $items) {
-                if ($items['object']['areaType']['key'] !== 'GEMEINDETEIL') {
-                    $areas['results'][$items['object']['id']] = $items['object'];
-                    $this->findAreasBySearchItem($items['object'], 0, $areas);
+        do {
+            $dataDown = $this->area()->find($filter)->getJsonDecode();
+            if (!empty($dataDown)) {
+                $count = $dataDown['count'] ?? 0;
+                if ($count > 0 && $count == $limit) {
+                    $filter['offset'] += $limit;
                 } else {
-                    $areas['results'][$items['object']['id']] = $items['object'];
+                    $count = 0;
                 }
+                foreach ($dataDown['values'] as $items) {
+                    $areas['results'][$items['id']] = $items;
+                }
+            } else {
+                $count = 0;
             }
-        } else {
-            $areas['results'][$searchItem['id']] = $searchItem;
-        }
+        } while (0 < $count);
+
         $areas['stopId'] = $searchItem['id'];
         if ($recursive > 0) {
             for ($i = $recursive; $i > 0; $i--) {
-                $searchItem = $this->area()->findById($searchItem['parentId'])->getJsonDecode();
+                $searchItem = $this->area()->findById($searchItem['parent']['refId'])->getJsonDecode();
                 $filter = array(
-                    'parentId' => $searchItem['id']
+                    'startAreaId' => $searchItem['id'],
                 );
                 $dataUp = $this->area()->find($filter)->getJsonDecode();
                 if ($dataUp['count'] > 0) {
                     foreach ($dataUp['results'] as $items) {
-                        if ($items['object']['areaType']['key'] !== 'GEMEINDETEIL' && array_key_exists($items['object']['id'],
-                                $areas) === false) {
+                        if ($items['object']['areaType']['name'] !== 'Gemeindeteil' && array_key_exists(
+                                $items['object']['id'],
+                                $areas
+                            ) === false) {
                             $areas['results'][$items['object']['id']] = $items['object'];
                             $this->findAreasBySearchItem($items['object'], 0, $areas);
                         } elseif (array_key_exists($items['object']['id'], $areas) === false) {
@@ -140,7 +152,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     public function getTreeMenu(array $legislator)
     {
         $cacheIdentifier = md5(
-            $this->jsonEncode($legislator) . '-' . __FUNCTION__
+            $this->jsonEncode($legislator).'-'.__FUNCTION__
         );
         if ($this->cacheInstance->has($cacheIdentifier)) {
             $treeMenu = $this->cacheInstance->get($cacheIdentifier);
@@ -150,7 +162,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 foreach ($data['object']['areas'] as $area) {
                     $result = $this->area()->findById($area['id'])->getJsonDecode();
                     if (!$this->recursiveArraySearch($result['id'], $treeMenu)) {
-                        if ($this->recursiveArraySearch($result['parentId'], $treeMenu)) {
+                        if ($this->recursiveArraySearch($result['parent']['refId'], $treeMenu)) {
                             $treeMenu = $this->setAvailableParentResult($result, $treeMenu);
                         } else {
                             $treeMenu = $this->setParentResult($result, $treeMenu);
@@ -162,6 +174,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
             $treeMenu = $this->setDisplayName($treeMenu);
             $this->cacheInstance->set($cacheIdentifier, $treeMenu, array('callRestApi'));
         }
+
         return $treeMenu;
     }
 
@@ -175,14 +188,15 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     protected function setAvailableParentResult(array $result, array $treeMenu)
     {
         $id = $result['id'];
-        $parentId = $result['parentId'];
+        $parentId = $result['parent']['refId'];
         foreach ($treeMenu as $key => $value) {
             if ($key == $parentId) {
                 $treeMenu[$key]['child'][$id] = $result;
-            } elseif (is_array($treeMenu[$key]['child'])) {
-                $treeMenu[$key]['child'] = $this->setAvailableParentResult($result, $treeMenu[$key]['child']);
+            } elseif (is_array($value['child'])) {
+                $treeMenu[$key]['child'] = $this->setAvailableParentResult($result, $value['child']);
             }
         }
+
         return $treeMenu;
     }
 
@@ -197,7 +211,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     protected function setParentResult(array $result, array $treeMenu, $parents = array())
     {
         $id = $result['id'];
-        $parentId = $result['parentId'];
+        $parentId = $result['parent']['refId'];
         $ags = $result['ags'];
         if ($this->recursiveArraySearch($parentId, $treeMenu)) {
             if (!$this->recursiveArraySearch($id, $treeMenu)) {
@@ -209,17 +223,18 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $parents[$result['id']] = $result;
             }
             if ($ags != $this->agsKey && $id != $this->stopId) {
-                $data = $this->area()->findById($result['parentId'])->getJsonDecode();
+                $data = $this->area()->findById($result['parent']['refId'])->getJsonDecode();
                 $parents[$data['id']] = $data;
+
                 return $this->setParentResult($data, $treeMenu, $parents);
             }
         }
         if (count($parents) > 1) {
             $parents = array_reverse($parents, true);
         }
-        foreach ($parents as $key => $value) {
+        foreach ($parents as $value) {
             $id = $value['id'];
-            $parentId = $value['parentId'];
+            $parentId = $value['parent']['refId'];
             $ags = $value['ags'];
             if (!$this->recursiveArraySearch($parentId, $treeMenu)) {
                 if ($ags == $this->agsKey || $id == $this->stopId) {
@@ -229,6 +244,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $treeMenu = $this->setAvailableParentResult($value, $treeMenu);
             }
         }
+
         return $treeMenu;
     }
 
@@ -246,6 +262,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $treeMenu = $this->setLegislatorToTreeMenu($area['id'], $data['object'], $treeMenu);
             }
         }
+
         return $treeMenu;
     }
 
@@ -264,12 +281,12 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $treeMenu[$key]['legislator'][$legislator['id']] = $legislator;
                 break;
             } else {
-                if (isset($treeMenu[$key]['child'])) {
-                    $treeMenu[$key]['child'] = $this->setLegislatorToTreeMenu($id, $legislator,
-                        $treeMenu[$key]['child']);
+                if (isset($value['child'])) {
+                    $treeMenu[$key]['child'] = $this->setLegislatorToTreeMenu($id, $legislator, $value['child']);
                 }
             }
         }
+
         return $treeMenu;
     }
 
@@ -282,11 +299,9 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     protected function setDisplayName(array $treeMenu)
     {
         foreach ($treeMenu as $key => $value) {
-            $displayName = isset($value['shortName']) ? $value['shortName'] : $value['name'];
-            switch ($value['areaType']['key']) {
-                case 'LANDKREIS':
-                    $displayName = 'Kreis ' . $displayName;
-                    break;
+            $displayName = $value['nameShort'] ?? $value['name'];
+            if ($value['areaType']['name'] == 'Landkreis') {
+                $displayName = 'Kreis '.$displayName;
             }
             $treeMenu[$key] = $value;
             $treeMenu[$key]['displayName'] = $displayName;
@@ -294,6 +309,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
                 $treeMenu[$key]['child'] = $this->setDisplayName($treeMenu[$key]['child']);
             }
         }
+
         return $treeMenu;
     }
 }
