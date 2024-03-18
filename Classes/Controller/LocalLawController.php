@@ -269,7 +269,7 @@ class LocalLawController extends AbstractController
             if ($this->settings['legislatorId']) {
                 $search = $this->request->getArgument('search');
                 $filter = array(
-                    'legislatorId' => $this->settings['legislatorId'],
+                    'legislatorIds' => [$this->settings['legislatorId']],
                     'selectAttributes' => array(
                         'id',
                         'categories',
@@ -280,7 +280,8 @@ class LocalLawController extends AbstractController
                         'jurisEnactmentFrom',
                         'jurisEnactmentTo',
                         'jurisPublicationDate',
-                        'jurisApprovalDate'
+                        'jurisApprovalDate',
+                        'jurisNormScopes',
                     ),
                     'sortAttribute' => 'longTitle',
                     'searchWord' => $search,
@@ -311,7 +312,7 @@ class LocalLawController extends AbstractController
             $this->userSession->cleanSearch();
             if ($this->settings['legislatorId']) {
                 $filter = array(
-                    'legislatorId' => $this->settings['legislatorId'],
+                    'legislatorIds' => [$this->settings['legislatorId']],
                     'selectAttributes' => array(
                         'id',
                         'categories',
@@ -322,7 +323,8 @@ class LocalLawController extends AbstractController
                         'jurisEnactmentFrom',
                         'jurisEnactmentTo',
                         'jurisPublicationDate',
-                        'jurisApprovalDate'
+                        'jurisApprovalDate',
+                        'jurisNormScopes',
                     ),
                     'sortAttribute' => 'longTitle'
                 );
