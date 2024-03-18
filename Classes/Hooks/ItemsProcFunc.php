@@ -148,6 +148,7 @@ class ItemsProcFunc
     {
         $apiKey = '';
         $request = [];
+        $legislatorId = 0;
         $itemName = 'json' . ucfirst($this->getActionName($params));
         if (isset($params['config']['filter']) && !empty($params['config']['filter'])) {
             $itemName .= ucfirst($params['config']['filter']);
