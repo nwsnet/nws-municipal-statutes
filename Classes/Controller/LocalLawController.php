@@ -574,7 +574,7 @@ class LocalLawController extends AbstractController
                     $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
                     $this->response->setHeader('Content-Length', strlen($pdf));
                     $this->response->setHeader('Connection', 'close');
-                    return $pdf;
+                    echo $pdf;
                 }
             }
             return '';
