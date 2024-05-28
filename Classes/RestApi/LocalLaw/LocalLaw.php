@@ -377,6 +377,10 @@ class LocalLaw extends AbstractLocalLaw
                 $oldDate = $normScope[$normScopeId]['date'];
                 if ($newDate->getTimestamp() > $oldDate->getTimestamp()) {
                     unset($legalNorm['results'][$normScope[$normScopeId]['id']]);
+                    $normScope[$normScopeId] = [
+                        'id' => $id,
+                        'date' => new \DateTime($object['object']['jurisPromulgationDate']),
+                    ];
                 } else {
                     unset($legalNorm['results'][$id]);
                 }
