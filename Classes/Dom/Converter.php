@@ -24,6 +24,8 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Dom;
 
+require_once __DIR__ . '/SimpleHtmlDom.php';
+
 use SimpleHtmlDom\simple_html_dom_node;
 
 use function SimpleHtmlDom\str_get_html;
