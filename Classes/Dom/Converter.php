@@ -45,6 +45,9 @@ class Converter
      */
     public function getContentArray($html)
     {
+        if (!function_exists('SimpleHtmlDom\str_get_html')) {
+            require_once __DIR__.'/SimpleHtmlDom.php';
+        }
         $content = array();
         $dom = str_get_html($html);
         // Get navigation elements
@@ -58,21 +61,27 @@ class Converter
             $header = $this->findFirstChildNode('header', $elements);
             $section = $this->findFirstChildNode('section', $elements);
             if (!empty($header)) {
-                $data['section'] = $this->getChildNodesData('a', array(
-                    'getAttribute' => 'href',
-                    'remove' => '#'
-                ),
-                    $header);
-                $data['headline'] = $this->getChildNodesData('a', array(
-                    'plaintext' => 'href'
-                ),
-                    $header);
+                $data['section'] = $this->getChildNodesData(
+                    'a',
+                    array(
+                        'getAttribute' => 'href',
+                        'remove' => '#',
+                    ),
+                    $header
+                );
+                $data['headline'] = $this->getChildNodesData(
+                    'a',
+                    array(
+                        'plaintext' => 'href',
+                    ),
+                    $header
+                );
                 $header = $data;
             }
             if (!empty($section)) {
                 $section = $this->setTag('h2', 'h4', $section);
             }
-            $content['elements'][] = array('header' => $header, 'content' => $section->innertext??'');
+            $content['elements'][] = array('header' => $header, 'content' => $section->innertext ?? '');
         }
 
         return $content;
@@ -104,6 +113,7 @@ class Converter
                 }
             }
         }
+
         return $node;
     }
 
@@ -130,6 +140,7 @@ class Converter
                 }
             }
         }
+
         return $child;
     }
 
@@ -166,6 +177,7 @@ class Converter
                             $data = $e->plaintext;
                     }
                 }
+
                 return $data;
             } else {
                 if ($e->hasChildNodes()) {
@@ -173,6 +185,7 @@ class Converter
                 }
             }
         }
+
         return $data;
     }
 }
