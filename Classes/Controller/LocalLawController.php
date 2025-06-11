@@ -38,6 +38,7 @@ use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
+use TYPO3\CMS\Extbase\Mvc\Exception\InvalidRequestMethodException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
@@ -381,6 +382,9 @@ class LocalLawController extends AbstractController
 
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
             $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+            if ($error['code'] == 404) {
+				throw new InvalidRequestMethodException($error['message'], $error['code']);
+			}
             throw new UnsupportedRequestTypeException($error['message'], $error['code']);
         }
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
