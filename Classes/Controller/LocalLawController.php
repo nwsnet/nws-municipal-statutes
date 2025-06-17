@@ -24,7 +24,9 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
+use Doctrine\DBAL\Exception;
 use Nwsnet\NwsMunicipalStatutes\Dom\Converter;
+use Nwsnet\NwsMunicipalStatutes\Exception\InvalidRequestMethodException;
 use Nwsnet\NwsMunicipalStatutes\Exception\UnsupportedRequestTypeException;
 use Nwsnet\NwsMunicipalStatutes\PageTitle\MunicipalPageTitleProvider;
 use Nwsnet\NwsMunicipalStatutes\Pdf\Writer\LegalNormPdf;
@@ -33,12 +35,9 @@ use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
 use Nwsnet\NwsMunicipalStatutes\RestApi\RestClient;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidRequestMethodException;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
@@ -57,14 +56,14 @@ class LocalLawController extends AbstractController
      *
      * @var LocalLaw
      */
-    protected $apiLocalLaw;
+    protected LocalLaw $apiLocalLaw;
 
     /**
      * jurisdictionFinderApiCall get data
      *
      * @var JurisdictionFinder
      */
-    protected $apiJurisdictionFinder;
+    protected JurisdictionFinder $apiJurisdictionFinder;
 
     /**
      * @param LocalLaw $apiLocalLaw
@@ -83,11 +82,11 @@ class LocalLawController extends AbstractController
     }
 
     /**
-     * deactivates flashmessages -> they are being generated for validation errrors for example
+     * deactivates flash messages -> they are being generated for validation errors for example
      *
      * @see ActionController::getErrorFlashMessage()
      */
-    protected function getErrorFlashMessage()
+    protected function getErrorFlashMessage(): bool
     {
         return false;
     }
@@ -95,9 +94,10 @@ class LocalLawController extends AbstractController
     /**
      * List view for legal standards with tree menu
      *
+     * @return ResponseInterface|void
+     *
      * @throws UnsupportedRequestTypeException
-     * @throws InvalidArgumentNameException
-     * @throws NoSuchArgumentException
+     * @throws \Exception
      */
     public function listAction()
     {
@@ -111,7 +111,7 @@ class LocalLawController extends AbstractController
             $search = $this->userSession->getSearch();
             if (!empty($search)) {
                 foreach ($search as $key => $value) {
-                    $this->request->setArgument($key, $value);
+                    $this->setArgument($key, $value);
                 }
             }
         }
@@ -125,7 +125,12 @@ class LocalLawController extends AbstractController
             }
             $legislator['count'] = count($items);
             $legislator['results'] = $items;
-            $recursive = $this->configurationManager->getContentObject()->data['recursive'];
+            if (method_exists($this->configurationManager, 'getContentObject')) {
+                $contentObjectData = $this->configurationManager->getContentObject()->data;
+            } else {
+                $contentObjectData = $this->request->getAttribute('currentContentObject')->data;
+            }
+            $recursive = $contentObjectData['recursive'] ?? [];
             //From the legislators of the multiple selection recursively determine the parents entries of the legislators
             if ($this->settings['recursiveSelection']) {
                 $areas = $this->apiLocalLaw->getAreasByLegislatorId($legislator);
@@ -141,13 +146,15 @@ class LocalLawController extends AbstractController
             }
         } else {
             $filter = array(
-                'sortAttribute' => array('name')
+                'sortAttribute' => array('name'),
             );
             if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
                 $error = $this->apiLocalLaw->legislator()->getExceptionError();
                 throw new UnsupportedRequestTypeException($error['message'], $error['code']);
             }
-            $legislator = $this->apiLocalLaw->getLegalNormByLegislator($this->apiLocalLaw->legislator()->getJsonDecode());
+            $legislator = $this->apiLocalLaw->getLegalNormByLegislator(
+                $this->apiLocalLaw->legislator()->getJsonDecode()
+            );
         }
 
         $treeMenu = $this->apiJurisdictionFinder->getTreeMenu($legislator);
@@ -155,7 +162,9 @@ class LocalLawController extends AbstractController
 
         $legalNorm = array();
         //When a search request has been made
-        if ($this->request->hasArgument('searchButton') && $this->request->hasArgument('search') && !$this->request->hasArgument('clearButton')) {
+        if ($this->request->hasArgument('searchButton') && $this->request->hasArgument(
+                'search'
+            ) && !$this->request->hasArgument('clearButton')) {
             if ($this->request->hasArgument('legislator')) {
                 $search = $this->request->getArgument('search');
                 $filter = array(
@@ -183,8 +192,10 @@ class LocalLawController extends AbstractController
                     throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-                $legalNorm = $this->apiLocalLaw->getLegalNormByStructure($this->request->getArgument('legislator'),
-                    $legalNorm);
+                $legalNorm = $this->apiLocalLaw->getLegalNormByStructure(
+                    $this->request->getArgument('legislator'),
+                    $legalNorm
+                );
                 $legalNorm['search'] = true;
                 $legalNorm['currentSearch'] = $search;
                 $this->userSession->saveSearch(array('searchButton' => 'search', 'search' => $search));
@@ -207,19 +218,21 @@ class LocalLawController extends AbstractController
                         'jurisApprovalDate',
                         'jurisNormScopes',
                     ),
-                    'sortAttribute' => 'longTitle'
+                    'sortAttribute' => 'longTitle',
                 );
                 if ($this->apiLocalLaw->legalNorm()->find($filter)->hasExceptionError()) {
                     $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
                     throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-                $legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->request->getArgument('legislator'),
-                    $legalNorm);
+                $legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm(
+                    $this->request->getArgument('legislator'),
+                    $legalNorm
+                );
             }
         }
         //Save referrer data for transmission
-        if (isset($this->settings['showSingleViewPid']) && !empty($this->settings['showSingleViewPid'])) {
+        if (!empty($this->settings['showSingleViewPid'] ?? 0)) {
             $page = array();
             $this->userSession->cleanReferrer();
             $page['controllerName'] = $this->request->getControllerName();
@@ -238,14 +251,19 @@ class LocalLawController extends AbstractController
 
         $this->view->assign('treeMenu', $treeMenu);
         $this->view->assign('legalNorm', $legalNorm);
+
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->htmlResponse();
+        }
     }
 
     /**
      * Single view for legal norms without tree menu
      *
-     * @throws InvalidArgumentNameException
-     * @throws NoSuchArgumentException
+     * @return ResponseInterface|void
+     *
      * @throws UnsupportedRequestTypeException
+     * @throws \Exception
      */
     public function singlelistAction()
     {
@@ -259,14 +277,16 @@ class LocalLawController extends AbstractController
             $search = $this->userSession->getSearch();
             if (!empty($search)) {
                 foreach ($search as $key => $value) {
-                    $this->request->setArgument($key, $value);
+                    $this->setArgument($key, $value);
                 }
             }
         }
 
         $legalNorm = array();
         //When a search request has been made
-        if ($this->request->hasArgument('searchButton') && $this->request->hasArgument('search') && !$this->request->hasArgument('clearButton')) {
+        if ($this->request->hasArgument('searchButton') && $this->request->hasArgument(
+                'search'
+            ) && !$this->request->hasArgument('clearButton')) {
             if ($this->settings['legislatorId']) {
                 $search = $this->request->getArgument('search');
                 $filter = array(
@@ -303,8 +323,10 @@ class LocalLawController extends AbstractController
                     throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-                $legalNorm = $this->apiLocalLaw->getLegalNormByStructure($this->settings['legislatorId'],
-                    $legalNorm);
+                $legalNorm = $this->apiLocalLaw->getLegalNormByStructure(
+                    $this->settings['legislatorId'],
+                    $legalNorm
+                );
                 $legalNorm['search'] = true;
                 $legalNorm['currentSearch'] = $search;
                 $this->userSession->saveSearch(array('searchButton' => 'search', 'search' => $search));
@@ -327,7 +349,7 @@ class LocalLawController extends AbstractController
                         'jurisApprovalDate',
                         'jurisNormScopes',
                     ),
-                    'sortAttribute' => 'longTitle'
+                    'sortAttribute' => 'longTitle',
                 );
                 if ($this->settings['structureId']) {
                     if (strpos($this->settings['structureId'], ',') !== false) {
@@ -342,8 +364,10 @@ class LocalLawController extends AbstractController
                     throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-                $legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm($this->settings['legislatorId'],
-                    $legalNorm);
+                $legalNorm = $this->apiLocalLaw->getStructureByAllLegalNorm(
+                    $this->settings['legislatorId'],
+                    $legalNorm
+                );
             }
         }
         //Save referrer data for transmission
@@ -365,13 +389,19 @@ class LocalLawController extends AbstractController
         }
 
         $this->view->assign('legalNorm', $legalNorm);
+
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->htmlResponse();
+        }
     }
 
     /**
      * Single view of the legal norm
      *
+     * @return ResponseInterface|void
+     *
      * @throws UnsupportedRequestTypeException
-     * @throws NoSuchArgumentException
+     * @throws InvalidRequestMethodException
      */
     public function showAction()
     {
@@ -382,9 +412,9 @@ class LocalLawController extends AbstractController
 
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
             $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
-            if ($error['code'] == 404) {
-				throw new InvalidRequestMethodException($error['message'], $error['code']);
-			}
+            if ($error['code'] === 404) {
+                throw new InvalidRequestMethodException($error['message'], $error['code']);
+            }
             throw new UnsupportedRequestTypeException($error['message'], $error['code']);
         }
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
@@ -393,10 +423,11 @@ class LocalLawController extends AbstractController
         $legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
 
         //Check if attachments exist and set document type
-        if (isset($legalNorm['jurisAttachments']) && !empty($legalNorm['jurisAttachments'])) {
+        if (!empty($legalNorm['jurisAttachments'] ?? null)) {
             foreach ($legalNorm['jurisAttachments'] as $key => $value) {
                 if (strpos($value['mimeType'], '/') !== false) {
-                    $legalNorm['jurisAttachments'][$key]['docType'] = substr($value['mimeType'],
+                    $legalNorm['jurisAttachments'][$key]['docType'] = substr(
+                        $value['mimeType'],
                         strpos($value['mimeType'], '/') + 1
                     );
                 }
@@ -426,17 +457,28 @@ class LocalLawController extends AbstractController
         $this->view->assign('referrer', $referrer);
 
         $this->view->assign('legalNorm', $legalNorm);
+
+        if (method_exists($this, 'htmlResponse')) {
+            return $this->htmlResponse();
+        }
     }
 
     /**
      * Creates a PDF with table of contents of the legal norm
      *
      * @return string|ResponseInterface
+     *
      * @throws NoSuchArgumentException
+     * @throws Exception
+     * @throws UnsupportedRequestTypeException
      */
     public function pdfAction()
     {
-        $params = GeneralUtility::_GET();
+        if (method_exists(GeneralUtility::class, '_GET')) {
+            $params = GeneralUtility::_GET();
+        } else {
+            $params = $this->request->getQueryParams();
+        }
 
         if (!isset($params['id'])) {
             $params['id'] = $GLOBALS['TYPO3_REQUEST']->getAttribute('routing')->getPageId();
@@ -456,11 +498,13 @@ class LocalLawController extends AbstractController
             $settings = array();
 
             //Read ContextRecord for Flexform
-            if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos($params['tx_nwsmunicipalstatutes_pi1']['context'],
-                    '|') !== false) {
+            if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos(
+                    $params['tx_nwsmunicipalstatutes_pi1']['context'],
+                    '|'
+                ) !== false) {
                 list($table, $uid) = explode('|', $params['tx_nwsmunicipalstatutes_pi1']['context']);
             }
-            //initalize the data us the content element
+            //initialize the data us the content element
             if (isset($table) && isset($uid)) {
                 $data = $this->getContentDataArray($table, $uid);
                 if (isset($data['pi_flexform'])) {
@@ -490,10 +534,11 @@ class LocalLawController extends AbstractController
             $legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
 
             //Check if attachments exist and set document type
-            if (isset($legalNorm['jurisAttachments']) && !empty($legalNorm['jurisAttachments'])) {
+            if (!empty($legalNorm['jurisAttachments'] ?? null)) {
                 foreach ($legalNorm['jurisAttachments'] as $key => $value) {
                     if (strpos($value['mimeType'], '/') !== false) {
-                        $legalNorm['jurisAttachments'][$key]['docType'] = substr($value['mimeType'],
+                        $legalNorm['jurisAttachments'][$key]['docType'] = substr(
+                            $value['mimeType'],
                             strpos($value['mimeType'], '/') + 1
                         );
                     }
@@ -511,11 +556,20 @@ class LocalLawController extends AbstractController
             $legalNorm['parseContent'] = $converter->getContentArray($htmlContent);
 
             //set absolute path for CSS and JS files for PDF creation
-            $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
+            if ($this->getTypo3Version() < 12000000) {
+                $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
+            } else {
+                $normalizedParams = $this->request->getAttribute('normalizedParams');
+                $GLOBALS['TSFE']->absRefPrefix = $normalizedParams->getSiteUrl();
+            }
 
             $this->view->assign('settings', $settings);
             $this->view->assign('legalNorm', $legalNorm);
+            if (method_exists($this, 'htmlResponse')) {
+                return $this->htmlResponse();
+            }
         } else {
+            /** @var TypoScriptFrontendController $typoScriptFrontendController */
             $typoScriptFrontendController = $GLOBALS['TSFE'];
             $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 0;
             $params['tx_nwsmunicipalstatutes_pi1']['create'] = 1;
@@ -523,7 +577,14 @@ class LocalLawController extends AbstractController
             $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
             $cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
             $params['cHash'] = $cHash;
-            $uri = $this->request->getBaseUri() . 'index.php';
+            //set absolute path for CSS and JS files for PDF creation
+            if ($this->getTypo3Version() < 12000000) {
+                $uri = $this->request->getBaseUri().'index.php';
+            } else {
+                $normalizedParams = $this->request->getAttribute('normalizedParams');
+                $uri = $normalizedParams->getSiteUrl().'index.php';
+            }
+
             /** @var RestClient $contentProvider */
             $contentProvider = GeneralUtility::makeInstance(RestClient::class);
             $html = $contentProvider->getData($uri, $params, true)->getResult();
@@ -534,7 +595,7 @@ class LocalLawController extends AbstractController
                         'longTitle',
                         'shortTitle',
 
-                    )
+                    ),
                 );
                 if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
                     $error = $this->apiLocalLaw->legislator()->getExceptionError();
@@ -543,46 +604,48 @@ class LocalLawController extends AbstractController
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
                 $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
                 $fileName = $this->convertToSafeString($fileName);
-                $fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH) . '.pdf';
+                $fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH).'.pdf';
 
-                /** @var LegalNormPdf $pdfFile */
-                $pdfFile = $this->objectManager->get(
-                    'Nwsnet\\NwsMunicipalStatutes\\Pdf\\Writer\\LegalNormPdf'
-                );
-                $pdfFilePath = Environment::getPublicPath() . '/typo3temp/' . md5(mt_rand()) . '.pdf';
+                if (property_exists($this, 'objectManager')) {
+                    /** @var LegalNormPdf $pdfFile */
+                    $pdfFile = $this->objectManager->get(LegalNormPdf::class);
+                } else {
+                    /** @var LegalNormPdf $pdfFile */
+                    $pdfFile = GeneralUtility::makeInstance(LegalNormPdf::class);
+                }
+
+                $pdfFilePath = Environment::getPublicPath().'/typo3temp/'.md5(mt_rand()).'.pdf';
                 if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
                     return '';
                 }
 
                 $pdf = @file_get_contents($pdfFilePath);
                 unlink($pdfFilePath);
+                $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+                $typoScriptFrontendController->setContentType('application/pdf');
                 if (method_exists($this, 'htmlResponse')) {
-                    /** @var TypoScriptFrontendController $typoScriptFrontendController */
-
-                    $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
                     $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 1;
-                    $typoScriptFrontendController->setContentType('application/pdf');
+
                     return $this->responseFactory->createResponse()
                         ->withHeader('Content-Type', 'application/pdf')
                         ->withHeader('Content-Transfer-Encoding', 'binary')
-                        ->withHeader('Content-Disposition', 'attachment;filename="' . $fileName)
-                        ->withHeader('Content-Length', (string)  strlen($pdf))
+                        ->withHeader('Content-Disposition', 'attachment;filename="'.$fileName)
+                        ->withHeader('Content-Length', (string)strlen($pdf))
                         ->withHeader('Connection', 'close')
                         ->withBody($this->streamFactory->createStream((string)($pdf)));
-
                 } else {
-                    /** @var TypoScriptFrontendController $typoScriptFrontendController */
-                    $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
-                    $typoScriptFrontendController->setContentType('application/pdf');
                     $this->response->setHeader('Content-Transfer-Encoding', 'binary');
-                    $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $fileName);
+                    $this->response->setHeader('Content-Disposition', 'attachment;filename="'.$fileName);
                     $this->response->setHeader('Content-Length', strlen($pdf));
                     $this->response->setHeader('Connection', 'close');
                     echo $pdf;
                 }
             }
+
             return '';
         }
+
+        return '';
     }
 
     /**
@@ -593,20 +656,20 @@ class LocalLawController extends AbstractController
     public function showTitleAction(int $legalnorm)
     {
         $legalNormId = $legalnorm;
-        $title= '';
+        $title = '';
         $filter = array(
             'selectAttributes' => array(
                 'id',
-                'longTitle'
-            )
+                'longTitle',
+            ),
         );
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
             return '';
         }
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
 
-        if (isset($legalNorm['longTitle']) && !empty($legalNorm['longTitle'])) {
-            $title =  $legalNorm['longTitle'];
+        if (!empty($legalNorm['longTitle'] ?? null)) {
+            $title = $legalNorm['longTitle'];
         }
         if (method_exists($this, 'htmlResponse')) {
             return $this->responseFactory->createResponse()
@@ -624,19 +687,19 @@ class LocalLawController extends AbstractController
     public function showTitleLegislatorAction(int $legislator)
     {
         $legislatorId = $legislator;
-        $title= '';
+        $title = '';
         $filter = array(
             'selectAttributes' => array(
                 'id',
-                'name'
-            )
+                'name',
+            ),
         );
         if ($this->apiLocalLaw->legislator()->findById($legislatorId, $filter)->hasExceptionError()) {
             return '';
         }
         $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
 
-        if (isset($legislator['name']) && !empty($legislator['name'])) {
+        if (!empty($legislator['name'] ?? null)) {
             $title = $legislator['name'];
         }
         if (method_exists($this, 'htmlResponse')) {
