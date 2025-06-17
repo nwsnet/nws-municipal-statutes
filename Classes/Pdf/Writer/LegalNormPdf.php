@@ -25,7 +25,9 @@
 namespace Nwsnet\NwsMunicipalStatutes\Pdf\Writer;
 
 use Nwsnet\NwsMunicipalStatutes\Pdf\WkHtmlToPdf;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * Class LegalNormPdf
@@ -38,41 +40,35 @@ use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 class LegalNormPdf
 {
     /**
-     * @var ObjectManagerInterface
-     */
-    private $objectManager;
-
-    /**
-     * LegalNormPdf constructor.
-     * @param ObjectManagerInterface $objectManager
-     */
-    public function __construct(ObjectManagerInterface $objectManager)
-    {
-        $this->objectManager = $objectManager;
-    }
-
-    /**
      * Creates the PDF document from the HTML content and saves it in the specified path
      *
-     * @param $path
-     * @param $html
+     * @param string $path
+     * @param string $html
      *
      * @return bool
      */
-    public function writeTo($path, $html)
+    public function writeTo(string $path, string $html): bool
     {
-        /** @var WkHtmlToPdf $pdf */
-        $pdf = $this->objectManager->get('Nwsnet\\NwsMunicipalStatutes\\Pdf\\WkHtmlToPdf', $html);
+
+        if ($this->getTypo3Version() < 12000000) {
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            /** @var WkHtmlToPdf $pdf */
+            $pdf = $objectManager->get(WkHtmlToPdf::class, $html);
+        } else {
+            /** @var WkHtmlToPdf $pdf */
+            $pdf = GeneralUtility::makeInstance(WkHtmlToPdf::class, $html);
+        }
         $pdf->setArgument('footer-right', 'Seite [page] von [topage]');
         $pdf->setArgument('footer-spacing', 5);
-        $pdf->setArgument('enable-internal-links', '');
-        $pdf->setArgument('disable-external-links', '');
+        $pdf->setArgument('enable-internal-links');
+        $pdf->setArgument('disable-external-links');
         if ($this->isBasicAuth()) {
             $auth = $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['BasicAuth'];
             $pdf->setArgument('username', $auth['username']);
             $pdf->setArgument('password', $auth['password']);
         }
-        // Set the proxy if entered in the TYPO3 configuration
+        // Set the proxy if entered the TYPO3 configuration
         $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? '');
         if (!empty($proxy)) {
             $pdf->setArgument('p', $proxy);
@@ -91,7 +87,7 @@ class LegalNormPdf
      *
      * @return bool
      */
-    private function isBasicAuth()
+    private function isBasicAuth(): bool
     {
         $check = false;
 
@@ -101,5 +97,21 @@ class LegalNormPdf
         }
 
         return $check;
+    }
+
+    /**
+     * Retrieves the TYPO3 version as an integer.
+     *
+     * @return int The TYPO3 version number converted to an integer.
+     */
+    private function getTypo3Version(): int
+    {
+        if (defined('TYPO3_version')) {
+            return VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        } else {
+            $version = VersionNumberUtility::getNumericTypo3Version();
+
+            return VersionNumberUtility::convertVersionNumberToInteger($version);
+        }
     }
 }

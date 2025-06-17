@@ -28,58 +28,34 @@ namespace Nwsnet\NwsMunicipalStatutes\Pdf;
 class ExtConf
 {
     /**
-     * $_EXTKEY
-     *
      * @var string
      */
-    protected static $extKey = 'nws_municipal_statutes';
+    protected static string $extKey = 'nws_municipal_statutes';
 
     /**
-     * @var array
+     * @var null|array
      */
-    protected static $extConf;
+    protected static ?array $extConf = null;
 
     /**
      * @param string $key
      * @param string|null $default
      * @return string|null
      */
-    public static function get($key, $default = null)
+    public static function get(string $key, string $default = null): ?string
     {
         if (null === self::$extConf) {
             self::loadExtConf();
         }
 
-        if (isset(self::$extConf[$key])) {
-            return self::$extConf[$key];
-        } else {
-            return $default;
-        }
-    }
-
-    /**
-     * @param string $key
-     * @param string $delimiter
-     * @param int $part
-     * @param string|null $default
-     * @return array|string|null
-     */
-    private static function splitAndGet($key, $delimiter, $part, $default = null)
-    {
-        $value = self::get($key, '');
-        $parts = explode($delimiter, $value);
-        if (isset($parts[$part])) {
-            return $parts[$part];
-        } else {
-            return $default;
-        }
+        return self::$extConf[$key] ?? $default;
     }
 
     /**
      * @param string $default
      * @return string
      */
-    public static function getWkHtmlToPdfPath($default = 'wkhtmltopdf')
+    public static function getWkHtmlToPdfPath(string $default = 'wkhtmltopdf'): ?string
     {
         return self::get('wkhtmltopdfPath', $default);
     }

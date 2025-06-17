@@ -30,14 +30,14 @@ class WkHtmlToPdf
     /**
      * @var string
      */
-    protected $htmlContent;
+    protected string $htmlContent;
 
     /**
      * Path to wkhtmltopdf binary
      *
      * @var string
      */
-    protected $binPath;
+    protected string $binPath;
 
     /**
      * @var resource
@@ -47,20 +47,20 @@ class WkHtmlToPdf
     /**
      * @var array
      */
-    protected $arguments = array(
+    protected array $arguments = array(
         'margin-top' => 15,
         'margin-left' => 15,
         'margin-right' => 15,
         'margin-bottom' => 15,
-        'print-media-type' => ''
+        'print-media-type' => '',
     );
 
     /**
      * WkHtmlToPdf constructor.
-     * @param $htmlContent
-     * @param null $binPath
+     * @param string $htmlContent
+     * @param string|null $binPath
      */
-    public function __construct($htmlContent, $binPath = null)
+    public function __construct(string $htmlContent, string $binPath = null)
     {
         if ($binPath === null) {
             $binPath = ExtConf::getWkHtmlToPdfPath();
@@ -83,7 +83,7 @@ class WkHtmlToPdf
      * @param $argument
      * @param string $value
      */
-    public function setArgument($argument, $value = '')
+    public function setArgument($argument, string $value = '')
     {
         $this->arguments[$argument] = $value;
     }
@@ -103,7 +103,7 @@ class WkHtmlToPdf
      *
      * @return bool
      */
-    public function writeTo($path)
+    public function writeTo(string $path): bool
     {
         if (null === $this->pdfStream) {
             $this->pdfStream = $this->createPdfStream();
@@ -157,6 +157,7 @@ class WkHtmlToPdf
             fclose($stdout);
         } else {
             fclose($tempStream);
+
             return false;
         }
 
@@ -164,6 +165,7 @@ class WkHtmlToPdf
 
         if ($exitCode === 0) {
             rewind($tempStream);
+
             return $tempStream;
         } else {
             return false;
@@ -173,7 +175,7 @@ class WkHtmlToPdf
     /**
      * @return string
      */
-    private function getArgString()
+    private function getArgString(): string
     {
         $arg = '';
         foreach ($this->arguments as $argument => $value) {
@@ -191,6 +193,7 @@ class WkHtmlToPdf
 
             $arg .= sprintf('%s%s %s', $prefix, $argument, $value);
         }
+
         return $arg;
     }
 }
