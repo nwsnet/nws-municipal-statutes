@@ -41,49 +41,49 @@ class RestClient
      *
      * @var string $http
      */
-    protected $http;
+    private string $http = '';
 
     /**
      * Api Key
      *
      * @var string $apiKey
      */
-    protected $apiKey;
+    private string $apiKey = '';
 
     /**
      * additional header information for submission
      *
      * @var array $additionalHeaders
      */
-    protected $additionalHeaders = array();
+    private array $additionalHeaders = [];
 
     /**
      * Json return from the response
      *
      * @var string $result
      */
-    protected $result;
+    private string $result;
 
     /**
      * Error transferring to the API
      *
      * @var array $exceptionError
      */
-    protected $exceptionError;
+    private array $exceptionError = [];
 
     /**
      * Representation of the curl call
      *
      * @var resource $curl
      */
-    protected $curl;
+    private $curl;
 
     /**
      * Provides the configuration of the call
      *
      * @param array $config
      */
-    public function setConfiguration($config = array())
+    public function setConfiguration(array $config = array())
     {
         //set baseUrl
         if (isset($config['http'])) {
@@ -106,9 +106,9 @@ class RestClient
      * @param string $path
      * @param array $filter
      * @param bool $noHeader
-     * @return mixed
+     * @return RestClient
      */
-    public function getData($path, array $filter, $noHeader = false)
+    public function getData(string $path, array $filter, bool $noHeader = false): RestClient
     {
         $this->setConnection($path, $filter, $noHeader);
 
@@ -122,7 +122,7 @@ class RestClient
      * @param array $filter
      * @param bool $noHeader
      */
-    protected function setConnection($path, array $filter, $noHeader = false)
+    protected function setConnection(string $path, array $filter, bool $noHeader = false)
     {
         $header = array();
         $executeHttp = $this->http.$path.'?'.$this->httpBuildQuery($filter);
@@ -141,7 +141,7 @@ class RestClient
             $header = array_merge($header, $additionalHeaders);
         }
 
-        // Set the proxy if entered in the TYPO3 configuration
+        // Set the proxy if entered the TYPO3 configuration
         $proxy = trim($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] ?? '');
 
         $this->curl = curl_init($executeHttp);
@@ -163,9 +163,9 @@ class RestClient
     /**
      * Executes the curl call
      *
-     * @return mixed
+     * @return RestClient
      */
-    protected function executeCurl()
+    protected function executeCurl(): RestClient
     {
         $curl_response = curl_exec($this->curl);
         $header = curl_getinfo($this->curl);
@@ -173,29 +173,19 @@ class RestClient
             switch ($header['http_code']) {
                 case 404:
                     $message = empty($curl_response) ? 'Not found' : strip_tags($curl_response);
-                    $error = array(
-                        'message' => $message,
-                        'code' => $header['http_code'],
-                    );
-                    $this->setExceptionError($error);
                     break;
                 case 401:
                     $message = empty($curl_response) ? 'Unauthorized' : strip_tags($curl_response);
-                    $error = array(
-                        'message' => $message,
-                        'code' => $header['http_code'],
-                    );
-                    $this->setExceptionError($error);
                     break;
                 default:
                     $message = empty($curl_response) ? 'Unknown' : strip_tags($curl_response);
-                    $error = array(
-                        'message' => $message,
-                        'code' => $header['http_code'],
-                    );
-                    $this->setExceptionError($error);
                     break;
             }
+            $error = array(
+                'message' => $message,
+                'code' => $header['http_code'],
+            );
+            $this->setExceptionError($error);
         }
 
         curl_close($this->curl);
@@ -210,7 +200,7 @@ class RestClient
      * @param $url
      * @return bool
      */
-    private function isInternalCallAndBasicAuth($url)
+    private function isInternalCallAndBasicAuth($url): bool
     {
         $check = false;
         if (GeneralUtility::isOnCurrentHost($url)) {
@@ -232,7 +222,7 @@ class RestClient
      * @param bool $qs
      * @return string
      */
-    private function httpBuildQuery($array, $qs = false)
+    private function httpBuildQuery($array, bool $qs = false): string
     {
         $parts = array();
         if ($qs) {
@@ -260,7 +250,7 @@ class RestClient
      *
      * @return string
      */
-    public function getResult()
+    public function getResult(): string
     {
         return $this->result;
     }
@@ -270,7 +260,7 @@ class RestClient
      *
      * @param string $result
      */
-    public function setResult($result)
+    public function setResult(string $result)
     {
         $this->result = $result;
     }
@@ -281,7 +271,7 @@ class RestClient
      *
      * @return array $exceptionError
      */
-    public function getExceptionError()
+    public function getExceptionError(): array
     {
         return $this->exceptionError;
     }
@@ -293,7 +283,7 @@ class RestClient
      *
      * @return void
      */
-    public function setExceptionError($exceptionError)
+    public function setExceptionError(array $exceptionError)
     {
         $this->exceptionError = $exceptionError;
     }
@@ -303,7 +293,7 @@ class RestClient
      *
      * @return boolean
      */
-    public function hasExceptionError()
+    public function hasExceptionError(): bool
     {
         $error = $this->getExceptionError();
         if (empty($error)) {
@@ -331,11 +321,11 @@ class RestClient
     /**
      * Encode to the json representation
      *
-     * @param object
+     * @param mixed $data
      *
      * @return string
      */
-    public function jsonEncode($data)
+    public function jsonEncode($data): string
     {
         return json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     }
@@ -343,12 +333,12 @@ class RestClient
     /**
      * Recursive search of an array to a value
      *
-     * @param string $needle (serach string)
+     * @param string $needle (search string)
      * @param array $haystack (to be searched)
      *
      * @return false|int
      */
-    public function recursiveArraySearch($needle, $haystack)
+    public function recursiveArraySearch(string $needle, array $haystack)
     {
         foreach ($haystack as $key => $value) {
             $current_key = $key;
