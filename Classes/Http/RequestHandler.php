@@ -26,10 +26,11 @@ declare(strict_types=1);
 
 namespace Nwsnet\NwsMunicipalStatutes\Http;
 
-use PDO;
+use Doctrine\DBAL\Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface as PsrRequestHandlerInterface;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Http\NullResponse;
@@ -37,6 +38,7 @@ use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -47,7 +49,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  *
  * "handle()" is called when all PSR-15 middlewares have been set up the PSR-7 ServerRequest object and the following
  * things have been evaluated
- * - correct page ID, page type (typeNum), rootline, MP etc.
+ * - correct page ID, page type (typeNum), root line, MP etc.
  * - info if is cached content already available
  * - proper language
  * - proper TypoScript which should be processed.
@@ -59,7 +61,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  * If the content has been built together within the cache (cache_pages), it is fetched directly, and
  * any so-called "uncached" content is generated again.
  *
- * Some further hooks allow to post-processing the content.
+ * Some further hooks allow to post-process the content.
  *
  * Then the right HTTP response headers are compiled together and sent as well.
  */
@@ -70,49 +72,49 @@ class RequestHandler implements PsrRequestHandlerInterface
      *
      * @var string
      */
-    private $vendorName = 'Nwsnet';
+    private string $vendorName = 'Nwsnet';
 
     /**
      * extensionName
      *
      * @var string
      */
-    private $extensionName = 'NwsMunicipalStatutes';
+    private string $extensionName = 'NwsMunicipalStatutes';
 
     /**
      * Default pluginName
      *
      * @var string
      */
-    private $defaultPluginName = 'Pi1';
+    private string $defaultPluginName = 'Pi1';
 
     /**
      * Default Controller
      *
      * @var string
      */
-    private $defaultController = 'LocalLaw';
+    private string $defaultController = 'LocalLaw';
 
     /**
      * Default action
      *
      * @var string
      */
-    private $defaultAction = 'list';
+    private string $defaultAction = 'list';
 
     /**
      * Default Patter for transmitted get parameter
      *
      * @var string
      */
-    private $defaultArrayPattern = 'tx_nwsmunicipalstatutes_pi1';
+    private string $defaultArrayPattern = 'tx_nwsmunicipalstatutes_pi1';
 
     /**
      * Pattern list for transmitted get parameter
      *
      * @var array
      */
-    private $arrayPattern = [
+    private array $arrayPattern = [
         'tx_nwsmunicipalstatutes_pi1',
     ];
 
@@ -123,6 +125,7 @@ class RequestHandler implements PsrRequestHandlerInterface
      * @param ServerRequestInterface $request
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
@@ -142,8 +145,8 @@ class RequestHandler implements PsrRequestHandlerInterface
         $originalGetParameters = $request->getAttribute('_originalGetParameters');
         if ($originalGetParameters !== null && !empty($_GET) && $_GET !== $originalGetParameters) {
             // Find out what has been changed.
-            $modifiedGetParameters = ArrayUtility::arrayDiffAssocRecursive($_GET ?? [], $originalGetParameters);
-            if (!empty($modifiedGetParameters)) {
+            $modifiedGetParameters = ArrayUtility::arrayDiffAssocRecursive($_GET, $originalGetParameters);
+            if (count($modifiedGetParameters) > 0) {
                 $queryParams = array_replace_recursive($modifiedGetParameters, $request->getQueryParams());
                 $request = $request->withQueryParams($queryParams);
                 $GLOBALS['TYPO3_REQUEST'] = $request;
@@ -151,15 +154,17 @@ class RequestHandler implements PsrRequestHandlerInterface
         }
         // do same for $_POST if the request is a POST request
         $originalPostParameters = $request->getAttribute('_originalPostParameters');
-        if ($request->getMethod() === 'POST' && $originalPostParameters !== null && !empty($_POST) && $_POST !== $originalPostParameters) {
+        if ($request->getMethod(
+            ) === 'POST' && $originalPostParameters !== null && !empty($_POST) && $_POST !== $originalPostParameters) {
             // Find out what has been changed
-            $modifiedPostParameters = ArrayUtility::arrayDiffAssocRecursive($_POST ?? [], $originalPostParameters);
+            $modifiedPostParameters = ArrayUtility::arrayDiffAssocRecursive($_POST, $originalPostParameters);
             if (!empty($modifiedPostParameters)) {
                 $parsedBody = array_replace_recursive($modifiedPostParameters, $request->getParsedBody());
                 $request = $request->withParsedBody($parsedBody);
                 $GLOBALS['TYPO3_REQUEST'] = $request;
             }
         }
+
         return $request;
     }
 
@@ -173,7 +178,7 @@ class RequestHandler implements PsrRequestHandlerInterface
      *
      * @internal this safety net will be removed in TYPO3 v10.0.
      */
-    protected function resetGlobalsToCurrentRequest(ServerRequestInterface $request)
+    protected function resetGlobalsToCurrentRequest(ServerRequestInterface $request): void
     {
         if ($request->getQueryParams() !== $_GET) {
             $queryParams = $request->getQueryParams();
@@ -194,7 +199,8 @@ class RequestHandler implements PsrRequestHandlerInterface
      *
      * @param ServerRequestInterface $request
      *
-     * @return ResponseInterface|null
+     * @return ResponseInterface
+     * @throws \Exception
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -205,11 +211,22 @@ class RequestHandler implements PsrRequestHandlerInterface
         $request = $this->addModifiedGlobalsToIncomingRequest($request);
         $this->resetGlobalsToCurrentRequest($request);
 
+        if (method_exists(GeneralUtility::class, '_GPmerged')) {
+            $params = GeneralUtility::_GPmerged($this->getArrayPattern($request));
+            $cHash = GeneralUtility::_GET('cHash');
+        } else {
+            $params = $request->getQueryParams()[$this->getArrayPattern($request)] ?? [];
+            ArrayUtility::mergeRecursiveWithOverrule(
+                $params,
+                $request->getParsedBody()[$this->getArrayPattern($request)] ?? []
+            );
+            $cHash = $request->getQueryParams()['cHash'] ?? $request->getParsedBody()['cHash'] ?? '';
+        }
 
-        $params = GeneralUtility::_GPmerged($this->getArrayPattern($request));
-        $cHash = GeneralUtility::_GET('cHash');
         if (!empty($cHash)) {
-            $typoScriptFrontendController->cHash = $cHash;
+            if (property_exists($typoScriptFrontendController, 'cHash')) {
+                $typoScriptFrontendController->cHash = $cHash;
+            }
         }
         //Read ContextRecord for Flexform
         if (isset($params['context']) && strpos($params['context'], '|') !== false) {
@@ -223,8 +240,9 @@ class RequestHandler implements PsrRequestHandlerInterface
             'pluginName' => $this->getPluginName($request),
 
         );
-        $configuration['controller'] = isset($params['controller']) ? $params['controller'] : $this->defaultController;
-        $configuration['action'] = isset($params['action']) ? $params['action'] : $this->defaultAction;
+        $configuration['controller'] = $params['controller'] ?? $this->defaultController;
+        $configuration['action'] = $params['action'] ?? $this->defaultAction;
+        $configuration['switchableControllerActions'][$configuration['controller']][] = $configuration['action'];
 
         /** @var TypoScriptService $typoScriptService */
         $typoScriptService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\TypoScript\\TypoScriptService');
@@ -234,10 +252,17 @@ class RequestHandler implements PsrRequestHandlerInterface
             $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray(
                 $typoScriptFrontendController->tmpl->setup['plugin.']['tx_nwsmunicipalstatutes.']
             );
+        } elseif ($request->getAttribute('frontend.typoscript') !== null) {
+            $typoScript = $request->getAttribute('frontend.typoscript')->getSetupArray();
+            if (isset($typoScript['plugin.']['tx_nwsmunicipalstatutes.'])) {
+                $pluginConfiguration = $typoScriptService->convertTypoScriptArrayToPlainArray(
+                    $typoScript['plugin.']['tx_nwsmunicipalstatutes.']
+                );
+            }
         }
 
         $configuration['settings'] = $pluginConfiguration['settings'];
-        $configuration['persistence'] = array('storagePid' => $pluginConfiguration['persistence']['storagePid']);
+        $configuration['persistence'] = array('storagePid' => $pluginConfiguration['persistence']['storagePid'] ?? 0);
         //TYPO3 >= 8.7  must be switched off the cHash validate
         if (empty($cHash)) {
             $configuration['features']['requireCHashArgumentForActionArguments'] = 0;
@@ -247,21 +272,26 @@ class RequestHandler implements PsrRequestHandlerInterface
         /**
          * Initialize Extbase bootstrap
          */
+        if ($this->getTypo3Version() < 12000000) {
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            /** @var Bootstrap $bootstrap */
+            $bootstrap = $objectManager->get(Bootstrap::class);
+        } else {
+            /** @var Bootstrap $bootstrap */
+            $bootstrap = GeneralUtility::makeInstance(Bootstrap::class);
+        }
 
-        /** @var ObjectManager $objectManager */
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        /** @var Bootstrap $bootstrap */
-        $bootstrap = $objectManager->get(Bootstrap::class);
         if (method_exists($bootstrap, 'setContentObjectRenderer')) {
             /** @var ContentObjectRenderer $contentObjectRenderer */
             $contentObjectRenderer = GeneralUtility::makeInstance(
                 'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
                 $typoScriptFrontendController
             );
-            //initalize the data us the content element
+            //initialize the data us the content element
             if (isset($table) && isset($uid)) {
                 $data = $this->getContentDataArray($table, intval($uid));
-                if (is_array($data) && !empty($data)) {
+                if (!empty($data)) {
                     $contentObjectRenderer->start($data, 'tt_content');
                 }
             }
@@ -272,27 +302,46 @@ class RequestHandler implements PsrRequestHandlerInterface
                 'TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer',
                 $typoScriptFrontendController
             );
-        //initalize the data us the content element
-        if (isset($table) && isset($uid)) {
+            //initialize the data us the content element
+            if (isset($table) && isset($uid)) {
                 $data = $this->getContentDataArray($table, intval($uid));
-                if (is_array($data) && !empty($data)) {
-                $bootstrap->cObj->start($data, 'tt_content');
+                if (!empty($data)) {
+                    $bootstrap->cObj->start($data, 'tt_content');
+                }
             }
-        }
         }
 
         //output
-        $typoScriptFrontendController->content = $bootstrap->run('', $configuration);
+        if ($this->getTypo3Version() < 12000000) {
+            $typoScriptFrontendController->content = $bootstrap->run('', $configuration);
+        } elseif ($this->getTypo3Version() < 13000000) {
+            $typoScriptFrontendController->content = $bootstrap->run('', $configuration, $GLOBALS['TYPO3_REQUEST']);
+        } else {
+            $request = clone $GLOBALS['TYPO3_REQUEST'];
+            if (isset($contentObjectRenderer)) {
+                $request = $request->withAttribute('currentContentObject', $contentObjectRenderer);
+            }
+            $typoScriptFrontendController->content = $bootstrap->run('', $configuration, $request);
+        }
         $isOutputting = !empty($typoScriptFrontendController->content);
         // Create a Response object when sending content
         $response = new Response();
 
         // Store session data for fe_users
-        $typoScriptFrontendController->fe_user->storeSessionData();
+        if ($typoScriptFrontendController->fe_user) {
+            $typoScriptFrontendController->fe_user->storeSessionData();
+        } else {
+            $user = $request->getAttribute('frontend.user');
+            $user->storeSessionData();
+        }
 
         $response->getBody()->write($typoScriptFrontendController->content);
-        if(method_exists($typoScriptFrontendController,'applyHttpHeadersToResponse')){
-            $response = $typoScriptFrontendController->applyHttpHeadersToResponse($response);
+        if (method_exists($typoScriptFrontendController, 'applyHttpHeadersToResponse')) {
+            if ($this->getTypo3Version() < 13000000) {
+                $response = $typoScriptFrontendController->applyHttpHeadersToResponse($response);
+            } else {
+                $response = $typoScriptFrontendController->applyHttpHeadersToResponse($request, $response);
+            }
         }
 
         return $isOutputting ? $response : new NullResponse();
@@ -305,17 +354,33 @@ class RequestHandler implements PsrRequestHandlerInterface
      * @param integer $uid
      *
      * @return array $row
+     * @throws Exception
      */
     protected function getContentDataArray(string $table, int $uid): array
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $res = $queryBuilder->select('*')
-            ->from('tt_content')
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)))
-            ->groupBy('uid')
-            ->execute();
-        $result = $res->fetch();
+        if ($table === 'pages') {
+            $res = $queryBuilder->select('*')
+                ->from('tt_content')
+                ->where(
+                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
+                )
+                ->andWhere(
+                    $queryBuilder->expr()->eq('list_type', $queryBuilder->createNamedParameter('wsmunicipalstatutes_pi1'))
+                );
+        } else {
+            $res = $queryBuilder->select('*')
+                ->from('tt_content')
+                ->where(
+                    $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
+                );
+        }
+        if (method_exists($res, 'execute')) {
+            $result = $res->execute()->fetch();
+        } else {
+            $result = current($res->executeQuery()->fetchAllAssociative());
+        }
 
         return !empty($result) ? $result : [];
     }
@@ -332,7 +397,7 @@ class RequestHandler implements PsrRequestHandlerInterface
         $queryParams = $request->getQueryParams();
         if (!empty($queryParams)) {
             foreach ($this->arrayPattern as $patter) {
-                if (isset($queryParams[$patter]) && !empty($queryParams[$patter])) {
+                if (!empty($queryParams[$patter] ?? null)) {
                     $result = $patter;
                 }
             }
@@ -351,7 +416,7 @@ class RequestHandler implements PsrRequestHandlerInterface
     {
         $result = $this->defaultPluginName;
         $plugin = GeneralUtility::trimExplode('_', $this->getArrayPattern($request));
-        if (!empty($plugin) && is_array($plugin)) {
+        if (!empty($plugin)) {
             $result = ucfirst(end($plugin));
         }
 
@@ -379,5 +444,21 @@ class RequestHandler implements PsrRequestHandlerInterface
     public function getPriority(): int
     {
         return 50;
+    }
+
+    /**
+     * Retrieves the TYPO3 version as an integer.
+     *
+     * @return int The TYPO3 version number converted to an integer.
+     */
+    private function getTypo3Version(): int
+    {
+        if (defined('TYPO3_version')) {
+            return VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        } else {
+            $version = VersionNumberUtility::getNumericTypo3Version();
+
+            return VersionNumberUtility::convertVersionNumberToInteger($version);
+        }
     }
 }
