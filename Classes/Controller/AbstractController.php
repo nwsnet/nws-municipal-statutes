@@ -104,7 +104,7 @@ abstract class AbstractController extends ActionController implements LoggerAwar
      *
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * @param UserSession $userSession
