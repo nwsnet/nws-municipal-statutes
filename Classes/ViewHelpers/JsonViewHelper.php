@@ -29,7 +29,7 @@ use Traversable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Reflection\Exception\PropertyNotAccessibleException;
 use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
-use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * For providing JSON data for maps etc.
@@ -45,11 +45,14 @@ class JsonViewHelper extends AbstractViewHelper
      * @return void
      * @api
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         $this->registerArgument('subject', 'mixed', 'The object or array of objects to serialize');
-        $this->registerArgument('mapping', 'array',
-            'The name of the properties, that should be imploded as array where key is the json object-key and value is the PHP object property. Can also be list of keys for a 1:1 mapping');
+        $this->registerArgument(
+            'mapping',
+            'array',
+            'The name of the properties, that should be imploded as array where key is the json object-key and value is the PHP object property. Can also be list of keys for a 1:1 mapping'
+        );
         $this->registerArgument('properties', 'string', 'List of properties to serialize (1:1 mapping)');
     }
 
@@ -59,7 +62,7 @@ class JsonViewHelper extends AbstractViewHelper
      * @return string
      * @throws PropertyNotAccessibleException
      */
-    public function render()
+    public function render(): string
     {
         $subject = $this->arguments['subject'];
         if (empty($subject)) {
@@ -78,6 +81,7 @@ class JsonViewHelper extends AbstractViewHelper
         } else {
             $ret = $this->objectToStdClass($subject, $mapping);
         }
+
         return json_encode($ret);
     }
 
@@ -88,7 +92,7 @@ class JsonViewHelper extends AbstractViewHelper
      * @return array
      * @throws PropertyNotAccessibleException
      */
-    private function objectCollectionToArray($collection, array $mapping)
+    private function objectCollectionToArray(array $collection, array $mapping): array
     {
         $ret = array();
         foreach ($collection as $key => $item) {
@@ -100,6 +104,7 @@ class JsonViewHelper extends AbstractViewHelper
                 $ret[$key] = $item;
             }
         }
+
         return $ret;
     }
 
@@ -108,8 +113,9 @@ class JsonViewHelper extends AbstractViewHelper
      * @param array $mapping
      *
      * @return stdClass
+     * @throws PropertyNotAccessibleException
      */
-    private function objectToStdClass($object, array $mapping)
+    private function objectToStdClass(object $object, array $mapping): stdClass
     {
         $stdClass = new stdClass();
 
