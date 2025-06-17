@@ -23,39 +23,11 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Exception;
 
-
 use Nwsnet\NwsMunicipalStatutes\Exception;
-use Throwable;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /**
- * Invalid call API
- *
- * Class UnsupportedRequestTypeException
- * @package Nwsnet\NwsMunicipalStatutes\Exception
+ * An "Invalid Request Method" exception
  */
-class UnsupportedRequestTypeException extends Exception
+class InvalidRequestMethodException extends Exception
 {
-    /**
-     * extensionName
-     *
-     * @var string
-     */
-    private string $extensionName = 'NwsRegionalMap';
-
-    /**
-     * ApiTypeNotAvailableException constructor.
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
-     */
-    public function __construct($message = "", $code = 0, Throwable $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
-        $this->code = 1602158550;
-        $this->message = LocalizationUtility::translate(
-            'template.exception.couldNotInitializeApi',
-            $this->extensionName
-        );
-    }
 }
