@@ -24,26 +24,23 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
-use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
-use TYPO3\CMS\Extbase\Configuration\FrontendConfigurationManager;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Mvc\Dispatcher;
 use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
+use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
-use TYPO3\CMS\Extbase\Object\Exception;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
@@ -70,30 +67,37 @@ class AbstractTitleMapper
     /**
      * Is set via $settings
      *
-     * @var
+     * @var int
      */
-    protected $maxLength;
+    protected int $maxLength;
 
     /**
      * vendorName
      *
      * @var string
      */
-    protected $vendorName = 'Nwsnet';
+    protected string $vendorName = 'Nwsnet';
 
     /**
      * extensionName
      *
      * @var string
      */
-    protected $extensionName = 'NwsMunicipalStatutes';
+    protected string $extensionName = 'NwsMunicipalStatutes';
 
     /**
      * pluginName
      *
      * @var string
      */
-    protected $pluginName = 'Pi1';
+    protected string $pluginName = 'Pi1';
+
+    /**
+     * Patter for transmitted get parameter
+     *
+     * @var string
+     */
+    protected string $arrayPattern = 'tx_nwsmunicipalstatutes_pi1';
 
     /**
      * Used only for sanitizing. "generate" won't work!
@@ -105,21 +109,14 @@ class AbstractTitleMapper
     /**
      * @var FrontendInterface
      */
-    protected $cache;
+    protected FrontendInterface $cache;
 
     /**
      * configurationBootstrap
      *
      * @var array
      */
-    private $configurationBootstrap;
-
-    /**
-     * bootstrap
-     *
-     * @var object
-     */
-    private $bootstrap;
+    private array $configurationBootstrap;
 
     /**
      * @var ConfigurationManager
@@ -129,7 +126,7 @@ class AbstractTitleMapper
     /**
      * @var array
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * @var array
@@ -145,7 +142,7 @@ class AbstractTitleMapper
      * Request object
      * @var array
      */
-    private $controllerAlias = array(
+    private array $controllerAlias = array(
         'LocalLaw' => 'Nwsnet\NwsMunicipalStatutes\Controller\LocalLawController',
     );
 
@@ -153,6 +150,7 @@ class AbstractTitleMapper
      * AbstractTitleMapper constructor.
      * @param array $settings
      * @throws InvalidConfigurationTypeException
+     * @throws NoSuchCacheException
      */
     public function __construct(array $settings)
     {
@@ -161,9 +159,8 @@ class AbstractTitleMapper
         $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
 
         // we'll just reuse the default page cache to store our slug cache
-        $this->cache = $cacheManager->getCache('cache_pages');
+        $this->cache = $cacheManager->getCache('nws_municipal_statutes');
 
-        /** @var SlugHelper slugHelper */
         $this->slugHelper = GeneralUtility::makeInstance(
             SlugHelper::class,
             $settings['tableName'],
@@ -172,14 +169,31 @@ class AbstractTitleMapper
         );
 
         // Read existing extbase configuration
-        /** @var ObjectManager $objectManager */
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        /** @var ConfigurationManager $configurationManager */
-        if (isset($GLOBALS['TSFE'])) {
+        if (class_exists(ObjectManager::class)) {
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
             /** @var ConfigurationManager $configurationManager */
-            $this->configurationManager = $objectManager->get(ConfigurationManager::class);
-            $this->setting = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-            $this->contentObject = $this->configurationManager->getContentObject();
+            if (isset($GLOBALS['TSFE'])) {
+                /** @var ConfigurationManager $configurationManager */
+                $this->configurationManager = $objectManager->get(ConfigurationManager::class);
+                $this->setting = $this->configurationManager->getConfiguration(
+                    ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+                );
+                $this->contentObject = $this->configurationManager->getContentObject();
+            }
+        } else {
+            if (isset($GLOBALS['TSFE'])) {
+                /** @var ConfigurationManager $configurationManager */
+                $this->configurationManager = GeneralUtility::makeInstance(ConfigurationManager::class);
+                $this->setting = $this->configurationManager->getConfiguration(
+                    ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+                );
+                if (method_exists($this->configurationManager, 'getContentObject')) {
+                    $this->contentObject = $this->configurationManager->getContentObject();
+                } else {
+                    $this->contentObject = $GLOBALS['TYPO3_REQUEST']->getAttribute('currentContentObject');
+                }
+            }
         }
 
         //set the configuration
@@ -195,11 +209,10 @@ class AbstractTitleMapper
      * Get the title over the interface
      *
      * @param array $arguments
+     * @param string $argumentName
      * @return string|null
-     * @throws InvalidActionNameException
-     * @throws InvalidControllerNameException
-     * @throws InvalidExtensionNameException
      * @throws InfiniteLoopException
+     * @throws \ReflectionException
      */
     protected function getTitle(array $arguments, string $argumentName): ?string
     {
@@ -211,19 +224,35 @@ class AbstractTitleMapper
                 return "0";
             }
         }
-        /** @var ObjectManager $objectManager */
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        /** @var Bootstrap $bootstrap */
-        $bootstrap = clone $objectManager->get(Bootstrap::class);
-        $controller = $arguments['controller'] ?? 'Companies';
-        $action = $arguments['action'] ?? 'title';
+        if (class_exists(ObjectManager::class)) {
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            /** @var Bootstrap $bootstrap */
+            $bootstrap = clone $objectManager->get(Bootstrap::class);
+            /** @var Request $request */
+            $request = clone $objectManager->get(Request::class);
+        } else {
+            /** @var Bootstrap $bootstrap */
+            $bootstrap = clone GeneralUtility::makeInstance(Bootstrap::class);
+            $extbaseRequestParameters = GeneralUtility::makeInstance(ExtbaseRequestParameters::class);
+            $extbaseRequestParameters->setControllerAliasToClassNameMapping($this->controllerAlias);
+            /** @var ServerRequestInterface $request */
+            $request = clone $GLOBALS['TYPO3_REQUEST'];
+            $request = $request->withAttribute('extbase', $extbaseRequestParameters);
+            /** @var Request $request */
+            $request = GeneralUtility::makeInstance(Request::class, $request);
+        }
+
+        $controller = $arguments['controller'] ?? 'LocalLaw';
+        $action = $arguments['action'] ?? 'showTitle';
 
         /**
-         * Initialize Extbase bootstap
+         * Initialize Extbase bootstrap
          */
         $this->configurationBootstrap['controller'] = $controller;
         $this->configurationBootstrap['action'] = $action;
-        $bootstrap->initialize($this->configurationBootstrap);
+        $this->configurationBootstrap['switchableControllerActions'][$controller][] = $action;
+        $bootstrap->initialize($this->configurationBootstrap, $request);
         if (method_exists($bootstrap, 'setContentObjectRenderer')) {
             /** @var ContentObjectRenderer $contentObjectRenderer */
             $contentObjectRenderer = GeneralUtility::makeInstance(
@@ -238,35 +267,65 @@ class AbstractTitleMapper
             );
         }
 
-        /**
-         * Build the request
-         */
-        /** @var Request $request */
-        $request = clone $objectManager->get(Request::class);
-
-        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
-        if ($versionAsInt < 9999999) {
-            $request->setControllerVendorName($this->vendorName);
+        if (defined('TYPO3_version')) {
+            $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
         } else {
-            $request->setControllerAliasToClassNameMapping($this->controllerAlias);
+            $version = VersionNumberUtility::getNumericTypo3Version();
+            $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger($version);
         }
-        $request->setControllerName($controller);
-        $request->setcontrollerExtensionName($this->extensionName);
-        $request->setPluginName($this->pluginName);
-        $request->setControllerActionName($action);
-        $request->setArguments($arguments);
 
-        /** @var Dispatcher $dispatcher */
-        $dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
-        $reflection = new \ReflectionMethod($dispatcher, 'dispatch');
-        if ($reflection->getNumberOfParameters() === 1) {
-            $response = $dispatcher->dispatch($request);
-            $title = $response->getBody()->__toString();
+        if ($versionAsInt < 12000000) {
+            $request->setControllerAliasToClassNameMapping($this->controllerAlias);
+            $request->setControllerName($controller);
+            $request->setcontrollerExtensionName($this->extensionName);
+            $request->setPluginName($this->pluginName);
+            $request->setControllerActionName($action);
+            $request->setArguments($arguments);
         } else {
-            /** @var ResponseInterface $response */
-            $response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
-            $dispatcher->dispatch($request, $response);
-            $title = $response->getContent();
+            $request = $request
+                ->withControllerName($controller)
+                ->withControllerExtensionName($this->extensionName)
+                ->withPluginName($this->pluginName)
+                ->withControllerActionName($action)
+                ->withArguments($arguments)
+                ->withQueryParams(
+                    [
+                        sprintf(
+                            $this->arrayPattern,
+                            strtolower($this->configurationBootstrap['pluginName'])
+                        ) => $arguments,
+                    ]
+                );
+        }
+
+
+        if ($versionAsInt < 12000000) {
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            /** @var Dispatcher $dispatcher */
+            $dispatcher = $objectManager->get('TYPO3\CMS\Extbase\Mvc\Dispatcher');
+            $reflection = new \ReflectionMethod($dispatcher, 'dispatch');
+            if ($reflection->getNumberOfParameters() === 1) {
+                $response = $dispatcher->dispatch($request);
+                $title = $response->getBody()->__toString();
+            } else {
+                /** @var ResponseInterface $response */
+                $response = $objectManager->get('TYPO3\CMS\Extbase\Mvc\ResponseInterface');
+                $dispatcher->dispatch($request, $response);
+                $title = $response->getContent();
+            }
+        } else {
+            /** @var PageArguments $routing */
+            $routing = $request->getAttribute('routing');
+            $pageArguments = new PageArguments(
+                $routing->getPageId(),
+                $routing->getPageType(),
+                $routing->getRouteArguments(),
+                $routing->getStaticArguments(),
+                $request->getQueryParams()
+            );
+            $request = $request->withAttribute('routing', $pageArguments);
+            $title = $bootstrap->run('', $this->configurationBootstrap, $request);
         }
 
         //fallback for removing "/"
@@ -278,11 +337,7 @@ class AbstractTitleMapper
             $this->configurationManager->setContentObject($this->contentObject);
         }
 
-        if (isset($title) && !empty($title)) {
-            return empty($title) ? null : $title;
-        }
-
-        return null;
+        return !empty($title) ? $title : null;
     }
 
     /**
@@ -297,7 +352,7 @@ class AbstractTitleMapper
         if (strpos($value, '-') !== false) {
             $ids = GeneralUtility::trimExplode('-', $value);
             $id = array_slice($ids, -1);
-            $result = isset($id[0]) && !empty($id[0]) ? $id[0] : null;
+            $result = !empty($id[0] ?? null) ? $id[0] : null;
         } else {
             if (is_numeric($value)) {
                 $result = $value;

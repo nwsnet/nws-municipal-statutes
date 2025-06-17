@@ -24,16 +24,14 @@
 namespace Nwsnet\NwsMunicipalStatutes\Routing\Aspect;
 
 use InvalidArgumentException;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Routing\Aspect\PersistedMappableAspectInterface;
 use TYPO3\CMS\Core\Routing\Aspect\StaticMappableAspectInterface;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 use TYPO3\CMS\Extbase\Mvc\Exception\InfiniteLoopException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidActionNameException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidControllerNameException;
-use TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException;
 
 /**
- * Title of the event for the link to the list view
+ * Title of the local law for the link to the list view
  *
  * @package    TYPO3
  * @subpackage nws_council_system
@@ -45,22 +43,23 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
     /**
      * @var string
      */
-    protected $controller;
+    protected string $controller;
 
     /**
      * @var string
      */
-    protected $action;
+    protected string $action;
 
     /**
      * @var string
      */
-    protected $argument;
+    protected string $argument;
 
     /**
      * MunicipalStatusStaticActionMapper constructor.
      * @param array $settings
      * @throws InvalidConfigurationTypeException
+     * @throws NoSuchCacheException
      */
     public function __construct(array $settings)
     {
@@ -79,7 +78,7 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
             throw new InvalidArgumentException('action must be be string', 1634128608);
         }
         if (!is_string($argument)) {
-            throw new InvalidArgumentException('arguemnt must be string', 1634128608);
+            throw new InvalidArgumentException('argument must be string', 1634128608);
         }
 
 
@@ -95,9 +94,7 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
      * @param string $value
      * @return string|null
      * @throws InfiniteLoopException
-     * @throws InvalidActionNameException
-     * @throws InvalidControllerNameException
-     * @throws InvalidExtensionNameException
+     * @throws \ReflectionException
      */
     public function generate(string $value): ?string
     {
@@ -130,9 +127,7 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
      * @param string $value
      * @return string|null
      * @throws InfiniteLoopException
-     * @throws InvalidActionNameException
-     * @throws InvalidControllerNameException
-     * @throws InvalidExtensionNameException
+     * @throws \ReflectionException
      */
     public function resolve(string $value): ?string
     {
@@ -141,7 +136,7 @@ class MunicipalStatusStaticActionMapper extends AbstractTitleMapper implements P
         }
         $cacheKey = md5('nws-static-action-mapper-'.$this->controller.$this->action.$this->argument.$value);
         if ($this->cache->has($cacheKey)) {
-            return (string)$id;
+            return $id;
         }
 
         // Test if the id actually exists.
