@@ -24,12 +24,15 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\ViewHelpers\Link;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
+use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
+use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder as ExtbaseUriBuilder;
+use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 
@@ -58,12 +61,12 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * @param ConfigurationManagerInterface $configurationManager
      */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager): void
     {
         $this->configurationManager = $configurationManager;
     }
@@ -73,45 +76,82 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
      *
      * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerUniversalTagAttributes();
         $this->registerTagAttribute('name', 'string', 'Specifies the name of an anchor');
-        $this->registerTagAttribute('rel', 'string',
-            'Specifies the relationship between the current document and the linked document');
-        $this->registerTagAttribute('rev', 'string',
-            'Specifies the relationship between the linked document and the current document');
+        $this->registerTagAttribute(
+            'rel',
+            'string',
+            'Specifies the relationship between the current document and the linked document'
+        );
+        $this->registerTagAttribute(
+            'rev',
+            'string',
+            'Specifies the relationship between the linked document and the current document'
+        );
         $this->registerTagAttribute('target', 'string', 'Specifies where to open the linked document');
         $this->registerArgument('action', 'string', 'Target action');
-        $this->registerArgument('controller', 'string',
-            'Target controller. If NULL current controllerName is used');
-        $this->registerArgument('extensionName', 'string',
-            'Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used');
+        $this->registerArgument(
+            'controller',
+            'string',
+            'Target controller. If NULL current controllerName is used'
+        );
+        $this->registerArgument(
+            'extensionName',
+            'string',
+            'Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used'
+        );
         $this->registerArgument('pluginName', 'string', 'Target plugin. If empty, the current plugin name is used');
         $this->registerArgument('pageUid', 'int', 'Target page. See TypoLink destination');
-        $this->registerArgument('pageType', 'int', 'Type of the target page. See typolink.parameter');
-        $this->registerArgument('noCache', 'bool',
-            'Set this to disable caching for the target page. You should not need this.');
-        $this->registerArgument('noCacheHash', 'bool',
-            'Set this to suppress the cHash query parameter created by TypoLink. You should not need this.');
+        $this->registerArgument('pageType', 'int', 'Type of the target page. See typo-link.parameter');
+        $this->registerArgument(
+            'noCache',
+            'bool',
+            'Set this to disable caching for the target page. You should not need this.'
+        );
+        $this->registerArgument(
+            'noCacheHash',
+            'bool',
+            'Set this to suppress the cHash query parameter created by TypoLink. You should not need this.'
+        );
         $this->registerArgument('section', 'string', 'The anchor to be added to the URI');
         $this->registerArgument('format', 'string', 'The requested format, e.g. ".html');
-        $this->registerArgument('linkAccessRestrictedPages', 'bool',
-            'If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.');
-        $this->registerArgument('additionalParams', 'array',
-            'Additional query parameters that won\'t be prefixed like $arguments (overrule $arguments)');
+        $this->registerArgument(
+            'linkAccessRestrictedPages',
+            'bool',
+            'If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.'
+        );
+        $this->registerArgument(
+            'additionalParams',
+            'array',
+            'Additional query parameters that won\'t be prefixed like $arguments (overrule $arguments)'
+        );
         $this->registerArgument('absolute', 'bool', 'If set, the URI of the rendered link is absolute');
-        $this->registerArgument('addQueryString', 'bool',
-            'If set, the current query parameters will be kept in the URI');
-        $this->registerArgument('argumentsToBeExcludedFromQueryString', 'array',
-            'Arguments to be removed from the URI. Only active if $addQueryString = TRUE');
-        $this->registerArgument('addQueryStringMethod', 'string',
-            'Set which parameters will be kept. Only active if $addQueryString = TRUE');
+        $this->registerArgument(
+            'addQueryString',
+            'bool',
+            'If set, the current query parameters will be kept in the URI'
+        );
+        $this->registerArgument(
+            'argumentsToBeExcludedFromQueryString',
+            'array',
+            'Arguments to be removed from the URI. Only active if $addQueryString = TRUE'
+        );
+        $this->registerArgument(
+            'addQueryStringMethod',
+            'string',
+            'Set which parameters will be kept. Only active if $addQueryString = TRUE'
+        );
         $this->registerArgument('arguments', 'array', 'Arguments for the controller action, associative array');
-        $this->registerArgument('contextRecord', 'string',
+        $this->registerArgument(
+            'contextRecord',
+            'string',
             'The record that the rendering should depend upon. e.g. current (default: record is fetched from current Extbase plugin), tt_content:12 (tt_content record with uid 12), pages:15 (pages record with uid 15), \'currentPage\' record of current page',
-            false, 'current');
+            false,
+            'current'
+        );
     }
 
     /**
@@ -120,7 +160,7 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
      * @return string Rendered link
      * @throws NoSuchArgumentException
      */
-    public function render()
+    public function render(): string
     {
         $action = $this->arguments['action'];
         $controller = $this->arguments['controller'];
@@ -129,7 +169,6 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
         $pageUid = (int)$this->arguments['pageUid'] ?: null;
         $pageType = (int)$this->arguments['pageType'];
         $noCache = (bool)$this->arguments['noCache'];
-        $noCacheHash = (bool)$this->arguments['noCacheHash'];
         $section = (string)$this->arguments['section'];
         $format = (string)$this->arguments['format'];
         $linkAccessRestrictedPages = (bool)$this->arguments['linkAccessRestrictedPages'];
@@ -141,24 +180,36 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
         $arguments = $this->arguments['arguments'];
         $contextRecord = $this->arguments['contextRecord'];
 
-        /** @var ControllerContext $controllerContext */
-        $controllerContext = $this->renderingContext->getControllerContext();
+        if (method_exists($this->renderingContext, 'getControllerContext')) {
+            /** @var ControllerContext $controllerContext */
+            $controllerContext = $this->renderingContext->getControllerContext();
+        } else {
+            /** @var RenderingContext $controllerContext */
+            $controllerContext = $this->renderingContext;
+        }
+        /** @var Request $request */
+        $request = $controllerContext->getRequest();
         if ($pluginName === null) {
-            $pluginName = $controllerContext->getRequest()->getPluginName();
+            $pluginName = $request->getPluginName();
         }
         if ($extensionName === null) {
-            $extensionName = $controllerContext->getRequest()->getControllerExtensionName();
+            $extensionName = $request->getControllerExtensionName();
         }
         if ($contextRecord === 'current') {
             if (
-                $pluginName !== $controllerContext->getRequest()->getPluginName()
-                || $extensionName !== $controllerContext->getRequest()->getControllerExtensionName()
+                $pluginName !== $request->getPluginName()
+                || $extensionName !== $request->getControllerExtensionName()
             ) {
                 $contextRecord = 'currentPage';
             } else {
-                $contextRecord = $this->configurationManager->getContentObject()->currentRecord;
-                if (empty($contextRecord) && $controllerContext->getRequest()->hasArgument('context')) {
-                    $contextRecord = $controllerContext->getRequest()->getArgument('context');
+                if (method_exists($this->configurationManager, 'getContentObject')) {
+                    $contentObject = $this->configurationManager->getContentObject();
+                } else {
+                    $contentObject = $request->getAttribute('currentContentObject');
+                }
+                $contextRecord = $contentObject->currentRecord;
+                if (empty($contextRecord) && $request->hasArgument('context')) {
+                    $contextRecord = $request->getArgument('context');
                 } elseif (empty($contextRecord)) {
                     $contextRecord = 'current';
                 }
@@ -166,8 +217,15 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
         }
         $arguments['context'] = str_replace(":", "|", $contextRecord);
 
+        if (method_exists($controllerContext, 'getUriBuilder')) {
+            $uriBuilder = $controllerContext->getUriBuilder();
+        } else {
+            /** @var ExtbaseUriBuilder $uriBuilder */
+            $uriBuilder = GeneralUtility::makeInstance(ExtbaseUriBuilder::class);
+        }
+
         /** @var UriBuilder $uri */
-        $uriBuilder = $controllerContext->getUriBuilder()
+        $uriBuilder
             ->reset()
             ->setTargetPageType($pageType)
             ->setNoCache($noCache)
@@ -179,20 +237,18 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
             ->setAddQueryString($addQueryString)
             ->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString);
 
-        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
-        if ($versionAsInt < 9999999) {
-            $uriBuilder->setTargetPageUid($pageUid)
-                ->setUseCacheHash(!$noCacheHash)
-                ->setAddQueryStringMethod($addQueryStringMethod);
-        } else {
-            if (MathUtility::canBeInterpretedAsInteger($pageUid)) {
-                $uriBuilder->setTargetPageUid((int)$pageUid);
-            }
-
-            if (is_string($addQueryStringMethod)) {
-                $uriBuilder->setAddQueryStringMethod($addQueryStringMethod);
-            }
+        if (method_exists($uriBuilder, 'setRequest')) {
+            $uriBuilder->setRequest($request);
         }
+
+        if (MathUtility::canBeInterpretedAsInteger($pageUid)) {
+            $uriBuilder->setTargetPageUid((int)$pageUid);
+        }
+
+        if (is_string($addQueryStringMethod) && method_exists($uriBuilder, 'setAddQueryStringMethod')) {
+            $uriBuilder->setAddQueryStringMethod($addQueryStringMethod);
+        }
+
         $uri = $uriBuilder->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
         if ($uri === '') {
             return $this->renderChildren();
@@ -200,6 +256,7 @@ class AjaxActionViewHelper extends AbstractTagBasedViewHelper
         $this->tag->addAttribute('href', $uri);
         $this->tag->setContent($this->renderChildren());
         $this->tag->forceClosingTag(true);
+
         return $this->tag->render();
     }
 }
