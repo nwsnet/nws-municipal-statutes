@@ -41,9 +41,9 @@ class Converter
      * Parses a html content and returns a formatted content item as an array
      *
      * @param $html
-     * @return array $ccontent
+     * @return array $content
      */
-    public function getContentArray($html)
+    public function getContentArray($html): array
     {
         if (!function_exists('SimpleHtmlDom\str_get_html')) {
             require_once __DIR__.'/SimpleHtmlDom.php';
@@ -91,14 +91,14 @@ class Converter
     }
 
     /**
-     * Change the tag elment of all nodes
+     * Change the tag element of all nodes
      *
      * @param string $tag
      * @param string $tagReplace
      * @param simple_html_dom_node $node
      * @return simple_html_dom_node
      */
-    protected function setTag($tag, $tagReplace, simple_html_dom_node $node)
+    protected function setTag(string $tag, string $tagReplace, simple_html_dom_node $node): simple_html_dom_node
     {
         /**
          * @var string $key
@@ -107,13 +107,9 @@ class Converter
         foreach ($node->children as $key => $e) {
             if ($e->tag == $tag) {
                 $e->tag = $tagReplace;
-                if ($e->hasChildNodes()) {
-                    $node->children[$key] = $this->setTag($tag, $tagReplace, $e);
-                }
-            } else {
-                if ($e->hasChildNodes()) {
-                    $node->children[$key] = $this->setTag($tag, $tagReplace, $e);
-                }
+            }
+            if ($e->hasChildNodes()) {
+                $node->children[$key] = $this->setTag($tag, $tagReplace, $e);
             }
         }
 
@@ -127,14 +123,13 @@ class Converter
      * @param simple_html_dom_node $node
      * @return bool|simple_html_dom_node
      */
-    protected function findFirstChildNode($tag, simple_html_dom_node $node)
+    protected function findFirstChildNode(string $tag, simple_html_dom_node $node)
     {
-        $child = false;
         /**
          * @var string $key
          * @var simple_html_dom_node $e
          */
-        foreach ($node->children as $key => $e) {
+        foreach ($node->children as $e) {
             if ($e->tag == $tag) {
                 return $e;
             } else {
@@ -144,7 +139,7 @@ class Converter
             }
         }
 
-        return $child;
+        return false;
     }
 
     /**
@@ -159,14 +154,11 @@ class Converter
      * @param simple_html_dom_node $node
      * @return bool|mixed|string
      */
-    protected function getChildNodesData($tag, array $filter, simple_html_dom_node $node)
+    protected function getChildNodesData(string $tag, array $filter, simple_html_dom_node $node)
     {
         $data = '';
-        /**
-         * @var string $key
-         * @var simple_html_dom_node $e
-         */
-        foreach ($node->children as $key => $e) {
+        /** @var simple_html_dom_node $e */
+        foreach ($node->children as $e) {
             if ($e->tag == $tag) {
                 foreach ($filter as $typ => $value) {
                     switch ($typ) {
