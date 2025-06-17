@@ -43,7 +43,7 @@ class LegalNorm extends RestClient
      *
      * @param array $config
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         parent::setConfiguration($config);
     }
@@ -53,9 +53,9 @@ class LegalNorm extends RestClient
      *
      * @param array $filter
      *
-     * @return mixed
+     * @return LegalNorm
      */
-    public function find($filter = array())
+    public function find(array $filter = array()): LegalNorm
     {
         return $this->getData(self::URI_GET_FIND, $filter);
     }
@@ -66,9 +66,9 @@ class LegalNorm extends RestClient
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return LegalNorm
      */
-    public function findById($id, $filter = array())
+    public function findById(int $id, array $filter = array()): LegalNorm
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
     }
@@ -79,9 +79,9 @@ class LegalNorm extends RestClient
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return LegalNorm
      */
-    public function findByIdHtml($id, $filter = array())
+    public function findByIdHtml(int $id, array $filter = array()): LegalNorm
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID_HTML), $filter);
     }

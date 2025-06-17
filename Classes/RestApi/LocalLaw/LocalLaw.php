@@ -42,22 +42,22 @@ class LocalLaw extends AbstractLocalLaw
     /**
      * @var Category
      */
-    protected $category;
+    protected Category $category;
 
     /**
      * @var LegalNorm
      */
-    protected $legalNorm;
+    protected LegalNorm $legalNorm;
 
     /**
      * @var Legislator
      */
-    protected $legislator;
+    protected Legislator $legislator;
 
     /**
      * @var Structure
      */
-    protected $structure;
+    protected Structure $structure;
 
     /**
      * Initializes the FullRest Api for the Category object
@@ -121,7 +121,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $items
      * @return array
      */
-    public function getLegalNormByLegislatorId(array $items)
+    public function getLegalNormByLegislatorId(array $items): array
     {
         $cacheIdentifier = md5(
             $this->jsonEncode($items).'-'.__FUNCTION__
@@ -231,7 +231,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $areas
      * @return bool
      */
-    protected function checkAreaId(array $area, array $areas)
+    protected function checkAreaId(array $area, array $areas): bool
     {
         foreach ($area as $value) {
             if (array_key_exists($value['id'], $areas)) {
@@ -248,7 +248,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $legislators
      * @return array
      */
-    public function getLegalNormByLegislator(array $legislators)
+    public function getLegalNormByLegislator(array $legislators): array
     {
         $cacheIdentifier = md5(
             $this->jsonEncode($legislators).'-'.__FUNCTION__
@@ -285,7 +285,7 @@ class LocalLaw extends AbstractLocalLaw
      * @return array
      * @throws \Exception
      */
-    public function getStructureByAllLegalNorm($legislatorId, array $legalNorm)
+    public function getStructureByAllLegalNorm(int $legislatorId, array $legalNorm): array
     {
         $cacheIdentifier = md5(
             $legislatorId.'-'.$this->jsonEncode($legalNorm).'-'.__FUNCTION__
@@ -303,7 +303,7 @@ class LocalLaw extends AbstractLocalLaw
                 $structure = $result['results'][0]['object'];
             }
 
-            if(isset($structure['legislator']['legislator']['id'])){
+            if (isset($structure['legislator']['legislator']['id'])) {
                 $structure['legislator']['id'] = $structure['legislator']['legislator']['id'];
             }
             foreach ($structure['structure']['subStructurNodes'] as $key => $data) {
@@ -353,8 +353,10 @@ class LocalLaw extends AbstractLocalLaw
             $count = 0;
             foreach ($legalNorm['results'] as $items) {
                 $legalNorm['results'][$count] = $items['object'];
-                $legalNorm['results'][$count]['structureNodes'] = $this->getStructureByLegalNorm($legalNorm['results'][$count]['structureNodes'],
-                    $structure);
+                $legalNorm['results'][$count]['structureNodes'] = $this->getStructureByLegalNorm(
+                    $legalNorm['results'][$count]['structureNodes'],
+                    $structure
+                );
                 $count += 1;
             }
             //unset($legalNorm['results']);
@@ -367,7 +369,7 @@ class LocalLaw extends AbstractLocalLaw
     /**
      * @throws \Exception
      */
-    protected function filterLegalNormByNormScope(array $legalNorm)
+    protected function filterLegalNormByNormScope(array $legalNorm): array
     {
         $normScope = [];
         foreach ($legalNorm['results'] as $id => $object) {
@@ -393,6 +395,7 @@ class LocalLaw extends AbstractLocalLaw
             }
         }
         $legalNorm['results'] = array_values($legalNorm['results']);
+
         return $legalNorm;
     }
 
@@ -403,7 +406,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $structure
      * @return array
      */
-    protected function getStructureByLegalNorm(array $structurNodes, array $structure)
+    protected function getStructureByLegalNorm(array $structurNodes, array $structure): array
     {
         $result = array();
         foreach ($structurNodes as $structurNode) {
@@ -424,7 +427,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $legalNorm
      * @return array
      */
-    protected function getAllLegalNormByStructureId($structureId, array $legalNorm)
+    protected function getAllLegalNormByStructureId(int $structureId, array $legalNorm): array
     {
         $result = array();
         foreach ($legalNorm['results'] as $data) {
@@ -443,7 +446,7 @@ class LocalLaw extends AbstractLocalLaw
      * @param array $legalNorm
      * @return array
      */
-    public function getLegalNormWithStructure($legislatorId, array $legalNorm)
+    public function getLegalNormWithStructure($legislatorId, array $legalNorm): array
     {
         $cacheIdentifier = md5(
             $legislatorId.'-'.$this->jsonEncode($legalNorm).'-'.__FUNCTION__

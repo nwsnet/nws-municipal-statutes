@@ -42,7 +42,7 @@ class Structure extends RestClient
      *
      * @param array $config
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         parent::setConfiguration($config);
     }
@@ -52,22 +52,22 @@ class Structure extends RestClient
      *
      * @param array $filter
      *
-     * @return mixed
+     * @return Structure
      */
-    public function find($filter = array())
+    public function find(array $filter = array()): Structure
     {
         return $this->getData(self::URI_GET_FIND, $filter);
     }
 
     /**
-     * Determines an outline using the Id.
+     * Determines an outline using the ID.
      *
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return Structure
      */
-    public function findById($id, $filter = array())
+    public function findById(int $id, array $filter = array()): Structure
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
     }

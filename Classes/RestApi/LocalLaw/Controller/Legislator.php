@@ -43,7 +43,7 @@ class Legislator extends RestClient
      *
      * @param array $config
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         parent::setConfiguration($config);
     }
@@ -54,9 +54,9 @@ class Legislator extends RestClient
      * @param array $filter
      * @param array $data
      *
-     * @return mixed
+     * @return Legislator
      */
-    public function findAll($filter = array(), $data = array())
+    public function findAll(array $filter = array(), array $data = array()): Legislator
     {
         $dataMerge = array();
         if (count($data) == 0) {
@@ -94,9 +94,9 @@ class Legislator extends RestClient
      *
      * @param array $filter
      *
-     * @return mixed
+     * @return Legislator
      */
-    public function find($filter = array())
+    public function find(array $filter = array()): Legislator
     {
         return $this->getData(self::URI_GET_FIND, $filter);
     }
@@ -107,9 +107,9 @@ class Legislator extends RestClient
      * @param string $key
      * @param array $filter
      *
-     * @return mixed
+     * @return Legislator
      */
-    public function findByKey($key, $filter = array())
+    public function findByKey(string $key, array $filter = array()): Legislator
     {
         return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
     }
@@ -120,9 +120,9 @@ class Legislator extends RestClient
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return Legislator
      */
-    public function findById($id, $filter = array())
+    public function findById(int $id, array $filter = array()): Legislator
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
     }

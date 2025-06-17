@@ -43,7 +43,7 @@ class Category extends RestClient
      *
      * @param array $config
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         parent::setConfiguration($config);
     }
@@ -53,9 +53,9 @@ class Category extends RestClient
      *
      * @param array $filter
      *
-     * @return mixed
+     * @return Category
      */
-    public function find($filter = array())
+    public function find(array $filter = array()): Category
     {
         return $this->getData(self::URI_GET_FIND, $filter);
     }
@@ -66,9 +66,9 @@ class Category extends RestClient
      * @param string $key
      * @param array $filter
      *
-     * @return mixed
+     * @return Category
      */
-    public function findByKey($key, $filter = array())
+    public function findByKey(string $key, array $filter = array()): Category
     {
         return $this->getData(str_replace('{key}', $key, self::URI_GET_FIND_BY_KEY), $filter);
     }
@@ -79,9 +79,9 @@ class Category extends RestClient
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return Category
      */
-    public function findById($id, $filter = array())
+    public function findById(int $id, array $filter = array()): Category
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
     }
