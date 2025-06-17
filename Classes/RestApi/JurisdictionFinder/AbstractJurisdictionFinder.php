@@ -25,7 +25,8 @@
 namespace Nwsnet\NwsMunicipalStatutes\RestApi\JurisdictionFinder;
 
 use TYPO3\CMS\Core\Cache\CacheManager;
-use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 
@@ -38,71 +39,72 @@ use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 class AbstractJurisdictionFinder
 {
     /**
-     * $_EXTKEY
-     *
      * @var string
      */
-    protected $extKey = 'nws_municipal_statutes';
+    protected string $extKey = 'nws_municipal_statutes';
 
     /**
      * ConfigurationManagerInterface
      *
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * Typoscript Settings
      *
      * @var array
      */
-    protected $settings;
+    protected array $settings = [];
 
     /**
      * Ext Template Settings
      *
      * @var array
      */
-    protected $extConf;
+    protected array $extConf = [];
 
     /**
      * Individual configuration for the FullRest Api calls
      *
      * @var array $config
      */
-    protected $config;
+    protected array $config = [];
 
     /**
      * Official municipality key for a federal state, for example (Schleswig-Holstein = 01)
      *
      * @var string $agsKey
      */
-    protected $agsKey = '01';
+    protected string $agsKey = '01';
 
     /**
      * Stop ID for creating the tree menu
      *
      * @var int
      */
-    protected $stopId = 0;
+    protected int $stopId = 0;
 
     /**
      * cacheUtility
      *
-     * @var VariableFrontend
+     * @var FrontendInterface
      */
-    protected $cacheInstance;
+    protected FrontendInterface $cacheInstance;
 
     /**
      * Injects the Configuration Manager and is initializing the framework settings
      *
      * @param ConfigurationManagerInterface $configurationManager
      * @return void
+     * @throws NoSuchCacheException
      */
     public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
     {
         $this->configurationManager = $configurationManager;
-        $config = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
+        $config = $this->configurationManager->getConfiguration(
+            ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+        );
         if (isset($config['settings'])) {
             $this->settings = $config['settings'];
         } else {
@@ -126,9 +128,13 @@ class AbstractJurisdictionFinder
         }
         // Set language header
         if (isset($GLOBALS['TSFE']->config['config']["locale_all"])) {
-            $localeAll = str_contains($GLOBALS['TSFE']->config['config']["locale_all"], '.') ? substr($GLOBALS['TSFE']->config['config']["locale_all"], 0,
-                strpos($GLOBALS['TSFE']->config['config']["locale_all"],
-                    '.')) : $GLOBALS['TSFE']->config['config']["locale_all"];
+            $localeAll = strpos($GLOBALS['TSFE']->config['config']["locale_all"], '.') !== false
+                ? substr(
+                    $GLOBALS['TSFE']->config['config']["locale_all"],
+                    0,
+                    strpos($GLOBALS['TSFE']->config['config']["locale_all"], '.')
+                )
+                : $GLOBALS['TSFE']->config['config']["locale_all"];
         } else {
             $localeAll = 'de_DE';
         }
@@ -143,11 +149,13 @@ class AbstractJurisdictionFinder
     /**
      * Initialization of the cache framework
      *
-     * @see \TYPO3\CMS\Core\Cache\CacheManager
+     * @throws NoSuchCacheException
      */
     protected function initializeCache()
     {
-        $this->cacheInstance = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache($this->extKey);
+        /** @var CacheManager $cacheManager */
+        $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+        $this->cacheInstance = $cacheManager->getCache($this->extKey);
     }
 
     /**
@@ -156,12 +164,13 @@ class AbstractJurisdictionFinder
      * @param $url
      * @return string
      */
-    protected function checkApiUrl($url)
+    protected function checkApiUrl($url): string
     {
         $lastCharacter = substr($url, -1);
         if ($lastCharacter == '/') {
             $url = substr($url, 0, strrpos($url, '/'));
         }
+
         return $url;
     }
 
@@ -185,7 +194,7 @@ class AbstractJurisdictionFinder
      *
      * @param string $stopId
      */
-    public function setStopId($stopId)
+    public function setStopId(string $stopId)
     {
         $this->stopId = $stopId;
     }
@@ -194,11 +203,11 @@ class AbstractJurisdictionFinder
     /**
      * Encode to the json representation
      *
-     * @param object
+     * @param mixed $data
      *
      * @return string
      */
-    public function jsonEncode($data)
+    public function jsonEncode($data): string
     {
         return json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     }
@@ -206,19 +215,20 @@ class AbstractJurisdictionFinder
     /**
      * Recursive search of an array to a value
      *
-     * @param string $needle (serach string)
+     * @param string $needle (search string)
      * @param array $haystack (to be searched)
      *
      * @return false|int
      */
-    public function recursiveArraySearch($needle, $haystack)
+    public function recursiveArraySearch(string $needle, array $haystack)
     {
         foreach ($haystack as $key => $value) {
             $current_key = $key;
-            if ($needle === $value OR (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
+            if ($needle === $value or (is_array($value) && $this->recursiveArraySearch($needle, $value) !== false)) {
                 return $current_key;
             }
         }
+
         return false;
     }
 }

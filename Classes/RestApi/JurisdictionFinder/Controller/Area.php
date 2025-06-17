@@ -41,7 +41,7 @@ class Area extends RestClient
      * Area constructor.
      * @param array $config
      */
-    public function __construct($config = array())
+    public function __construct(array $config = array())
     {
         parent::setConfiguration($config);
     }
@@ -51,9 +51,9 @@ class Area extends RestClient
      *
      * @param array $filter
      *
-     * @return mixed
+     * @return Area
      */
-    public function find($filter = array())
+    public function find(array $filter = array()): Area
     {
         return $this->getData(self::URI_GET_FIND, $filter);
     }
@@ -64,9 +64,9 @@ class Area extends RestClient
      * @param integer $id
      * @param array $filter
      *
-     * @return mixed
+     * @return Area
      */
-    public function findById($id, $filter = array())
+    public function findById(int $id, array $filter = array()): Area
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID), $filter);
     }

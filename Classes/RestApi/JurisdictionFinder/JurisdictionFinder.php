@@ -39,7 +39,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
     /**
      * @var Area
      */
-    protected $area;
+    protected Area $area;
 
     /**
      * Initializes the FullRest Api for the Area object
@@ -89,7 +89,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param integer $recursive
      * @param array $areas
      */
-    protected function findAreasBySearchItem(array $searchItem, $recursive, array &$areas)
+    protected function findAreasBySearchItem(array $searchItem, int $recursive, array &$areas)
     {
         $limit = 200;
         $filter = array(
@@ -154,7 +154,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $legislator
      * @return array
      */
-    public function getTreeMenu(array $legislator)
+    public function getTreeMenu(array $legislator): array
     {
         $cacheIdentifier = md5(
             $this->jsonEncode($legislator).'-'.__FUNCTION__
@@ -190,7 +190,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $treeMenu
      * @return array
      */
-    protected function setAvailableParentResult(array $result, array $treeMenu)
+    protected function setAvailableParentResult(array $result, array $treeMenu): array
     {
         $id = $result['id'];
         $parentId = $result['parent']['refId'];
@@ -213,7 +213,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $parents
      * @return array
      */
-    protected function setParentResult(array $result, array $treeMenu, $parents = array())
+    protected function setParentResult(array $result, array $treeMenu, array $parents = array()): array
     {
         $id = $result['id'];
         $parentId = $result['parent']['refId'];
@@ -260,7 +260,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $legislator
      * @return array
      */
-    protected function mergeAreaWithLegislator(array $treeMenu, array $legislator)
+    protected function mergeAreaWithLegislator(array $treeMenu, array $legislator): array
     {
         foreach ($legislator['results'] as $data) {
             foreach ($data['object']['areas'] as $area) {
@@ -279,7 +279,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $treeMenu
      * @return array
      */
-    protected function setLegislatorToTreeMenu($id, array $legislator, array $treeMenu)
+    protected function setLegislatorToTreeMenu($id, array $legislator, array $treeMenu): array
     {
         foreach ($treeMenu as $key => $value) {
             if ($id == $key) {
@@ -301,7 +301,7 @@ class JurisdictionFinder extends AbstractJurisdictionFinder
      * @param array $treeMenu
      * @return array
      */
-    protected function setDisplayName(array $treeMenu)
+    protected function setDisplayName(array $treeMenu): array
     {
         foreach ($treeMenu as $key => $value) {
             $displayName = $value['nameShort'] ?? $value['name'];
