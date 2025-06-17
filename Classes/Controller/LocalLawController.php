@@ -466,7 +466,7 @@ class LocalLawController extends AbstractController
     /**
      * Creates a PDF with table of contents of the legal norm
      *
-     * @return string|ResponseInterface
+     * @return string|ResponseInterface|void
      *
      * @throws NoSuchArgumentException
      * @throws Exception
@@ -644,8 +644,6 @@ class LocalLawController extends AbstractController
 
             return '';
         }
-
-        return '';
     }
 
     /**
