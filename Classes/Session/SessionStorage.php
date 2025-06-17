@@ -39,23 +39,24 @@ class SessionStorage implements SingletonInterface
     /**
      * Session namespace
      *
-     * @const SESSIONNAMESPACE
+     * @const SESSION NAMESPACE
      */
-    const SESSIONNAMESPACE = 'tx_nwsmunicipalstatutes';
+    const SESSION_NAMESPACE = 'tx_nwsmunicipalstatutes';
 
     /**
      * Returns the object stored in the user´s session
      *
      * @param string $key
      *
-     * @return object the stored object
+     * @return object|array the stored object
      */
-    public function get($key)
+    public function get(string $key)
     {
-        $sessionData = $this->getFrontendUser()->getKey('ses', self::SESSIONNAMESPACE . $key);
+        $sessionData = $this->getFrontendUser()->getKey('ses', self::SESSION_NAMESPACE.$key);
         if ($sessionData == '') {
-            throw new LogicException('No value for key found in session ' . $key);
+            throw new LogicException('No value for key found in session '.$key);
         }
+
         return $sessionData;
     }
 
@@ -66,12 +67,13 @@ class SessionStorage implements SingletonInterface
      *
      * @return boolean
      */
-    public function has($key)
+    public function has(string $key): bool
     {
-        $sessionData = $this->getFrontendUser()->getKey('ses', self::SESSIONNAMESPACE . $key);
+        $sessionData = $this->getFrontendUser()->getKey('ses', self::SESSION_NAMESPACE.$key);
         if ($sessionData == '') {
             return false;
         }
+
         return true;
     }
 
@@ -79,25 +81,25 @@ class SessionStorage implements SingletonInterface
      * Writes something to storage
      *
      * @param string $key
-     * @param string $value
+     * @param mixed $value
      *
      * @return    void
      */
-    public function set($key, $value)
+    public function set(string $key, $value)
     {
-        $this->getFrontendUser()->setKey('ses', self::SESSIONNAMESPACE . $key, $value);
+        $this->getFrontendUser()->setKey('ses', self::SESSION_NAMESPACE.$key, $value);
         $this->getFrontendUser()->storeSessionData();
     }
 
     /**
-     * Writes a object to the session if the key is empty it used the classname
+     * Writes an object to the session if the key is empty it used the classname
      *
-     * @param object $object
-     * @param string $key
+     * @param object|array $object
+     * @param string|null $key
      *
      * @return    void
      */
-    public function storeObject($object, $key = null)
+    public function storeObject($object, string $key = null)
     {
         if (is_null($key)) {
             $key = get_class($object);
@@ -110,9 +112,9 @@ class SessionStorage implements SingletonInterface
      *
      * @param string $key
      *
-     * @return    object
+     * @return  object|array
      */
-    public function getObject($key)
+    public function getObject(string $key)
     {
         return unserialize($this->get($key));
     }
@@ -124,9 +126,9 @@ class SessionStorage implements SingletonInterface
      *
      * @return    void
      */
-    public function clean($key)
+    public function clean(string $key)
     {
-        $this->getFrontendUser()->setKey('ses', self::SESSIONNAMESPACE . $key, null);
+        $this->getFrontendUser()->setKey('ses', self::SESSION_NAMESPACE.$key, null);
         $this->getFrontendUser()->storeSessionData();
     }
 
@@ -137,11 +139,13 @@ class SessionStorage implements SingletonInterface
      *                                                                             object
      * @throws    LogicException
      */
-    protected function getFrontendUser()
+    protected function getFrontendUser(): FrontendUserAuthentication
     {
         if ($GLOBALS ['TSFE']->fe_user) {
             return $GLOBALS ['TSFE']->fe_user;
+        } elseif ($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user') !== null) {
+            return $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user');
         }
-        throw new LogicException ('No Frontentuser found in session!');
+        throw new LogicException ('No frontend user found in session!');
     }
 }

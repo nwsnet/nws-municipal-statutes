@@ -39,7 +39,7 @@ class UserSession implements SingletonInterface
      *
      * @var SessionStorage
      */
-    private $sessionStorage;
+    private SessionStorage $sessionStorage;
 
     /**
      * construct for the storage of user data
@@ -55,7 +55,7 @@ class UserSession implements SingletonInterface
     /**
      * Returns the object stored in the session of the user with the choice of search criteria
      *
-     * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
+     * @return NULL|object|array
      */
     public function getSearch()
     {
@@ -73,7 +73,7 @@ class UserSession implements SingletonInterface
      *
      * @return void
      */
-    public function saveSearch(array $value)
+    public function saveSearch($value)
     {
         $this->sessionStorage->storeObject($value, 'search');
     }
@@ -93,13 +93,14 @@ class UserSession implements SingletonInterface
     /**
      * Returns the object stored in the session of the user of which page you came to the current page
      *
-     * @return NULL|object Nwsnet\NwsMunicipalStatutes\Session\SessionStorage getObject()
+     * @return NULL|object|array
      */
     public function getReferrer()
     {
         if ($this->sessionStorage->has('referrer')) {
             return $this->sessionStorage->getObject('referrer');
         }
+
         return null;
     }
 
@@ -110,7 +111,7 @@ class UserSession implements SingletonInterface
      *
      * @return void
      */
-    public function saveReferrer(array $value)
+    public function saveReferrer($value)
     {
         $this->sessionStorage->storeObject($value, 'referrer');
     }
