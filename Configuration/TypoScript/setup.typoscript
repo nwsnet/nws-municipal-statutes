@@ -1,0 +1,117 @@
+plugin.tx_nwsmunicipalstatutes {
+    view {
+        templateRootPath = {$plugin.tx_nwsmunicipalstatutes.view.templateRootPath}
+        partialRootPath = {$plugin.tx_nwsmunicipalstatutes.view.partialRootPath}
+        layoutRootPath = {$plugin.tx_nwsmunicipalstatutes.view.layoutRootPath}
+        templateRootPaths.0 = {$plugin.tx_nwsmunicipalstatutes.view.templateRootPath}
+        partialRootPaths.0 = {$plugin.tx_nwsmunicipalstatutes.view.partialRootPath}
+        layoutRootPaths.0 = {$plugin.tx_nwsmunicipalstatutes.view.layoutRootPath}
+    }
+
+    persistence {
+        storagePid = {$plugin.tx_nwsmunicipalstatutes.persistence.storagePid}
+    }
+
+    features {
+        # uncomment the following line to enable the new Property Mapper.
+        # rewrittenPropertyMapper = 1
+    }
+
+    mvc {
+        # For details, please see https://forge.typo3.org/issues/31322
+        callDefaultActionIfActionCantBeResolved = 1
+    }
+
+    settings {
+        substitutePageTitle = {$plugin.tx_nwsmunicipalstatutes.enables.substitutePageTitle}
+        settingFixedHeader = {$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}
+        showSingleViewPid =
+        showListViewPid =
+    }
+}
+
+# [NWS] override pagetitle if legal norm on this page (determine by GET-parameter)
+# Providing the legal norm name for the page title generation
+[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0]
+    lib.nwsMunicipalStatutesPageTitle = COA
+    lib.nwsMunicipalStatutesPageTitle {
+        data >
+        10 = USER
+        10.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        10.vendorName = Nwsnet
+        10.extensionName = NwsMunicipalStatutes
+        10.pluginName = Pi1
+        10.switchableControllerActions {
+            LocalLaw {
+                0 = showTitle
+            }
+        }
+    }
+
+    lib.misc.headline.10.5 < lib.nwsMunicipalStatutesPageTitle
+    lib.misc.main_headline < lib.nwsMunicipalStatutesPageTitle
+    page.headerData.80.10 < lib.nwsMunicipalStatutesPageTitle
+
+    lib.nwsMunicipalStatutesTitle = COA
+    lib.nwsMunicipalStatutesTitle {
+        10 = TEXT
+        10.noTrimWrap = | - ||
+        20 = USER
+        20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        20.vendorName = Nwsnet
+        20.extensionName = NwsMunicipalStatutes
+        20.pluginName = Pi1
+        20.switchableControllerActions {
+            LocalLaw {
+                0 = showTitle
+            }
+        }
+
+        wrap = |
+    }
+[global]
+
+#Turn off redirection for referencing other side trees for services
+[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0 || traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/controller') == "LocalLaw" && traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/action') == "list"]
+    config.typolinkEnableLinksAcrossDomains = 0
+[global]
+
+plugin.tx_nwsmunicipalstatutes._CSS_DEFAULT_STYLE (
+	div.tx-nwsmunicipalstatutes .anchor{display: block; position: relative; top: -{$plugin.tx_nwsmunicipalstatutes.enables.settingFixedHeader}px; visibility: hidden;}
+)
+
+page.includeJS.tx_nwsmunicipalstatutes_js = {$plugin.tx_nwsmunicipalstatutes.files.javascriptPath}
+page.includeCSS.tx_nwsmunicipalstatutes = {$plugin.tx_nwsmunicipalstatutes.files.cssPath}
+
+nws_municipalstatutes_pdf = PAGE
+nws_municipalstatutes_pdf {
+    typeNum = 6363
+    includeCSS < page.includeCSS
+    includeCSSLibs < page.includeCSSLibs
+    cssInline < page.cssInline
+    config {
+        xhtml_cleaning = 0
+        disableAllHeaderCode = 1
+        additionalHeaders = Content-type:text/html
+        additionalHeaders.10.header = Content-type:text/html
+    }
+
+    20 = USER_INT
+    20.userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+    20.vendorName = Nwsnet
+    20.extensionName = NwsMunicipalStatutes
+    20.pluginName = Pi1
+    20.switchableControllerActions {
+        LocalLaw {
+            0 = pdf
+        }
+    }
+}
+[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/create') > 0]
+    nws_municipalstatutes_pdf.config.disableAllHeaderCode = 0
+[global]
+
+[getTSFE() && getTSFE().type == 6363]
+    config.debug = 0
+    tt_content.stdWrap >
+[end]

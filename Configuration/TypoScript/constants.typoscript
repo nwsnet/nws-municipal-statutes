@@ -1,0 +1,33 @@
+plugin.tx_nwsmunicipalstatutes {
+	# customsubcategory=view=View Settings
+	view {
+		# cat=plugin.tx_nwsmunicipalstatutes/view/0010; type=string; label=Path to template root (FE)
+		templateRootPath = EXT:nws_municipal_statutes/Resources/Private/Templates/
+		# cat=plugin.tx_nwsmunicipalstatutes/view/0020; type=string; label=Path to template partials (FE)
+		partialRootPath = EXT:nws_municipal_statutes/Resources/Private/Partials/
+		# cat=plugin.tx_nwsmunicipalstatutes/view/0030; type=string; label=Path to template layouts (FE)
+		layoutRootPath = EXT:nws_municipal_statutes/Resources/Private/Layouts/
+	}
+
+	persistence {
+		# cat=plugin.tx_nwsmunicipalstatutes//a; type=string; label=Default storage PID
+		storagePid =
+	}
+
+
+	# customsubcategory=enables=Enable features
+	enables {
+		# cat=plugin.tx_nwsmunicipalstatutes/enables/0010; type=string; label=Offsetting an html anchor to adjust for fixed header (px)
+		settingFixedHeader = 0
+		# cat=plugin.tx_nwsmunicipalstatutes/enables/0020; type=boolean; label=Override the title page title.: You should use this if it is define in the Typoscript. (lib.misc.headline)
+		substitutePageTitle = 0
+	}
+
+	# customsubcategory=files=Files
+	files {
+		# cat=plugin.tx_nwsmunicipalstatutes/files/0010; type=string; label=Path to the Bootstrap-CSS file: CSS file for Bootstrap. See EXT:nws_municipal_statutes/Resources/Public/Stylesheets/events.min.css.
+		cssPath = EXT:nws_municipal_statutes/Resources/Public/Stylesheets/locallaw.min.css
+		# cat=plugin.tx_nwsmunicipalstatutes/files/0020; type=string; label=Path to the javascript file: Javascript file for all scripts. See EXT:nws_municipal_statutes/Resources/Public/Javascripts/events.min.js.
+		javascriptPath = EXT:nws_municipal_statutes/Resources/Public/Javascripts/locallaw.min.js
+	}
+}
