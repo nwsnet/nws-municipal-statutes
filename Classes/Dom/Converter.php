@@ -83,6 +83,9 @@ class Converter
             }
             $content['elements'][] = array('header' => $header, 'content' => $section->innertext ?? '');
         }
+        foreach ($dom->find('footer') as $element) {
+            $content['elements'][] = array('header' => '', 'content' => $element->innertext ?? '');
+        }
 
         return $content;
     }
