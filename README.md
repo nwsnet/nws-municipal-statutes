@@ -45,7 +45,7 @@ Simply add the configuration to the _"config.yaml"_ for TYPO3 9.5 and higher
 
 ### 3.1. Versions and support
 
-The extension can be used for Typo3 versions 9.5 to 10.4.x and PHP Versions 7.2 – 7.4.x.
+The extension can be used for Typo3 versions 10.4 to 12.4.x and PHP Versions 7.4 – 8.4.x.
 
 ### 3.2. Release Management
 
