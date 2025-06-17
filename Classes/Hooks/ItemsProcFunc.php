@@ -24,15 +24,21 @@
 
 namespace Nwsnet\NwsMunicipalStatutes\Hooks;
 
-use PDO;
+use Doctrine\DBAL\Exception;
+use Nwsnet\NwsMunicipalStatutes\Exception\UnsupportedRequestTypeException;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
-use TYPO3\CMS\Extbase\Object\Exception;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
@@ -48,28 +54,28 @@ class ItemsProcFunc
      *
      * @var string
      */
-    private $vendorName = 'Nwsnet';
+    private string $vendorName = 'Nwsnet';
 
     /**
      * extensionName
      *
      * @var string
      */
-    private $extensionName = 'NwsMunicipalStatutes';
+    private string $extensionName = 'NwsMunicipalStatutes';
 
     /**
      * pluginName
      *
      * @var string
      */
-    private $pluginName = 'Items1';
+    private string $pluginName = 'Items1';
 
     /**
      * configuration
      *
      * @var array
      */
-    private $configuration;
+    private array $configuration;
 
     /**
      * bootstrap
@@ -83,7 +89,7 @@ class ItemsProcFunc
      *
      * @var array
      */
-    private $controllerActions = array(  // Allowed controller action combinations
+    private array $controllerActions = array(  // Allowed controller action combinations
         'ItemsProcFunc' => 'readLegislator,readStructure',
     );
 
@@ -91,22 +97,23 @@ class ItemsProcFunc
      * TYPO3 10.x controller class
      * @var string
      */
-    private $controllerClass = "Nwsnet\NwsMunicipalStatutes\Controller\ItemsProcFuncController";
+    private string $controllerClass = "Nwsnet\NwsMunicipalStatutes\Controller\ItemsProcFuncController";
 
     /**
      * TYPO3 10.x controller alias
      * @var string
      */
-    private $controllerAlias = "ItemsProcFunc";
+    private string $controllerAlias = "ItemsProcFunc";
+
+    private $backendRequest = null;
 
     /**
      * Initialize Extbase
      *
-     * @param array $params
-     * @throws Exception
+     * @throws \Exception
      * @see Bootstrap::run()
      */
-    public function __construct(array &$params = [])
+    public function __construct()
     {
         //set the configuration
         $this->configuration = array(
@@ -115,27 +122,49 @@ class ItemsProcFunc
             'pluginName' => $this->pluginName,
 
         );
-        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
-        if ($versionAsInt < 9999999) {
-            //set the default allowed controller action combinations
-            foreach ($this->controllerActions as $controllerName => $actions) {
-                $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$controllerName] = array(
-                    'actions' => GeneralUtility::trimExplode(',', $actions)
-                );
-            }
-            $this->bootstrap = new Bootstrap();
-        } else {
-            //set the default allowed controller action combinations
-            foreach ($this->controllerActions as $controllerName => $actions) {
-                $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$this->controllerClass] = array(
-                    'className' => $this->controllerClass,
-                    'alias' => $this->controllerAlias,
-                    'actions' => GeneralUtility::trimExplode(',', $actions),
-                );
-            }
+
+        //set the default allowed controller action combinations
+        foreach ($this->controllerActions as $actions) {
+            $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$this->controllerClass] = array(
+                'className' => $this->controllerClass,
+                'alias' => $this->controllerAlias,
+                'actions' => GeneralUtility::trimExplode(',', $actions),
+            );
+        }
+        if ($this->getTypo3Version() < 12000000) {
             /** @var ObjectManager $objectManager */
             $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
             $this->bootstrap = $objectManager->get(Bootstrap::class);
+        } else {
+            $this->backendRequest = clone $GLOBALS['TYPO3_REQUEST'];
+            if (isset($GLOBALS['BE_USER']->user['lang'])) {
+                $lang = $GLOBALS['BE_USER']->user['lang'];
+                $site = $GLOBALS['TYPO3_REQUEST']->getAttribute('site');
+                $backendLanguage = current($site->getLanguages());
+                $configuration = $backendLanguage->toArray();
+                $configuration['typo3Language'] = $lang;
+                $language = new SiteLanguage(0, $lang, new Uri('/'), $configuration);
+                $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withAttribute('language', $language);
+            }
+            $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withAttribute(
+                'applicationType',
+                SystemEnvironmentBuilder::REQUESTTYPE_FE
+            );
+            /** @var FrontendTypoScript $frontendTypoScript */
+            $frontendTypoScript = GeneralUtility::makeInstance(
+                FrontendTypoScript::class,
+                GeneralUtility::makeInstance(RootNode::class),
+                [],
+                [],
+                []
+            );
+            $frontendTypoScript->setSetupArray([]);
+            $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withAttribute(
+                'frontend.typoscript',
+                $frontendTypoScript
+            );
+            $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['plugins'][$this->pluginName]['controllers'][$this->controllerClass] = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'][$this->extensionName]['modules'][$this->pluginName]['controllers'][$this->controllerClass];
+            $this->bootstrap = GeneralUtility::makeInstance(Bootstrap::class);
         }
     }
 
@@ -143,52 +172,71 @@ class ItemsProcFunc
      * Executing the call and determining the data
      *
      * @param array $params
+     * @throws Exception
      */
     public function execute(array &$params)
     {
         $apiKey = '';
         $request = [];
         $legislatorId = 0;
-        $itemName = 'json' . ucfirst($this->getActionName($params));
-        if (isset($params['config']['filter']) && !empty($params['config']['filter'])) {
+        $itemName = 'json'.ucfirst($this->getActionName($params));
+        if (!empty($params['config']['filter'] ?? '')) {
             $itemName .= ucfirst($params['config']['filter']);
         }
         //read and provide flexform
-        if (isset($params['row']['pi_flexform']) && !empty($params['row']['pi_flexform'])) {
+        if (!empty($params['row']['pi_flexform'] ?? null)) {
             $data = GeneralUtility::xml2array($params['row']['pi_flexform']);
-            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
+            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey');
+            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId');
         } elseif (isset($params['row']['uid']) && isset($params['table']) && is_numeric($params['row']['uid'])) {
             $pi_flexform = $this->getPiFlexformFromTable($params['table'], $params['row']['uid']);
             $data = GeneralUtility::xml2array($pi_flexform);
-            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey', 'sDEF');
-            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId', 'sDEF');
+            $apiKey = $this->pi_getFFvalue($data, 'settings.apiKey');
+            $legislatorId = $this->pi_getFFvalue($data, 'settings.legislatorId');
         }
         //test for double call
-        $post = GeneralUtility::_GP('tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName));
+        $pattern = 'tx_'.strtolower($this->extensionName).'_'.strtolower($this->pluginName);
+        if (method_exists(GeneralUtility::class, '_GP')) {
+            $post = GeneralUtility::_GP($pattern);
+        } else {
+            $post = $GLOBALS['TYPO3_REQUEST']->getParsedBody()[$pattern]
+                ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()[$pattern]
+                ?? null;
+        }
         //first call
-        if (!isset($post[$itemName]) || empty($post[$itemName]) || $params['config']['action'] != $post['action']) {
-            unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['controller'] = $params['config']['controller'];
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['action'] = $params['config']['action'];
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['legislatorId'] = $request['settings']['legislatorId'] = $legislatorId;
-            if (isset($params['config']['filter']) && !empty($params['config']['filter'])) {
-                $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]['filter'] = $params['config']['filter'];
+        if (empty($post[$itemName] ?? '') || $params['config']['action'] !== $post['action']) {
+            unset($_POST[$pattern]);
+            $_POST[$pattern]['apiKey'] = $request['settings']['apiKey'] = $apiKey;
+            $_POST[$pattern]['controller'] = $params['config']['controller'];
+            $_POST[$pattern]['action'] = $params['config']['action'];
+            $_POST[$pattern]['legislatorId'] = $request['settings']['legislatorId'] = $legislatorId;
+            if (!empty($params['config']['filter'] ?? null)) {
+                $_POST[$pattern]['filter'] = $params['config']['filter'];
             }
             //For TYPO3 9.5 put query parameters in the backend
             if (isset($GLOBALS['TYPO3_REQUEST']) && $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
                 $queryParams = $GLOBALS['TYPO3_REQUEST']->getQueryParams();
-                $queryParams['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)] = $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)];
+                $queryParams['tx_'.strtolower($this->extensionName).'_'.strtolower(
+                    $this->pluginName
+                )] = $_POST['tx_'.strtolower($this->extensionName).'_'.strtolower($this->pluginName)];
                 $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withQueryParams($queryParams);
             }
             $this->configuration['controller'] = $params['config']['controller'];
             $this->configuration['action'] = $params['config']['action'];
+            $this->configuration['switchableControllerActions'][$this->configuration['controller']][] = $this->configuration['action'];
             $this->configuration = array_merge($this->configuration, $request);
             //start of Extbase bootstrap program
-            $json = $this->bootstrap->run('', $this->configuration);
+            try {
+                if ($this->getTypo3Version() < 12000000) {
+                    $json = $this->bootstrap->run('', $this->configuration);
+                } else {
+                    $json = $this->bootstrap->run('', $this->configuration, $GLOBALS['TYPO3_REQUEST']);
+                }
+            } catch (UnsupportedRequestTypeException $e) {
+                $json = json_encode(['items' => [0 => ['name' => $e->getMessage(), 'id' => 0]]]);
+            }
 
-            $_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)][$itemName] = addslashes($json);
+            $_POST[$pattern][$itemName] = addslashes($json);
             $items = json_decode($json, true);
             if (!empty($items) && is_array($items)) {
                 foreach ($items['items'] as $item) {
@@ -197,7 +245,7 @@ class ItemsProcFunc
             }
             //second call
         } else {
-            if (isset($post[$itemName]) && !empty($post[$itemName])) {
+            if (!empty($post[$itemName] ?? null)) {
                 $json = stripslashes($post[$itemName]);
                 $items = json_decode($json, true);
                 if (!empty($items) && is_array($items)) {
@@ -206,16 +254,19 @@ class ItemsProcFunc
                     }
                 }
             }
-            if (isset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)])) {
-                unset($_POST['tx_' . strtolower($this->extensionName) . '_' . strtolower($this->pluginName)]);
+            if (isset($_POST[$pattern])) {
+                unset($_POST[$pattern]);
             }
+        }
+        if ($this->getTypo3Version() > 12000000) {
+            $GLOBALS['TYPO3_REQUEST'] = $this->backendRequest;
         }
     }
 
     /**
      * Return value from somewhere inside a FlexForm structure
      *
-     * @param array $T3FlexForm_array FlexForm data
+     * @param array|string $T3FlexForm_array FlexForm data
      * @param string $fieldName Field name to extract. Can be given like
      *                                 "test/el/2/test/el/field_templateObject" where each part will dig a level deeper
      *                                 in the FlexForm data.
@@ -225,23 +276,29 @@ class ItemsProcFunc
      *
      * @return string|NULL The content.
      */
-    private function pi_getFFvalue($T3FlexForm_array, $fieldName, $sheet = 'sDEF', $lang = 'lDEF', $value = 'vDEF')
-    {
+    public function pi_getFFvalue(
+        $T3FlexForm_array,
+        string $fieldName,
+        string $sheet = 'sDEF',
+        string $lang = 'lDEF',
+        string $value = 'vDEF'
+    ): ?string {
         $sheetArray = is_array($T3FlexForm_array) ? $T3FlexForm_array['data'][$sheet][$lang] : '';
         if (is_array($sheetArray)) {
             return $this->pi_getFFvalueFromSheetArray($sheetArray, explode('/', $fieldName), $value);
         }
+
         return null;
     }
 
     /**
      * Returns part of $sheetArray pointed to by the keys in $fieldNameArray
      *
-     * @param array $sheetArray Multidimensiona array, typically FlexForm contents
+     * @param array $sheetArray Multidimensional array, typically FlexForm contents
      * @param array $fieldNameArr Array where each value points to a key in the FlexForms content - the input array
      *                             will have the value returned pointed to by these keys. All integer keys will not
      *                             take their integer counterparts, but rather traverse the current position in the
-     *                             array an return element number X (whether this is right behavior is not settled
+     *                             array a return element number X (whether this is right behavior is not settled
      *                             yet...)
      * @param string $value Value for outermost key, typ. "vDEF" depending on language.
      *
@@ -249,10 +306,10 @@ class ItemsProcFunc
      * @access private
      * @see    pi_getFFvalue()
      */
-    private function pi_getFFvalueFromSheetArray($sheetArray, $fieldNameArr, $value)
+    public function pi_getFFvalueFromSheetArray(array $sheetArray, array $fieldNameArr, string $value)
     {
         $tempArr = $sheetArray;
-        foreach ($fieldNameArr as $k => $v) {
+        foreach ($fieldNameArr as $v) {
             if (MathUtility::canBeInterpretedAsInteger($v)) {
                 if (is_array($tempArr)) {
                     $c = 0;
@@ -265,9 +322,10 @@ class ItemsProcFunc
                     }
                 }
             } else {
-                $tempArr = $tempArr[$v] ?? [$value => ''];
+                $tempArr = $tempArr[$v];
             }
         }
+
         return $tempArr[$value];
     }
 
@@ -277,22 +335,30 @@ class ItemsProcFunc
      * @param string $table
      * @param integer $uid
      *
-     * @return string $pi_flexform
+     * @return string
+     * @throws Exception
      */
-    private function getPiFlexformFromTable($table, $uid)
+    protected function getPiFlexformFromTable(string $table, int $uid): string
     {
         $pi_flexform = '';
+
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $res = $queryBuilder->select('pi_flexform')
+        $res = $queryBuilder
+            ->select('*')
             ->from('tt_content')
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)))
-            ->execute();
-        $row = $res->fetch();
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)));
+        if (method_exists($res, 'execute')) {
+            $row = $res->execute()->fetch();
+        } else {
+            $row = current($res->executeQuery()->fetchAllAssociative());
+        }
 
-        if (isset($row['pi_flexform']) && !empty($row['pi_flexform'])) {
+
+        if (!empty($row['pi_flexform'] ?? '')) {
             $pi_flexform = $row['pi_flexform'];
         }
+
         return $pi_flexform;
     }
 
@@ -303,10 +369,27 @@ class ItemsProcFunc
     private function getActionName(array $param): string
     {
         $actionName = '';
-        if (isset($param['config']['action']) && !empty($param['config']['action'])) {
+        if (!empty($param['config']['action'] ?? null)) {
             $actionName = $param['config']['action'];
         }
+
         return $actionName;
+    }
+
+    /**
+     * Retrieves the TYPO3 version as an integer.
+     *
+     * @return int The TYPO3 version number converted to an integer.
+     */
+    private function getTypo3Version(): int
+    {
+        if (defined('TYPO3_version')) {
+            return VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
+        } else {
+            $version = VersionNumberUtility::getNumericTypo3Version();
+
+            return VersionNumberUtility::convertVersionNumberToInteger($version);
+        }
     }
 
 }
