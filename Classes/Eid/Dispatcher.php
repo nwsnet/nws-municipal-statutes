@@ -63,33 +63,32 @@ class Dispatcher
     /**
      * @var string
      */
-    protected $requestHandler = RequestHandler::class;
+    protected string $requestHandler = RequestHandler::class;
 
     /**
      * @var array
      */
-    private $middlewares9 = array(
+    private array $middlewares10 = array(
         'typo3/cms-frontend/prepare-tsfe-rendering' => 'TYPO3\\CMS\\Frontend\\Middleware\\PrepareTypoScriptFrontendRendering',
+        'typo3/cms-frontend/tsfe' => 'TYPO3\\CMS\\Frontend\\Middleware\\TypoScriptFrontendInitialization',
         'typo3/cms-frontend/page-argument-validator' => 'TYPO3\\CMS\\Frontend\\Middleware\\PageArgumentValidator',
-        'typo3/cms-frontend/maintenance-mode' => 'TYPO3\\CMS\\Frontend\\Middleware\\MaintenanceMode',
         'typo3/cms-frontend/page-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\PageResolver',
         'typo3/cms-redirects/redirecthandler' => 'TYPO3\\CMS\\Redirects\\Http\\Middleware\\RedirectHandler',
         'typo3/cms-frontend/static-route-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\StaticRouteResolver',
         'typo3/cms-frontend/base-redirect-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\SiteBaseRedirectResolver',
-        'typo3/cms-frontend/site' => 'TYPO3\\CMS\\Frontend\\Middleware\\SiteResolver',
         'typo3/cms-frontend/authentication' => 'TYPO3\\CMS\\Frontend\\Middleware\\FrontendUserAuthenticator',
-        'typo3/cms-frontend/tsfe' => 'TYPO3\\CMS\\Frontend\\Middleware\\TypoScriptFrontendInitialization',
+        'typo3/cms-frontend/site' => 'TYPO3\\CMS\\Frontend\\Middleware\\SiteResolver',
+        'typo3/cms-frontend/maintenance-mode' => 'TYPO3\\CMS\\Frontend\\Middleware\\MaintenanceMode',
     );
 
     /**
      * @var array
      */
-    private $middlewares10 = array(
+    private array $middlewares11 = array(
         'typo3/cms-frontend/prepare-tsfe-rendering' => 'TYPO3\\CMS\\Frontend\\Middleware\\PrepareTypoScriptFrontendRendering',
         'typo3/cms-frontend/tsfe' => 'TYPO3\\CMS\\Frontend\\Middleware\\TypoScriptFrontendInitialization',
         'typo3/cms-frontend/page-argument-validator' => 'TYPO3\\CMS\\Frontend\\Middleware\\PageArgumentValidator',
         'typo3/cms-frontend/page-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\PageResolver',
-        'typo3/cms-redirects/redirecthandler' => 'TYPO3\\CMS\\Redirects\\Http\\Middleware\\RedirectHandler',
         'typo3/cms-frontend/static-route-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\StaticRouteResolver',
         'typo3/cms-frontend/base-redirect-resolver' => 'TYPO3\\CMS\\Frontend\\Middleware\\SiteBaseRedirectResolver',
         'typo3/cms-frontend/authentication' => 'TYPO3\\CMS\\Frontend\\Middleware\\FrontendUserAuthenticator',
@@ -104,7 +103,7 @@ class Dispatcher
      *
      * @return ResponseInterface
      */
-    public function processRequest(ServerRequestInterface $request)
+    public function processRequest(ServerRequestInterface $request): ResponseInterface
     {
         //Initialization of the response via middleware request
         return $this->handle($request);
@@ -129,13 +128,18 @@ class Dispatcher
      *
      * @return MiddlewareDispatcher
      */
-    protected function createMiddlewareDispatcher(RequestHandlerInterface $requestHandler)
+    protected function createMiddlewareDispatcher(RequestHandlerInterface $requestHandler): MiddlewareDispatcher
     {
-        $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
-        if ($versionAsInt < 9999999) {
-            $middlewares = $this->middlewares9;
+        if (defined('TYPO3_version')) {
+            $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version);
         } else {
+            $version = VersionNumberUtility::getNumericTypo3Version();
+            $versionAsInt = VersionNumberUtility::convertVersionNumberToInteger($version);
+        }
+        if ($versionAsInt < 10999999) {
             $middlewares = $this->middlewares10;
+        } else {
+            $middlewares = $this->middlewares11;
         }
 
         return new MiddlewareDispatcher($requestHandler, $middlewares);
