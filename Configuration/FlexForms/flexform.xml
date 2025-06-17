@@ -5,11 +5,9 @@
     <sheets>
         <sDEF>
             <ROOT>
-                <TCEforms>
-                    <sheetTitle>
-                        LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.sheettitle
-                    </sheetTitle>
-                </TCEforms>
+                <sheetTitle>
+                    LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.sheettitle
+                </sheetTitle>
                 <type>array</type>
                 <el>
                     <switchableControllerActions>
@@ -58,7 +56,8 @@
                         <label>
                             LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.sdef.legislatorId
                         </label>
-                        <displayCond>FIELD:switchableControllerActions:=:LocalLaw->singlelist;LocalLaw->show;</displayCond>
+                        <displayCond>FIELD:switchableControllerActions:=:LocalLaw->singlelist;LocalLaw->show;
+                        </displayCond>
                         <config>
                             <type>select</type>
                             <renderType>selectMultipleSideBySide</renderType>
@@ -147,11 +146,9 @@
         </sDEF>
         <restrictions type="array">
             <ROOT type="array">
-                <TCEforms type="array">
-                    <sheetTitle>
-                        LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.restrictions.sheettitle
-                    </sheetTitle>
-                </TCEforms>
+                <sheetTitle>
+                    LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.restrictions.sheettitle
+                </sheetTitle>
                 <type>array</type>
                 <el type="array">
                     <settings.searchSelection>
@@ -186,11 +183,9 @@
         </restrictions>
         <pdf type="array">
             <ROOT type="array">
-                <TCEforms type="array">
-                    <sheetTitle>
-                        LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.pdf.sheettitle
-                    </sheetTitle>
-                </TCEforms>
+                <sheetTitle>
+                    LLL:EXT:nws_municipal_statutes/Resources/Private/Language/locallang.xlf:flexform.pdf.sheettitle
+                </sheetTitle>
                 <type>array</type>
                 <el type="array">
                     <settings.enablePdf>
