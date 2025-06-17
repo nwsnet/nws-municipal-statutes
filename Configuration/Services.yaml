@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Nwsnet\NwsMunicipalStatutes\:
+    resource: '../Classes/*'
+    exclude:
+      - '../Classes/Dom/SimpleHtmlDom.php'
+
+
