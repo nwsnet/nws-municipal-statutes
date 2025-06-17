@@ -25,11 +25,12 @@
 namespace Nwsnet\NwsMunicipalStatutes\Controller;
 
 use Nwsnet\NwsMunicipalStatutes\RestApi\LocalLaw\LocalLaw;
+use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /**
- * ItemsProcFunc Controller for reading and providing alternative selection fields for the media elemete (Flexform)
+ * ItemsProcFunc Controller for reading and providing alternative selection fields for the media element (Flexform)
  *
  * @package    TYPO3
  * @subpackage nws_municipal_statutes
@@ -42,7 +43,7 @@ class ItemsProcFuncController extends AbstractController
      *
      * @var LocalLaw
      */
-    protected $apiLocalLaw;
+    protected LocalLaw $apiLocalLaw;
 
     /**
      * @param LocalLaw $apiLocalLaw
@@ -53,11 +54,11 @@ class ItemsProcFuncController extends AbstractController
     }
 
     /**
-     * deactivates flashmessages -> they are being generated for validation errrors for example
+     * deactivates flash-messages -> they are being generated for validation errors for example
      *
      * @see ActionController::getErrorFlashMessage()
      */
-    protected function getErrorFlashMessage()
+    protected function getErrorFlashMessage(): bool
     {
         return false;
     }
@@ -65,19 +66,24 @@ class ItemsProcFuncController extends AbstractController
     /**
      * Read the legislators and put them to the selection
      *
-     * @return string
+     * @return ResponseInterface|string
      */
     public function readLegislatorAction()
     {
         $filter = array(
-            'sortAttribute' => array('name')
+            'sortAttribute' => array('name'),
         );
         if ($this->apiLocalLaw->legislator()->findAll($filter)->hasExceptionError()) {
             $error = $this->apiLocalLaw->legislator()->getExceptionError();
             $exception = new stdClass;
-            $exception->legislator[0]['name'] = $error['message'];
-            $exception->legislator[0]['id'] = 0;
-            return $this->apiLocalLaw->jsonEncode($exception);
+            $exception->items[0]['name'] = $error['message'];
+            $exception->items[0]['id'] = 0;
+            $error = $this->apiLocalLaw->jsonEncode($exception);
+            if (method_exists($this, 'jsonResponse')) {
+                return $this->jsonResponse($error);
+            } else {
+                return $error;
+            }
         }
         $items = array();
         $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
@@ -85,17 +91,22 @@ class ItemsProcFuncController extends AbstractController
             foreach ($legislator['results'] as $item) {
                 $items['items'][] = array(
                     'id' => $item['object']['id'],
-                    'name' => $item['object']['name']
+                    'name' => $item['object']['name'],
                 );
             }
         }
-        return $this->apiLocalLaw->jsonEncode($items);
+        $items = $this->apiLocalLaw->jsonEncode($items);
+        if (method_exists($this, 'jsonResponse')) {
+            return $this->jsonResponse($items);
+        } else {
+            return $items;
+        }
     }
 
     /**
      * Reads the structure of a legislator and adds it to the selection
      *
-     * @return string
+     * @return ResponseInterface|string
      */
     public function readStructureAction()
     {
@@ -103,8 +114,8 @@ class ItemsProcFuncController extends AbstractController
             $filter = array(
                 'legislatorId' => $this->settings['legislatorId'],
                 'sortAttribute' => array(
-                    'name'
-                )
+                    'name',
+                ),
             );
 
             if ($this->apiLocalLaw->structure()->find($filter)->hasExceptionError()) {
@@ -112,7 +123,12 @@ class ItemsProcFuncController extends AbstractController
                 $exception = new stdClass;
                 $exception->structure[0]['name'] = $error['message'];
                 $exception->structure[0]['id'] = 0;
-                return $this->apiLocalLaw->jsonEncode($exception);
+                $error = $this->apiLocalLaw->jsonEncode($exception);
+                if (method_exists($this, 'jsonResponse')) {
+                    return $this->jsonResponse($error);
+                } else {
+                    return $error;
+                }
             }
             $items = array();
             $structure = $this->apiLocalLaw->structure()->getJsonDecode();
@@ -121,19 +137,25 @@ class ItemsProcFuncController extends AbstractController
                     foreach ($value['object']['structure']['subStructurNodes'] as $item) {
                         $items['items'][] = array(
                             'id' => $item['id'],
-                            'name' => $item['structureText']
+                            'name' => $item['structureText'],
                         );
                     }
                 }
             }
-            return $this->apiLocalLaw->jsonEncode($items);
         } else {
             $items['items'][] = array(
                 'id' => 0,
-                'name' => LocalizationUtility::translate('global.empty',
-                    $this->extensionName)
+                'name' => LocalizationUtility::translate(
+                    'global.empty',
+                    $this->extensionName
+                ),
             );
-            return $this->apiLocalLaw->jsonEncode($items);
+        }
+        $items = $this->apiLocalLaw->jsonEncode($items);
+        if (method_exists($this, 'jsonResponse')) {
+            return $this->jsonResponse($items);
+        } else {
+            return $items;
         }
     }
 }
