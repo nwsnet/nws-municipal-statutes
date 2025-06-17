@@ -100,13 +100,6 @@ abstract class AbstractController extends ActionController implements LoggerAwar
     protected PageRenderer $pageRenderer;
 
     /**
-     * ApiCall set data
-     *
-     * @var ConfigurationManagerInterface
-     */
-    protected ConfigurationManagerInterface $configurationManager;
-
-    /**
      * @param UserSession $userSession
      */
     public function injectUserSession(UserSession $userSession)
@@ -120,14 +113,6 @@ abstract class AbstractController extends ActionController implements LoggerAwar
     public function injectPageRenderer(PageRenderer $pageRenderer)
     {
         $this->pageRenderer = $pageRenderer;
-    }
-
-    /**
-     * @param ConfigurationManagerInterface $configurationManager
-     */
-    public function injectConfigurationManagerInterface(ConfigurationManagerInterface $configurationManager)
-    {
-        $this->configurationManager = $configurationManager;
     }
 
     /**
