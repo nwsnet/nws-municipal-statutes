@@ -17,10 +17,10 @@ $EM_CONF['nws_municipal_statutes'] = array(
 	'author_company' => 'die NetzWerkstatt GmbH & Co. KG',
 	'state' => 'beta',
 	'clearCacheOnLoad' => 1,
-	'version' => '0.4.6',
+	'version' => '0.4.7',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '10.4.0-12.4.99',
+			'typo3' => '10.4.0-13.4.99',
 		),
 		'conflicts' => array(),
 		'suggests' => array(),
