@@ -407,7 +407,7 @@ class LocalLawController extends AbstractController
     {
         $legalNormId = 0;
         if ($this->request->hasArgument('legalnorm')) {
-            $legalNormId = $this->request->getArgument('legalnorm');
+            $legalNormId = (int)$this->request->getArgument('legalnorm');
         }
 
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
