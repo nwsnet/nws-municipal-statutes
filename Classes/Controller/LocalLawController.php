@@ -471,6 +471,7 @@ class LocalLawController extends AbstractController
      * @throws NoSuchArgumentException
      * @throws Exception
      * @throws UnsupportedRequestTypeException
+     * @throws InvalidRequestMethodException
      */
     public function pdfAction()
     {
@@ -525,8 +526,8 @@ class LocalLawController extends AbstractController
                 }
             }
             if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
-                $error = $this->apiLocalLaw->legislator()->getExceptionError();
-                throw new \UnexpectedValueException($error['message'], $error['code']);
+                $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                throw new UnsupportedRequestTypeException($error['message'], $error['code']);
             }
             $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
             $legislatorId = $legalNorm['legislator']['id'];
@@ -598,8 +599,11 @@ class LocalLawController extends AbstractController
                     ),
                 );
                 if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
-                    $error = $this->apiLocalLaw->legislator()->getExceptionError();
-                    throw new \UnexpectedValueException($error['message'], $error['code']);
+                    $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                    if ($error['code'] === 404) {
+                        throw new InvalidRequestMethodException($error['message'], $error['code']);
+                    }
+                    throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
                 $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
