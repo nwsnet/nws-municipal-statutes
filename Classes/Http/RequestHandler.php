@@ -328,7 +328,7 @@ class RequestHandler implements PsrRequestHandlerInterface
         $response = new Response();
 
         // Store session data for fe_users
-        if ($typoScriptFrontendController->fe_user) {
+        if (property_exists($typoScriptFrontendController, 'fe_user') && $typoScriptFrontendController->fe_user) {
             $typoScriptFrontendController->fe_user->storeSessionData();
         } else {
             $user = $request->getAttribute('frontend.user');
