@@ -32,7 +32,7 @@ plugin.tx_nwsmunicipalstatutes {
 
 # [NWS] override pagetitle if legal norm on this page (determine by GET-parameter)
 # Providing the legal norm name for the page title generation
-[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0]
+[traverse(request.getQueryParams(), 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0]
     lib.nwsMunicipalStatutesPageTitle = COA
     lib.nwsMunicipalStatutesPageTitle {
         data >
@@ -72,7 +72,7 @@ plugin.tx_nwsmunicipalstatutes {
 [global]
 
 #Turn off redirection for referencing other side trees for services
-[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0 || traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/controller') == "LocalLaw" && traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/action') == "list"]
+[traverse(request.getQueryParams(), 'tx_nwsmunicipalstatutes_pi1/legalnorm') > 0 || traverse(request.getQueryParams(), 'tx_nwsmunicipalstatutes_pi1/controller') == "LocalLaw" && traverse(request.getQueryParams(), 'tx_nwsmunicipalstatutes_pi1/action') == "list"]
     config.typolinkEnableLinksAcrossDomains = 0
 [global]
 
@@ -107,11 +107,17 @@ nws_municipalstatutes_pdf {
         }
     }
 }
-[traverse(request.getQueryParams() , 'tx_nwsmunicipalstatutes_pi1/create') > 0]
+
+[traverse(request.getQueryParams(), 'tx_nwsmunicipalstatutes_pi1/create') > 0]
     nws_municipalstatutes_pdf.config.disableAllHeaderCode = 0
 [global]
 
-[getTSFE() && getTSFE().type == 6363]
+[(typo3.branch == "10.4" && typo3.branch == "11.5") && getTSFE() && getTSFE().type == 6363]
+    config.debug = 0
+    tt_content.stdWrap >
+[end]
+
+[(typo3.branch == "12.4" && typo3.branch == "13.4") && request.getPageArguments()?.getPageType() == 6363]
     config.debug = 0
     tt_content.stdWrap >
 [end]
