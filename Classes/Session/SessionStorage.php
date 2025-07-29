@@ -141,7 +141,7 @@ class SessionStorage implements SingletonInterface
      */
     protected function getFrontendUser(): FrontendUserAuthentication
     {
-        if ($GLOBALS ['TSFE']->fe_user) {
+        if (isset($GLOBALS ['TSFE']) && property_exists($GLOBALS ['TSFE'], 'fe_user') && $GLOBALS ['TSFE']->fe_user) {
             return $GLOBALS ['TSFE']->fe_user;
         } elseif ($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user') !== null) {
             return $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user');
