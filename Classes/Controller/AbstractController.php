@@ -365,7 +365,10 @@ abstract class AbstractController extends ActionController implements LoggerAwar
         if (method_exists($this->configurationManager, 'getContentObject')) {
             $contentObjectData = $this->configurationManager->getContentObject()->data;
         } else {
-            $contentObjectData = $this->request->getAttribute('currentContentObject')->data;
+            $contentObject = $this->request->getAttribute('currentContentObject');
+            if (null !== $contentObject) {
+                $contentObjectData = $contentObject->data;
+            }
         }
 
         /** @var FlexFormService $flexFormService */
