@@ -322,7 +322,7 @@ class ItemsProcFunc
                     }
                 }
             } else {
-                $tempArr = $tempArr[$v];
+                $tempArr = $tempArr[$v] ?? [$value => null];
             }
         }
 
