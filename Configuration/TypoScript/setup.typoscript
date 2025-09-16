@@ -112,12 +112,12 @@ nws_municipalstatutes_pdf {
     nws_municipalstatutes_pdf.config.disableAllHeaderCode = 0
 [global]
 
-[(typo3.branch == "10.4" && typo3.branch == "11.5") && getTSFE() && getTSFE().type == 6363]
+[(typo3.branch == "10.4" || typo3.branch == "11.5") && getTSFE() && getTSFE().type == 6363]
     config.debug = 0
     tt_content.stdWrap >
 [end]
 
-[(typo3.branch == "12.4" && typo3.branch == "13.4") && request.getPageArguments()?.getPageType() == 6363]
+[(typo3.branch == "12.4" || typo3.branch == "13.4") && request.getPageArguments() && request.getPageArguments().getPageType() == 6363]
     config.debug = 0
     tt_content.stdWrap >
 [end]
