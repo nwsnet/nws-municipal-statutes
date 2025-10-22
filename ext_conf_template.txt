@@ -1,12 +1,14 @@
-# cat=content/enable; type=string; label=Activation of the FullRest-API key: Providing municipal legal information requires an API key
+# cat=api/enable; type=string; label=Activation of the FullRest-API key: Providing municipal legal information requires an API key
 apiKey =
-# cat=content/enable; type=string; label=Local law FullRest-API URL: Providing local legal information requires a FullRest-API Url.
+# cat=api/enable; type=string; label=Local law FullRest-API URL: Providing local legal information requires a FullRest-API Url.
 localLawApiUrl = https://restapi-v2-kr-sh.infodienste.de
-# cat=content/enable; type=string; label=Geo FullRest-API URL: To provide geo information, a FullRest Url is needed.
+# cat=api/enable; type=string; label=Geo FullRest-API URL: To provide geo information, a FullRest Url is needed.
 jurisdictionFinderApiUrl = https://gd-api.zfinder.de
-# cat=content/enable; type=string; label=Official municipality key: Official municipality key for a federal state, for example (Schleswig-Holstein = 01)
+# cat=api/enable; type=string; label=Official municipality key: Official municipality key for a federal state, for example (Schleswig-Holstein = 01)
 agsKey = 01
-# cat=basic/fields/010; type=string; label=wkhtmltopdf binary:Absolute path to wkhtmltopdf binary. (because of https version >= 0.12.5)
+# cat=pdf/fields/010; type=string; label=PDF Download-URL: The required URL consists of "System" - "State" and at the end the ID of the legal norm.
+pdfUrl = https://kr-sh.infodienste.de/fileloader/LegalNorm/{id}/pdf
+# cat=pdf/fields/020; type=string; label=wkhtmltopdf binary:Absolute path to wkhtmltopdf binary. (because of https version >= 0.12.5)
 wkhtmltopdfPath = /usr/local/bin/wkhtmltopdf
 
 
