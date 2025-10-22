@@ -475,6 +475,8 @@ class LocalLawController extends AbstractController
      */
     public function pdfAction()
     {
+        $this->loadExtConf();
+
         if (method_exists(GeneralUtility::class, '_GET')) {
             $params = GeneralUtility::_GET();
         } else {
@@ -495,167 +497,208 @@ class LocalLawController extends AbstractController
             $legalNormId = $this->request->getArgument('legalnorm');
         }
 
-        if ($this->request->hasArgument('create')) {
-            $settings = array();
-
-            //Read ContextRecord for Flexform
-            if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos(
-                    $params['tx_nwsmunicipalstatutes_pi1']['context'],
-                    '|'
-                ) !== false) {
-                list($table, $uid) = explode('|', $params['tx_nwsmunicipalstatutes_pi1']['context']);
-            }
-            //initialize the data us the content element
-            if (isset($table) && isset($uid)) {
-                $data = $this->getContentDataArray($table, $uid);
-                if (isset($data['pi_flexform'])) {
-                    /** @var FlexFormService $flexFormService */
-                    $flexFormService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Service\\FlexFormService');
-                    $flexform = $flexFormService->convertFlexFormContentToArray($data['pi_flexform']);
-                    if (isset($flexform['settings'])) {
-                        $settings = array_merge($this->settings, $flexform['settings']);
-                    }
+        if (isset($this->extConf['pdfUrl']) && 0 !== $legalNormId) {
+            $pdfUrl = $this->extConf['pdfUrl'];
+            if ($this->apiLocalLaw->legalNorm()->getPdfById($legalNormId, $pdfUrl)->hasExceptionError()) {
+                $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                if ($error['code'] === 404) {
+                    throw new InvalidRequestMethodException($error['message'], $error['code']);
                 }
-                $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
-                /** @var FileRepository $fileObjects */
-                $fileObjects = $fileRepository->findByRelation('tt_content', 'image', $uid);
-                if (isset($fileObjects[0])) {
-                    $settings['headlineImage'] = $fileObjects[0];
-                } else {
-                    $settings['headlineImage'] = null;
-                }
+                throw new UnsupportedRequestTypeException($error['message'], $error['code']);
             }
+            $pdf = $this->apiLocalLaw->legalNorm()->getResult();
             if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
                 $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
                 throw new UnsupportedRequestTypeException($error['message'], $error['code']);
             }
             $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-            $legislatorId = $legalNorm['legislator']['id'];
-
-            $legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
-
-            //Check if attachments exist and set document type
-            if (!empty($legalNorm['jurisAttachments'] ?? null)) {
-                foreach ($legalNorm['jurisAttachments'] as $key => $value) {
-                    if (strpos($value['mimeType'], '/') !== false) {
-                        $legalNorm['jurisAttachments'][$key]['docType'] = substr(
-                            $value['mimeType'],
-                            strpos($value['mimeType'], '/') + 1
-                        );
-                    }
-                }
-            }
-
-            if ($this->apiLocalLaw->legalNorm()->findByIdHtml($legalNormId)->hasExceptionError()) {
-                $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
-                throw new UnsupportedRequestTypeException($error['message'], $error['code']);
-            }
-            $htmlContent = $this->apiLocalLaw->legalNorm()->getResult();
-            //HTML parser for the structure of the content
-            /** @var Converter $converter */
-            $converter = GeneralUtility::makeInstance(Converter::class);
-            $legalNorm['parseContent'] = $converter->getContentArray($htmlContent);
-
-            //set absolute path for CSS and JS files for PDF creation
-            if ($this->getTypo3Version() < 12000000) {
-                $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
-            } else {
-                $normalizedParams = $this->request->getAttribute('normalizedParams');
-                $GLOBALS['TSFE']->absRefPrefix = $normalizedParams->getSiteUrl();
-            }
-
-            $this->view->assign('settings', $settings);
-            $this->view->assign('legalNorm', $legalNorm);
-            if (method_exists($this, 'htmlResponse')) {
-                return $this->htmlResponse();
-            }
-        } else {
+            $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
+            $fileName = $this->convertToSafeString($fileName);
+            $fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH).'.pdf';
             /** @var TypoScriptFrontendController $typoScriptFrontendController */
             $typoScriptFrontendController = $GLOBALS['TSFE'];
-            $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 0;
-            $params['tx_nwsmunicipalstatutes_pi1']['create'] = 1;
-            /* @var $cacheHash CacheHashCalculator */
-            $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
-            $cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
-            $params['cHash'] = $cHash;
-            //set absolute path for CSS and JS files for PDF creation
-            if ($this->getTypo3Version() < 12000000) {
-                $uri = $this->request->getBaseUri().'index.php';
+            $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+            $typoScriptFrontendController->setContentType('application/pdf');
+            if (method_exists($this, 'htmlResponse')) {
+                $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 1;
+
+                return $this->responseFactory->createResponse()
+                    ->withHeader('Content-Type', 'application/pdf')
+                    ->withHeader('Content-Transfer-Encoding', 'binary')
+                    ->withHeader('Content-Disposition', 'attachment;filename="'.$fileName)
+                    ->withHeader('Content-Length', (string)strlen($pdf))
+                    ->withHeader('Connection', 'close')
+                    ->withBody($this->streamFactory->createStream((string)($pdf)));
             } else {
-                $normalizedParams = $this->request->getAttribute('normalizedParams');
-                $uri = $normalizedParams->getSiteUrl().'index.php';
+                $this->response->setHeader('Content-Transfer-Encoding', 'binary');
+                $this->response->setHeader('Content-Disposition', 'attachment;filename="'.$fileName);
+                $this->response->setHeader('Content-Length', strlen($pdf));
+                $this->response->setHeader('Connection', 'close');
+                echo $pdf;
             }
+        } else {
+            if ($this->request->hasArgument('create')) {
+                $settings = array();
 
-            /** @var RestClient $contentProvider */
-            $contentProvider = GeneralUtility::makeInstance(RestClient::class);
-            $html = $contentProvider->getData($uri, $params, true)->getResult();
-            if (!empty($html)) {
-                $filter = array(
-                    'selectAttributes' => array(
-                        'id',
-                        'longTitle',
-                        'shortTitle',
-
-                    ),
-                );
-                if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
-                    $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
-                    if ($error['code'] === 404) {
-                        throw new InvalidRequestMethodException($error['message'], $error['code']);
+                //Read ContextRecord for Flexform
+                if (isset($params['tx_nwsmunicipalstatutes_pi1']['context']) && strpos(
+                        $params['tx_nwsmunicipalstatutes_pi1']['context'],
+                        '|'
+                    ) !== false) {
+                    list($table, $uid) = explode('|', $params['tx_nwsmunicipalstatutes_pi1']['context']);
+                }
+                //initialize the data us the content element
+                if (isset($table) && isset($uid)) {
+                    $data = $this->getContentDataArray($table, $uid);
+                    if (isset($data['pi_flexform'])) {
+                        /** @var FlexFormService $flexFormService */
+                        $flexFormService = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Service\\FlexFormService');
+                        $flexform = $flexFormService->convertFlexFormContentToArray($data['pi_flexform']);
+                        if (isset($flexform['settings'])) {
+                            $settings = array_merge($this->settings, $flexform['settings']);
+                        }
                     }
+                    $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+                    /** @var FileRepository $fileObjects */
+                    $fileObjects = $fileRepository->findByRelation('tt_content', 'image', $uid);
+                    if (isset($fileObjects[0])) {
+                        $settings['headlineImage'] = $fileObjects[0];
+                    } else {
+                        $settings['headlineImage'] = null;
+                    }
+                }
+                if ($this->apiLocalLaw->legalNorm()->findById($legalNormId)->hasExceptionError()) {
+                    $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
                     throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
                 $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
-                $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
-                $fileName = $this->convertToSafeString($fileName);
-                $fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH).'.pdf';
+                $legislatorId = $legalNorm['legislator']['id'];
 
-                if (property_exists($this, 'objectManager')) {
-                    /** @var LegalNormPdf $pdfFile */
-                    $pdfFile = $this->objectManager->get(LegalNormPdf::class);
-                } else {
-                    /** @var LegalNormPdf $pdfFile */
-                    $pdfFile = GeneralUtility::makeInstance(LegalNormPdf::class);
-                }
+                $legalNorm = $this->apiLocalLaw->getLegalNormWithStructure($legislatorId, $legalNorm);
 
-                $pdfFilePath = Environment::getPublicPath().'/typo3temp/'.md5(mt_rand()).'.pdf';
-                if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
-                    if (method_exists($this, 'htmlResponse')) {
-                        return $this->responseFactory->createResponse()
-                            ->withBody($this->streamFactory->createStream(''));
-                    } else {
-                        return '';
+                //Check if attachments exist and set document type
+                if (!empty($legalNorm['jurisAttachments'] ?? null)) {
+                    foreach ($legalNorm['jurisAttachments'] as $key => $value) {
+                        if (strpos($value['mimeType'], '/') !== false) {
+                            $legalNorm['jurisAttachments'][$key]['docType'] = substr(
+                                $value['mimeType'],
+                                strpos($value['mimeType'], '/') + 1
+                            );
+                        }
                     }
                 }
 
-                $pdf = @file_get_contents($pdfFilePath);
-                unlink($pdfFilePath);
-                $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
-                $typoScriptFrontendController->setContentType('application/pdf');
-                if (method_exists($this, 'htmlResponse')) {
-                    $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 1;
-
-                    return $this->responseFactory->createResponse()
-                        ->withHeader('Content-Type', 'application/pdf')
-                        ->withHeader('Content-Transfer-Encoding', 'binary')
-                        ->withHeader('Content-Disposition', 'attachment;filename="'.$fileName)
-                        ->withHeader('Content-Length', (string)strlen($pdf))
-                        ->withHeader('Connection', 'close')
-                        ->withBody($this->streamFactory->createStream((string)($pdf)));
-                } else {
-                    $this->response->setHeader('Content-Transfer-Encoding', 'binary');
-                    $this->response->setHeader('Content-Disposition', 'attachment;filename="'.$fileName);
-                    $this->response->setHeader('Content-Length', strlen($pdf));
-                    $this->response->setHeader('Connection', 'close');
-                    echo $pdf;
+                if ($this->apiLocalLaw->legalNorm()->findByIdHtml($legalNormId)->hasExceptionError()) {
+                    $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                    throw new UnsupportedRequestTypeException($error['message'], $error['code']);
                 }
-            }
+                $htmlContent = $this->apiLocalLaw->legalNorm()->getResult();
+                //HTML parser for the structure of the content
+                /** @var Converter $converter */
+                $converter = GeneralUtility::makeInstance(Converter::class);
+                $legalNorm['parseContent'] = $converter->getContentArray($htmlContent);
 
-            if (method_exists($this, 'htmlResponse')) {
-                return $this->responseFactory->createResponse()
-                    ->withBody($this->streamFactory->createStream(''));
+                //set absolute path for CSS and JS files for PDF creation
+                if ($this->getTypo3Version() < 12000000) {
+                    $GLOBALS['TSFE']->absRefPrefix = $this->request->getBaseUri();
+                } else {
+                    $normalizedParams = $this->request->getAttribute('normalizedParams');
+                    $GLOBALS['TSFE']->absRefPrefix = $normalizedParams->getSiteUrl();
+                }
+
+                $this->view->assign('settings', $settings);
+                $this->view->assign('legalNorm', $legalNorm);
+                if (method_exists($this, 'htmlResponse')) {
+                    return $this->htmlResponse();
+                }
             } else {
-                return '';
+                /** @var TypoScriptFrontendController $typoScriptFrontendController */
+                $typoScriptFrontendController = $GLOBALS['TSFE'];
+                $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 0;
+                $params['tx_nwsmunicipalstatutes_pi1']['create'] = 1;
+                /* @var $cacheHash CacheHashCalculator */
+                $cacheHash = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator');
+                $cHash = $cacheHash->generateForParameters($this->httpBuildQuery($params));
+                $params['cHash'] = $cHash;
+                //set absolute path for CSS and JS files for PDF creation
+                if ($this->getTypo3Version() < 12000000) {
+                    $uri = $this->request->getBaseUri().'index.php';
+                } else {
+                    $normalizedParams = $this->request->getAttribute('normalizedParams');
+                    $uri = $normalizedParams->getSiteUrl().'index.php';
+                }
+
+                /** @var RestClient $contentProvider */
+                $contentProvider = GeneralUtility::makeInstance(RestClient::class);
+                $html = $contentProvider->getData($uri, $params, true)->getResult();
+                if (!empty($html)) {
+                    $filter = array(
+                        'selectAttributes' => array(
+                            'id',
+                            'longTitle',
+                            'shortTitle',
+
+                        ),
+                    );
+                    if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
+                        $error = $this->apiLocalLaw->legalNorm()->getExceptionError();
+                        if ($error['code'] === 404) {
+                            throw new InvalidRequestMethodException($error['message'], $error['code']);
+                        }
+                        throw new UnsupportedRequestTypeException($error['message'], $error['code']);
+                    }
+                    $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
+                    $fileName = !empty($legalNorm['shortTitle']) ? $legalNorm['shortTitle'] : $legalNorm['longTitle'];
+                    $fileName = $this->convertToSafeString($fileName);
+                    $fileName = substr($fileName, 0, self::MAX_ALIAS_LENGTH).'.pdf';
+
+                    if (property_exists($this, 'objectManager')) {
+                        /** @var LegalNormPdf $pdfFile */
+                        $pdfFile = $this->objectManager->get(LegalNormPdf::class);
+                    } else {
+                        /** @var LegalNormPdf $pdfFile */
+                        $pdfFile = GeneralUtility::makeInstance(LegalNormPdf::class);
+                    }
+
+                    $pdfFilePath = Environment::getPublicPath().'/typo3temp/'.md5(mt_rand()).'.pdf';
+                    if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
+                        if (method_exists($this, 'htmlResponse')) {
+                            return $this->responseFactory->createResponse()
+                                ->withBody($this->streamFactory->createStream(''));
+                        } else {
+                            return '';
+                        }
+                    }
+
+                    $pdf = @file_get_contents($pdfFilePath);
+                    unlink($pdfFilePath);
+                    $typoScriptFrontendController->config['config']['additionalHeaders.']['10.']['header'] = 'Content-type: application/pdf';
+                    $typoScriptFrontendController->setContentType('application/pdf');
+                    if (method_exists($this, 'htmlResponse')) {
+                        $typoScriptFrontendController->config['config']['disableAllHeaderCode'] = 1;
+
+                        return $this->responseFactory->createResponse()
+                            ->withHeader('Content-Type', 'application/pdf')
+                            ->withHeader('Content-Transfer-Encoding', 'binary')
+                            ->withHeader('Content-Disposition', 'attachment;filename="'.$fileName)
+                            ->withHeader('Content-Length', (string)strlen($pdf))
+                            ->withHeader('Connection', 'close')
+                            ->withBody($this->streamFactory->createStream((string)($pdf)));
+                    } else {
+                        $this->response->setHeader('Content-Transfer-Encoding', 'binary');
+                        $this->response->setHeader('Content-Disposition', 'attachment;filename="'.$fileName);
+                        $this->response->setHeader('Content-Length', strlen($pdf));
+                        $this->response->setHeader('Connection', 'close');
+                        echo $pdf;
+                    }
+                }
+
+                if (method_exists($this, 'htmlResponse')) {
+                    return $this->responseFactory->createResponse()
+                        ->withBody($this->streamFactory->createStream(''));
+                } else {
+                    return '';
+                }
             }
         }
     }
