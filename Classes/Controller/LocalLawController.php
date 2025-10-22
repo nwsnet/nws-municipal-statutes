@@ -620,7 +620,12 @@ class LocalLawController extends AbstractController
 
                 $pdfFilePath = Environment::getPublicPath().'/typo3temp/'.md5(mt_rand()).'.pdf';
                 if ($pdfFile->writeTo($pdfFilePath, $html) !== true) {
-                    return '';
+                    if (method_exists($this, 'htmlResponse')) {
+                        return $this->responseFactory->createResponse()
+                            ->withBody($this->streamFactory->createStream(''));
+                    } else {
+                        return '';
+                    }
                 }
 
                 $pdf = @file_get_contents($pdfFilePath);
@@ -646,7 +651,12 @@ class LocalLawController extends AbstractController
                 }
             }
 
-            return '';
+            if (method_exists($this, 'htmlResponse')) {
+                return $this->responseFactory->createResponse()
+                    ->withBody($this->streamFactory->createStream(''));
+            } else {
+                return '';
+            }
         }
     }
 
@@ -666,7 +676,12 @@ class LocalLawController extends AbstractController
             ),
         );
         if ($this->apiLocalLaw->legalNorm()->findById($legalNormId, $filter)->hasExceptionError()) {
-            return '';
+            if (method_exists($this, 'htmlResponse')) {
+                return $this->responseFactory->createResponse()
+                    ->withBody($this->streamFactory->createStream(''));
+            } else {
+                return '';
+            }
         }
         $legalNorm = $this->apiLocalLaw->legalNorm()->getJsonDecode();
 
@@ -697,7 +712,12 @@ class LocalLawController extends AbstractController
             ),
         );
         if ($this->apiLocalLaw->legislator()->findById($legislatorId, $filter)->hasExceptionError()) {
-            return '';
+            if (method_exists($this, 'htmlResponse')) {
+                return $this->responseFactory->createResponse()
+                    ->withBody($this->streamFactory->createStream(''));
+            } else {
+                return '';
+            }
         }
         $legislator = $this->apiLocalLaw->legislator()->getJsonDecode();
 
