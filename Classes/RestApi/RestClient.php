@@ -36,6 +36,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class RestClient
 {
+    const METHOD_GET = 'GET';
+    const METHOD_RAW = 'RAW';
+
     /**
      * Api Url
      *
@@ -116,16 +119,38 @@ class RestClient
     }
 
     /**
+     * Get the raw data from the api
+     *
+     * @param $route
+     * @param array $filter
+     * @return RestClient
+     */
+    protected function getDataRaw($route, array $filter): RestClient
+    {
+        $this->setConnection($route, $filter, true, self::METHOD_RAW);
+
+        return $this->executeCurl();
+    }
+
+    /**
      * Establishes the connection to the interface
      *
      * @param string $path
      * @param array $filter
      * @param bool $noHeader
      */
-    protected function setConnection(string $path, array $filter, bool $noHeader = false)
-    {
+    protected function setConnection(
+        string $path,
+        array $filter,
+        bool $noHeader = false,
+        string $method = self::METHOD_GET
+    ) {
         $header = array();
-        $executeHttp = $this->http.$path.'?'.$this->httpBuildQuery($filter);
+        if ($method !== self::METHOD_RAW) {
+            $executeHttp = $this->http.$path.'?'.$this->httpBuildQuery($filter);
+        } else {
+            $executeHttp = $path;
+        }
         if (empty($noHeader)) {
             $header = array(
                 "Content-type: application/json",
