@@ -100,6 +100,11 @@ abstract class AbstractController extends ActionController implements LoggerAwar
     protected PageRenderer $pageRenderer;
 
     /**
+     * @var mixed
+     */
+    protected $extConf;
+
+    /**
      * @param UserSession $userSession
      */
     public function injectUserSession(UserSession $userSession)
@@ -473,6 +478,21 @@ abstract class AbstractController extends ActionController implements LoggerAwar
             $this->request = $this->request->withArgument($key, $value);
         } else {
             $this->request->setArgument($key, $value);
+        }
+    }
+
+    /**
+     * Loads the extConf
+     *
+     * @return void
+     */
+    protected function loadExtConf()
+    {
+        //load the ext conf (ext_conf_template.txt)
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey])) {
+            $this->extConf = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$this->extKey];
+        } elseif (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey])) {
+            $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
         }
     }
 }
