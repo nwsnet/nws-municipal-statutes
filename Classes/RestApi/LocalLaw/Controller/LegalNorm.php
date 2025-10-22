@@ -85,4 +85,17 @@ class LegalNorm extends RestClient
     {
         return $this->getData(str_replace('{id}', $id, self::URI_GET_FIND_BY_ID_HTML), $filter);
     }
+
+    /**
+     * Retrieves a PDF by the given id and URL
+     *
+     * @param integer $id The unique identifier of the PDF
+     * @param string $pdfUrl The URL template for fetching the PDF containing a placeholder for the id
+     *
+     * @return LegalNorm
+     */
+    public function getPdfById(int $id, string $pdfUrl): LegalNorm
+    {
+        return $this->getDataRaw(str_replace('{id}', $id, $pdfUrl), []);
+    }
 }
