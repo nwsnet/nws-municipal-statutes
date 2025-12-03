@@ -57,7 +57,7 @@ class Converter
             $content['nav'][] = array('name' => $name, 'section' => $section);
         }
         // Get content elements
-        foreach ($dom->find('section[class]') as $elements) {
+        foreach ($dom->find('.sectionwrapper section[class]') as $elements) {
             $header = $this->findFirstChildNode('header', $elements);
             $section = $this->findFirstChildNode('section', $elements);
             if (!empty($header)) {
