@@ -182,7 +182,7 @@
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.enactment-to">
 				<source>| Enactment to: </source>
-				<target>| gültig am: </target>
+				<target>| gültig bis: </target>
 			</trans-unit>
 			<trans-unit id="partials.locallaw.date.publication-date">
 				<source>| Publication date: </source>
