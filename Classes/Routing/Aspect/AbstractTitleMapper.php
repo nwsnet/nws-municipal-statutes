@@ -185,9 +185,13 @@ class AbstractTitleMapper
             if (isset($GLOBALS['TSFE'])) {
                 /** @var ConfigurationManager $configurationManager */
                 $this->configurationManager = GeneralUtility::makeInstance(ConfigurationManager::class);
-                $this->setting = $this->configurationManager->getConfiguration(
-                    ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
-                );
+                try {
+                    $this->setting = $this->configurationManager->getConfiguration(
+                        ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+                    );
+                } catch(\RuntimeException $e) {
+                   $this->setting = [];
+                }
                 if (method_exists($this->configurationManager, 'getContentObject')) {
                     $this->contentObject = $this->configurationManager->getContentObject();
                 } else {
