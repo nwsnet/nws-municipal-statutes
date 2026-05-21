@@ -50,13 +50,58 @@ class Converter
         }
         $content = array();
         $dom = str_get_html($html);
-        // Get navigation elements
+
         foreach ($dom->find('nav a') as $element) {
             $section = str_replace('#', '', $element->href);
             $name = $element->plaintext;
             $content['nav'][] = array('name' => $name, 'section' => $section);
         }
-        // Get content elements
+
+        $newFormatWrapper = $dom->find('.tsa-id-kr-legalnorm-content-wrapper', 0);
+        if (!empty($newFormatWrapper)) {
+            $this->parseNewFormatContent($newFormatWrapper, $content);
+        } else {
+            $this->parseOldFormatContent($dom, $content);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Neues HTML-Format (tsa-id-kr): Sektions-ID im id-Attribut, h2 als direktes Kind, Inhalt in level-0 div
+     */
+    protected function parseNewFormatContent(simple_html_dom_node $wrapper, array &$content): void
+    {
+        foreach ($wrapper->find('.tsa-id-kr-legalnorm-content-part-wrapper') as $element) {
+            $sectionId = $element->getAttribute('id') ?? '';
+            $h2 = $element->find('h2', 0);
+
+            $header = '';
+            $elementContent = '';
+
+            if (!empty($h2)) {
+                $header = [
+                    'section' => $sectionId,
+                    'headline' => $h2->plaintext,
+                ];
+                $contentDiv = $element->find('.tsa-id-kr-legalnorm-content-inner-div', 0);
+                if (!empty($contentDiv)) {
+                    $contentDiv = $this->setTag('h2', 'h4', $contentDiv);
+                    $elementContent = $contentDiv->innertext;
+                }
+            } else {
+                $elementContent = $element->innertext;
+            }
+
+            $content['elements'][] = ['header' => $header, 'content' => $elementContent];
+        }
+    }
+
+    /**
+     * Altes HTML-Format: sectionwrapper mit verschachtelten header/section Elementen und footer
+     */
+    protected function parseOldFormatContent($dom, array &$content): void
+    {
         foreach ($dom->find('.sectionwrapper section[class]') as $elements) {
             $header = $this->findFirstChildNode('header', $elements);
             $section = $this->findFirstChildNode('section', $elements);
@@ -87,8 +132,6 @@ class Converter
             $cleaned = preg_replace('/<section\b[^>]*>.*?<\/section>/is', '', $element->innertext ?? '');
             $content['elements'][] = array('header' => '', 'content' => $cleaned);
         }
-
-        return $content;
     }
 
     /**
