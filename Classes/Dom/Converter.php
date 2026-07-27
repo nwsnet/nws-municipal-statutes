@@ -129,7 +129,11 @@ class Converter
             $content['elements'][] = array('header' => $header, 'content' => $section->innertext ?? '');
         }
         foreach ($dom->find('footer') as $element) {
-            $cleaned = preg_replace('/<section\b[^>]*>.*?<\/section>/is', '', $element->innertext ?? '');
+            $cleaned = $element->innertext ?? '';
+            while (preg_match('/<section\b[^>]*>.*?<\/section>/is', $cleaned)) {
+                $cleaned = preg_replace('/<section\b[^>]*>.*?<\/section>/is', '', $cleaned);
+            }
+            $cleaned = preg_replace('/<\/?section[^>]*>/is', '', $cleaned);
             $content['elements'][] = array('header' => '', 'content' => $cleaned);
         }
     }
